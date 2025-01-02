@@ -1,7 +1,7 @@
 @powershell -NoProfile -ExecutionPolicy Unrestricted "$s=[scriptblock]::create((gc \"%~f0\"|?{$_.readcount -gt 1})-join\"`n\");&$s" %*&goto:eof
 
 #
-#   AviUtl Installer Script (Version 0.9.0_2025-01-03)
+#   AviUtl Installer Script (Version 0.9.1_2025-01-03)
 #
 #
 #   MIT License
@@ -36,14 +36,17 @@ function GithubLatestReleaseUrl ($repo) {
     return($api.assets.browser_download_url)
 }
 
-Write-Host "AviUtl Installer Script (Version 0.9.0_2025-01-03)`r`n`r`n"
+Write-Host "AviUtl Installer Script (Version 0.9.1_2025-01-03)`r`n`r`n"
 Write-Host -NoNewline "AviUtlをインストールするフォルダを作成しています..."
 
-# C:\AviUtl ディレクトリを作成する（待機）
-Start-Process powershell -ArgumentList "-command New-Item C:\AviUtl -ItemType Directory -Force" -WindowStyle Minimized -Wait
+# C:\Applications ディレクトリを作成する（待機）
+Start-Process powershell -ArgumentList "-command New-Item C:\Applications -ItemType Directory -Force" -WindowStyle Minimized -Wait
+
+# C:\Applications\AviUtl ディレクトリを作成する（待機）
+Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl -ItemType Directory -Force" -WindowStyle Minimized -Wait
 
 # AviUtl ディレクトリ内に plugins, script, license, readme の4つのディレクトリを作成する（待機）
-Start-Process powershell -ArgumentList "-command New-Item C:\AviUtl\plugins, C:\AviUtl\script, C:\AviUtl\license, C:\AviUtl\readme -ItemType Directory -Force" -WindowStyle Minimized -Wait
+Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\plugins, C:\Applications\AviUtl\script, C:\Applications\AviUtl\license, C:\Applications\AviUtl\readme -ItemType Directory -Force" -WindowStyle Minimized -Wait
 
 # tmp ディレクトリを作成する（待機）
 Start-Process powershell -ArgumentList "-command New-Item tmp -ItemType Directory -Force" -WindowStyle Minimized -Wait
@@ -70,11 +73,11 @@ Start-Process powershell -ArgumentList "-command Expand-Archive -Path aviutl110.
 Set-Location aviutl110
 
 # AviUtl\readme 内に aviutl ディレクトリを作成（待機）
-Start-Process powershell -ArgumentList "-command New-Item C:\AviUtl\readme\aviutl -ItemType Directory -Force" -WindowStyle Minimized -Wait
+Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\readme\aviutl -ItemType Directory -Force" -WindowStyle Minimized -Wait
 
 # AviUtl ディレクトリ内に aviutl.exe を、AviUtl\readme\aviutl 内に aviutl.txt をそれぞれ移動
-Move-Item aviutl.exe C:\AviUtl -Force
-Move-Item aviutl.txt C:\AviUtl\readme\aviutl -Force
+Move-Item aviutl.exe C:\Applications\AviUtl -Force
+Move-Item aviutl.txt C:\Applications\AviUtl\readme\aviutl -Force
 
 # カレントディレクトリを tmp ディレクトリに変更
 Set-Location ..
@@ -95,14 +98,14 @@ Start-Process powershell -ArgumentList "-command Expand-Archive -Path exedit92.z
 Set-Location exedit92
 
 # AviUtl\readme 内に exedit ディレクトリを作成（待機）
-Start-Process powershell -ArgumentList "-command New-Item C:\AviUtl\readme\exedit -ItemType Directory -Force" -WindowStyle Minimized -Wait
+Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\readme\exedit -ItemType Directory -Force" -WindowStyle Minimized -Wait
 
 # exedit.ini は使用せず、かつこの後の処理で邪魔になるので削除する（待機）
 Start-Process powershell -ArgumentList "-command Remove-Item exedit.ini" -WindowStyle Minimized -Wait
 
 # AviUtl\readme\exedit 内に exedit.txt, lua.txt を（待機）、AviUtl ディレクトリ内にその他のファイルをそれぞれ移動
-Start-Process powershell -ArgumentList "-command Move-Item *.txt C:\AviUtl\readme\exedit -Force" -WindowStyle Minimized -Wait
-Move-Item * C:\AviUtl -Force
+Start-Process powershell -ArgumentList "-command Move-Item *.txt C:\Applications\AviUtl\readme\exedit -Force" -WindowStyle Minimized -Wait
+Move-Item * C:\Applications\AviUtl -Force
 
 # カレントディレクトリを tmp ディレクトリに変更
 Set-Location ..
@@ -129,11 +132,11 @@ Start-Process powershell -ArgumentList "-command Expand-Archive -Path patch.aul_
 Set-Location "patch.aul_*"
 
 # AviUtl\license 内に patch-aul ディレクトリを作成（待機）
-Start-Process powershell -ArgumentList "-command New-Item C:\AviUtl\license\patch-aul -ItemType Directory -Force" -WindowStyle Minimized -Wait
+Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\license\patch-aul -ItemType Directory -Force" -WindowStyle Minimized -Wait
 
 # AviUtl ディレクトリ内に patch.aul を（待機）、AviUtl\license\patch-aul 内にその他のファイルをそれぞれ移動
-Start-Process powershell -ArgumentList "-command Move-Item patch.aul C:\AviUtl -Force" -WindowStyle Minimized -Wait
-Move-Item * C:\AviUtl\license\patch-aul -Force
+Start-Process powershell -ArgumentList "-command Move-Item patch.aul C:\Applications\AviUtl -Force" -WindowStyle Minimized -Wait
+Move-Item * C:\Applications\AviUtl\license\patch-aul -Force
 
 # カレントディレクトリを tmp ディレクトリに変更
 Set-Location ..
@@ -163,12 +166,12 @@ Start-Process powershell -ArgumentList "-command Expand-Archive -Path L-SMASH-Wo
 Set-Location "L-SMASH-Works_*"
 
 # AviUtl\readme, AviUtl\license 内に l-smash_works ディレクトリを作成（待機）
-Start-Process powershell -ArgumentList "-command New-Item C:\AviUtl\readme\l-smash_works, C:\AviUtl\license\l-smash_works -ItemType Directory -Force" -WindowStyle Minimized -Wait
+Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\readme\l-smash_works, C:\Applications\AviUtl\license\l-smash_works -ItemType Directory -Force" -WindowStyle Minimized -Wait
 
 # AviUtl\plugins ディレクトリ内に lw*.au* を、AviUtl\readme\l-smash_works 内に READM* を（待機）、
 # AviUtl\license\l-smash_works 内にその他のファイルをそれぞれ移動
-Start-Process powershell -ArgumentList "-command Move-Item lw*.au* C:\AviUtl\plugins -Force; Move-Item READM* C:\AviUtl\readme\l-smash_works -Force" -WindowStyle Minimized -Wait
-Move-Item * C:\AviUtl\license\l-smash_works -Force
+Start-Process powershell -ArgumentList "-command Move-Item lw*.au* C:\Applications\AviUtl\plugins -Force; Move-Item READM* C:\Applications\AviUtl\readme\l-smash_works -Force" -WindowStyle Minimized -Wait
+Move-Item * C:\Applications\AviUtl\license\l-smash_works -Force
 
 # カレントディレクトリを tmp ディレクトリに変更
 Set-Location ..
@@ -195,12 +198,12 @@ Start-Process powershell -ArgumentList "-command Expand-Archive -Path InputPipeP
 Set-Location "InputPipePlugin_*\InputPipePlugin"
 
 # AviUtl\readme, AviUtl\license 内に inputPipePlugin ディレクトリを作成（待機）
-Start-Process powershell -ArgumentList "-command New-Item C:\AviUtl\readme\inputPipePlugin, C:\AviUtl\license\inputPipePlugin -ItemType Directory -Force" -WindowStyle Minimized -Wait
+Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\readme\inputPipePlugin, C:\Applications\AviUtl\license\inputPipePlugin -ItemType Directory -Force" -WindowStyle Minimized -Wait
 
 # AviUtl\license\inputPipePlugin 内に LICENSE を、AviUtl\readme\inputPipePlugin 内に Readme.md を（待機）、
 # AviUtl\plugins ディレクトリ内にその他のファイルをそれぞれ移動
-Start-Process powershell -ArgumentList "-command Move-Item LICENSE C:\AviUtl\license\inputPipePlugin -Force; Move-Item Readme.md C:\AviUtl\readme\inputPipePlugin -Force" -WindowStyle Minimized -Wait
-Move-Item * C:\AviUtl\plugins -Force
+Start-Process powershell -ArgumentList "-command Move-Item LICENSE C:\Applications\AviUtl\license\inputPipePlugin -Force; Move-Item Readme.md C:\Applications\AviUtl\readme\inputPipePlugin -Force" -WindowStyle Minimized -Wait
+Move-Item * C:\Applications\AviUtl\plugins -Force
 
 # カレントディレクトリを tmp ディレクトリに変更
 Set-Location ..\..
@@ -227,13 +230,13 @@ Start-Process powershell -ArgumentList "-command Expand-Archive -Path x264guiEx_
 Set-Location "x264guiEx_*\x264guiEx_*"
 
 # AviUtl\readme 内に x264guiEx ディレクトリを作成（待機）
-Start-Process powershell -ArgumentList "-command New-Item C:\AviUtl\readme\x264guiEx -ItemType Directory -Force" -WindowStyle Minimized -Wait
+Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\readme\x264guiEx -ItemType Directory -Force" -WindowStyle Minimized -Wait
 
 # カレントディレクトリをx264guiExのzipファイルを展開したディレクトリ内の plugins ディレクトリに変更
 Set-Location plugins
 
 # AviUtl\plugins 内に現在のディレクトリのファイルを全て移動（待機）
-Start-Process powershell -ArgumentList "-command Move-Item * C:\AviUtl\plugins -Force" -WindowStyle Minimized -Wait
+Start-Process powershell -ArgumentList "-command Move-Item * C:\Applications\AviUtl\plugins -Force" -WindowStyle Minimized -Wait
 
 # カレントディレクトリをx264guiExのzipファイルを展開したディレクトリに変更
 Set-Location ..
@@ -242,8 +245,8 @@ Set-Location ..
 Start-Process powershell -ArgumentList "-command Remove-Item plugins -Recurse" -WindowStyle Minimized -Wait
 
 # AviUtl\readme\x264guiEx 内に x264guiEx_readme.txt を（待機）、AviUtl ディレクトリ内にその他のファイルをそれぞれ移動
-Start-Process powershell -ArgumentList "-command Move-Item x264guiEx_readme.txt C:\AviUtl\readme\x264guiEx -Force" -WindowStyle Minimized -Wait
-Move-Item * C:\AviUtl -Force
+Start-Process powershell -ArgumentList "-command Move-Item x264guiEx_readme.txt C:\Applications\AviUtl\readme\x264guiEx -Force" -WindowStyle Minimized -Wait
+Move-Item * C:\Applications\AviUtl -Force
 
 # カレントディレクトリを tmp ディレクトリに変更
 Set-Location ..\..
@@ -255,10 +258,10 @@ Write-Host -NoNewline "`r`n設定ファイルをコピーしています..."
 Set-Location ..\settings
 
 # AviUtl\plugins 内に lsmash.ini を、AviUtl 内にその他のファイルをコピー
-Copy-Item lsmash.ini C:\AviUtl\plugins
-Copy-Item aviutl.ini C:\AviUtl
-Copy-Item exedit.ini C:\AviUtl
-Copy-Item デフォルト.cfg C:\AviUtl
+Copy-Item lsmash.ini C:\Applications\AviUtl\plugins
+Copy-Item aviutl.ini C:\Applications\AviUtl
+Copy-Item exedit.ini C:\Applications\AviUtl
+Copy-Item デフォルト.cfg C:\Applications\AviUtl
 
 # カレントディレクトリを tmp ディレクトリに変更
 Set-Location ..\tmp
@@ -271,8 +274,8 @@ $ShortcutFolder = [Environment]::GetFolderPath("Desktop")
 $ShortcutFile = Join-Path -Path $ShortcutFolder -ChildPath "AviUtl.lnk"
 $WshShell = New-Object -comObject WScript.Shell
 $Shortcut = $WshShell.CreateShortcut($ShortcutFile)
-$Shortcut.TargetPath = "C:\AviUtl\aviutl.exe"
-$Shortcut.IconLocation = "C:\AviUtl\aviutl.exe,0"
+$Shortcut.TargetPath = "C:\Applications\AviUtl\aviutl.exe"
+$Shortcut.IconLocation = "C:\Applications\AviUtl\aviutl.exe,0"
 $Shortcut.WorkingDirectory = "."
 $Shortcut.Save()
 
@@ -284,8 +287,8 @@ $ShortcutFolder = [Environment]::GetFolderPath("Programs")
 $ShortcutFile = Join-Path -Path $ShortcutFolder -ChildPath "AviUtl.lnk"
 $WshShell = New-Object -comObject WScript.Shell
 $Shortcut = $WshShell.CreateShortcut($ShortcutFile)
-$Shortcut.TargetPath = "C:\AviUtl\aviutl.exe"
-$Shortcut.IconLocation = "C:\AviUtl\aviutl.exe,0"
+$Shortcut.TargetPath = "C:\Applications\AviUtl\aviutl.exe"
+$Shortcut.IconLocation = "C:\Applications\AviUtl\aviutl.exe,0"
 $Shortcut.WorkingDirectory = "."
 $Shortcut.Save()
 
@@ -305,4 +308,4 @@ Write-Host -NoNewline "`r`n`r`n`r`nインストールが完了しました！`r`n`r`n`r`nreadm
 Pause
 
 # 終了時にreadmeフォルダを表示
-Invoke-Item "C:\AviUtl\readme"
+Invoke-Item "C:\Applications\AviUtl\readme"
