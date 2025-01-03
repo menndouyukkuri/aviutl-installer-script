@@ -1,7 +1,7 @@
 @powershell -NoProfile -ExecutionPolicy Unrestricted "$s=[scriptblock]::create((gc \"%~f0\"|?{$_.readcount -gt 1})-join\"`n\");&$s" %*&goto:eof
 
 #
-#   AviUtl Installer Script (Version 0.9.1_2025-01-03)
+#   AviUtl Installer Script (Version 1.0.0_2025-01-03)
 #
 #
 #   MIT License
@@ -36,7 +36,7 @@ function GithubLatestReleaseUrl ($repo) {
     return($api.assets.browser_download_url)
 }
 
-Write-Host "AviUtl Installer Script (Version 0.9.1_2025-01-03)`r`n`r`n"
+Write-Host "AviUtl Installer Script (Version 1.0.0_2025-01-03)`r`n`r`n"
 Write-Host -NoNewline "AviUtlをインストールするフォルダを作成しています..."
 
 # C:\Applications ディレクトリを作成する（待機）
@@ -58,9 +58,9 @@ Write-Host -NoNewline "`r`n一時的にファイルを保管するフォルダを作成しています...
 Set-Location tmp
 
 Write-Host "完了"
-Write-Host -NoNewline "`r`nAviUtl本体（version1.10）をダウンロードしています..."
+Write-Host -NoNewline "`r`nAviUtl本体（version 1.10）をダウンロードしています..."
 
-# AviUtl 1.10のzipファイルをダウンロード（待機）
+# AviUtl version 1.10のzipファイルをダウンロード（待機）
 Start-Process curl.exe -ArgumentList "-OL http://spring-fragrance.mints.ne.jp/aviutl/aviutl110.zip" -WindowStyle Minimized -Wait
 
 Write-Host "完了"
@@ -83,9 +83,9 @@ Move-Item aviutl.txt C:\Applications\AviUtl\readme\aviutl -Force
 Set-Location ..
 
 Write-Host "完了"
-Write-Host -NoNewline "`r`n拡張編集Plugin version0.92をダウンロードしています..."
+Write-Host -NoNewline "`r`n拡張編集Plugin version 0.92をダウンロードしています..."
 
-# 拡張編集Plugin 0.92のzipファイルをダウンロード（待機）
+# 拡張編集Plugin version 0.92のzipファイルをダウンロード（待機）
 Start-Process curl.exe -ArgumentList "-OL http://spring-fragrance.mints.ne.jp/aviutl/exedit92.zip" -WindowStyle Minimized -Wait
 
 Write-Host "完了"
@@ -252,6 +252,90 @@ Move-Item * C:\Applications\AviUtl -Force
 Set-Location ..\..
 
 Write-Host "完了"
+Write-Host -NoNewline "`r`nVisual C++ 再頒布可能パッケージを確認しています..."
+
+# レジストリからデスクトップアプリの一覧を取得する
+$installedApps = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*',
+                                  'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*',
+                                  'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*' -ErrorAction SilentlyContinue |
+Where-Object { $_.DisplayName -and $_.UninstallString -and -not $_.SystemComponent -and ($_.ReleaseType -notin 'Update','Hotfix') -and -not $_.ParentKeyName } |
+Select-Object DisplayName
+
+# Microsoft Visual C++ 2015-20xx Redistributable (x86) がインストールされているか確認する
+$Vc2015App = $installedApps.DisplayName -match "Microsoft Visual C\+\+ 2015-20.. Redistributable \(x86\)"
+
+# Microsoft Visual C++ 2008 Redistributable - x86 がインストールされているか確認する
+$Vc2008App = $installedApps.DisplayName -match "Microsoft Visual C\+\+ 2008 Redistributable - x86"
+
+Write-Host "完了"
+
+# $Vc2015App の結果で処理を分岐する
+if ($Vc2015App) {
+    Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) はインストール済みです。"
+} else {
+    Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) はインストールされていません。"
+    Write-Host "このパッケージは patch.aul など重要なプラグインの動作に必要です。インストールには管理者権限が必要です。`r`n"
+    Write-Host -NoNewline "Microsoft Visual C++ 2015-20xx Redistributable (x86) のインストーラーをダウンロードしています..."
+
+    # Visual C++ 2015-20xx Redistributable (x86) のインストーラーをダウンロード（待機）
+    Start-Process curl.exe -ArgumentList "-OL https://aka.ms/vs/17/release/vc_redist.x86.exe" -WindowStyle Minimized -Wait
+
+    Write-Host "完了"
+    Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) のインストーラーを起動します。"
+    Write-Host "インストーラーの指示に従ってインストールを行ってください。`r`n"
+
+    # Visual C++ 2015-20xx Redistributable (x86) のインストーラーを実行（待機）
+    Start-Process -FilePath vc_redist.x86.exe -WindowStyle Minimized -Wait
+
+    Write-Host "インストーラーが終了しました。"
+}
+
+# $Vc2008App 結果で処理を分岐する
+if ($Vc2008App) {
+    Write-Host "Microsoft Visual C++ 2008 Redistributable - x86 はインストール済みです。"
+} else {
+    Write-Host "Microsoft Visual C++ 2008 Redistributable - x86 はインストールされていません。"
+
+    # 選択ここから
+
+    $choiceTitle = "Microsoft Visual C++ 2008 Redistributable - x86 をインストールしますか？"
+    $choiceMessage = "このパッケージは一部のスクリプトの動作に必要です。インストールには管理者権限が必要です。"
+
+    $tChoiceDescription = "System.Management.Automation.Host.ChoiceDescription"
+    $choiceOptions = @(
+        New-Object $tChoiceDescription ("はい(&Y)",       "インストールを実行します。")
+        New-Object $tChoiceDescription ("いいえ(&N)",     "インストールをせず、スキップして次の処理に進みます。")
+    )
+
+    $result = $host.ui.PromptForChoice($choiceTitle, $choiceMessage, $choiceOptions, 0)
+    switch ($result)
+    {
+        0 {
+            Write-Host -NoNewline "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 のインストーラーをダウンロードしています..."
+
+            # Visual C++ 2008 Redistributable - x86 のインストーラーをダウンロード（待機）
+            Start-Process curl.exe -ArgumentList "-OL https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe" -WindowStyle Minimized -Wait
+
+            Write-Host "完了"
+            Write-Host "Microsoft Visual C++ 2008 Redistributable - x86 のインストーラーを起動します。"
+            Write-Host "インストーラーの指示に従ってインストールを行ってください。"
+
+            # Visual C++ 2008 Redistributable - x86 のインストーラーを実行（待機）
+            Start-Process -FilePath vcredist_x86.exe -WindowStyle Minimized -Wait
+
+            Write-Host "インストーラーが終了しました。"
+
+            break
+        }
+        1 {
+            Write-Host "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 のインストールをスキップしました。"
+            break
+        }
+    }
+
+    # 選択ここまで
+}
+
 Write-Host -NoNewline "`r`n設定ファイルをコピーしています..."
 
 # カレントディレクトリを settings ディレクトリに変更
