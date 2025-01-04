@@ -33,83 +33,82 @@ function GithubLatestReleaseUrl ($repo) {
     return($api.assets.browser_download_url)
 }
 
-Write-Host "AviUtl Installer Script (Version 1.0.1_2025-01-04)`r`n`r`n"
+Write-Host "必須プラグイン (patch.aul・L-SMASH Works・InputPipePlugin・x264guiEx) の更新を開始します。`r`n`r`n"
 
 # カレントディレクトリのパスを $scriptFileRoot に保存 (起動方法のせいで $PSScriptRoot が使用できないため)
 $scriptFileRoot = (Get-Location).Path
 
-Write-Host -NoNewline "AviUtlをインストールするフォルダを作成しています..."
+Write-Host -NoNewline "AviUtlがインストールされているフォルダを確認しています..."
 
-# C:\Applications ディレクトリを作成する (待機)
-Start-Process powershell -ArgumentList "-command New-Item C:\Applications -ItemType Directory -Force" -WindowStyle Minimized -Wait
+# aviutl.exe が入っているディレクトリを探し、$aviutlExeDirectory にパスを保存
+if (Test-Path "C:\AviUtl\aviutl.exe") {
+    Write-Host "完了"
+    $aviutlExeDirectory = "C:\AviUtl"
+} elseif (Test-Path "C:\Applications\AviUtl\aviutl.exe") {
+    Write-Host "完了"
+    $aviutlExeDirectory = "C:\Applications\AviUtl"
+} else { # 確認できなかった場合、ユーザーにパスを入力させる
+    # ユーザーにパスを入力させ、aviutl.exe が入っていることを確認したらループを抜ける
+    New-Variable checkInputAviutlExePath # ループを抜けても使用するため先に宣言
+    do {
+        Write-Host "完了"
+        Write-Host "AviUtlがインストールされているフォルダが確認できませんでした。`r`n"
 
-# C:\Applications\AviUtl ディレクトリを作成する (待機)
-Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl -ItemType Directory -Force" -WindowStyle Minimized -Wait
+        Write-Host "aviutl.exe のパス、または aviutl.exe が入っているフォルダのパスを入力し、Enter を押してください。"
+        $userInputAviutlExePath = Read-Host
+
+        # ユーザーの入力をもとに aviutl.exe のパスを $checkInputAviutlExePath に代入
+        if ($userInputAviutlExePath -match "\\aviutl\.exe") {
+            $checkInputAviutlExePath = $userInputAviutlExePath
+        } else {
+            $checkInputAviutlExePath = $userInputAviutlExePath + "\aviutl.exe"
+        }
+
+        Write-Host -NoNewline "`r`nAviUtlがインストールされているフォルダを確認しています..."
+    } while (!(Test-Path $checkInputAviutlExePath))
+    Write-Host "完了"
+
+    # パスを \aviutl.exe を消去してから $aviutlExeDirectory に保存
+    $aviutlExeDirectory = $checkInputAviutlExePath -replace "\\aviutl\.exe", ""
+}
+
+Start-Sleep -Milliseconds 500
+
+Write-Host -NoNewline "`r`n一時的にファイルを保管するフォルダを作成しています..."
 
 # AviUtl ディレクトリ内に plugins, script, license, readme の4つのディレクトリを作成する (待機)
-Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\plugins, C:\Applications\AviUtl\script, C:\Applications\AviUtl\license, C:\Applications\AviUtl\readme -ItemType Directory -Force" -WindowStyle Minimized -Wait
-
-Write-Host "完了"
-Write-Host -NoNewline "`r`n一時的にファイルを保管するフォルダを作成しています..."
+$aviutlPluginsDirectory = $aviutlExeDirectory + "\plugins"
+$aviutlScriptDirectory = $aviutlExeDirectory + "\script"
+$LicenseDirectoryRoot = $aviutlExeDirectory + "\license"
+$ReadmeDirectoryRoot = $aviutlExeDirectory + "\readme"
+Start-Process powershell -ArgumentList "-command New-Item $aviutlPluginsDirectory, $aviutlScriptDirectory, $LicenseDirectoryRoot, $ReadmeDirectoryRoot -ItemType Directory -Force" -WindowStyle Minimized -Wait
 
 # tmp ディレクトリを作成する (待機)
 Start-Process powershell -ArgumentList "-command New-Item tmp -ItemType Directory -Force" -WindowStyle Minimized -Wait
 
+Write-Host "完了"
+Write-Host -NoNewline "`r`n拡張編集Pluginのインストールされているディレクトリを確認しています..."
+
+# 拡張編集Pluginが plugins ディレクトリ内にある場合、AviUtl ディレクトリ内に移動させる (エラーの防止)
+$exeditAufPluginsPath = $aviutlPluginsDirectory + "\exedit.auf"
+if (Test-Path $exeditAufPluginsPath) {
+    # カレントディレクトリを plugins ディレクトリに変更
+    Set-Location $aviutlPluginsDirectory
+
+    # 拡張編集Pluginのファイルを全て AviUtl ディレクトリ内に移動
+    Move-Item "exedit.*" $aviutlExeDirectory -Force
+    Move-Item lua51.dll $aviutlExeDirectory -Force
+    $luaTxtPluginsPath = $aviutlPluginsDirectory + "\lua.txt"
+    if (Test-Path $luaTxtPluginsPath) {
+        Move-Item lua.txt $aviutlExeDirectory -Force
+    }
+
+    # カレントディレクトリをスクリプトファイルのあるディレクトリに変更
+    Set-Location $scriptFileRoot
+}
+
 # カレントディレクトリを tmp ディレクトリに変更
 Set-Location tmp
-
-Write-Host "完了"
-Write-Host -NoNewline "`r`nAviUtl本体 (version 1.10) をダウンロードしています..."
-
-# AviUtl version 1.10のzipファイルをダウンロード (待機)
-Start-Process curl.exe -ArgumentList "-OL http://spring-fragrance.mints.ne.jp/aviutl/aviutl110.zip" -WindowStyle Minimized -Wait
-
-Write-Host "完了"
-Write-Host -NoNewline "AviUtl本体をインストールしています..."
-
-# AviUtlのzipファイルを展開 (待機)
-Start-Process powershell -ArgumentList "-command Expand-Archive -Path aviutl110.zip -Force" -WindowStyle Minimized -Wait
-
-# カレントディレクトリを aviutl110 ディレクトリに変更
-Set-Location aviutl110
-
-# AviUtl\readme 内に aviutl ディレクトリを作成 (待機)
-Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\readme\aviutl -ItemType Directory -Force" -WindowStyle Minimized -Wait
-
-# AviUtl ディレクトリ内に aviutl.exe を、AviUtl\readme\aviutl 内に aviutl.txt をそれぞれ移動
-Move-Item aviutl.exe C:\Applications\AviUtl -Force
-Move-Item aviutl.txt C:\Applications\AviUtl\readme\aviutl -Force
-
-# カレントディレクトリを tmp ディレクトリに変更
-Set-Location ..
-
-Write-Host "完了"
-Write-Host -NoNewline "`r`n拡張編集Plugin version 0.92をダウンロードしています..."
-
-# 拡張編集Plugin version 0.92のzipファイルをダウンロード (待機)
-Start-Process curl.exe -ArgumentList "-OL http://spring-fragrance.mints.ne.jp/aviutl/exedit92.zip" -WindowStyle Minimized -Wait
-
-Write-Host "完了"
-Write-Host -NoNewline "拡張編集Pluginをインストールしています..."
-
-# 拡張編集Pluginのzipファイルを展開 (待機)
-Start-Process powershell -ArgumentList "-command Expand-Archive -Path exedit92.zip -Force" -WindowStyle Minimized -Wait
-
-# カレントディレクトリを exedit92 ディレクトリに変更
-Set-Location exedit92
-
-# AviUtl\readme 内に exedit ディレクトリを作成 (待機)
-Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\readme\exedit -ItemType Directory -Force" -WindowStyle Minimized -Wait
-
-# exedit.ini は使用せず、かつこの後の処理で邪魔になるので削除する (待機)
-Start-Process powershell -ArgumentList "-command Remove-Item exedit.ini" -WindowStyle Minimized -Wait
-
-# AviUtl\readme\exedit 内に exedit.txt, lua.txt を (待機) 、AviUtl ディレクトリ内にその他のファイルをそれぞれ移動
-Start-Process powershell -ArgumentList "-command Move-Item *.txt C:\Applications\AviUtl\readme\exedit -Force" -WindowStyle Minimized -Wait
-Move-Item * C:\Applications\AviUtl -Force
-
-# カレントディレクトリを tmp ディレクトリに変更
-Set-Location ..
 
 Write-Host "完了"
 Write-Host -NoNewline "`r`npatch.aul (謎さうなフォーク版) の最新版情報を取得しています..."
@@ -133,11 +132,25 @@ Start-Process powershell -ArgumentList "-command Expand-Archive -Path patch.aul_
 Set-Location "patch.aul_*"
 
 # AviUtl\license 内に patch-aul ディレクトリを作成 (待機)
-Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\license\patch-aul -ItemType Directory -Force" -WindowStyle Minimized -Wait
+$patchAulLicenseDirectory = $LicenseDirectoryRoot + "\patch-aul"
+Start-Process powershell -ArgumentList "-command New-Item $patchAulLicenseDirectory -ItemType Directory -Force" -WindowStyle Minimized -Wait
+
+# patch.aul が plugins ディレクトリ内にある場合、削除して patch.aul.json を移動させる (エラーの防止)
+$patchAulPluginsPath = $aviutlPluginsDirectory + "\patch.aul"
+if (Test-Path $patchAulPluginsPath) {
+    Remove-Item $patchAulPluginsPath
+    $patchAulJsonPath = $aviutlExeDirectory + "\patch.aul.json"
+    $patchAulJsonPluginsPath = $aviutlPluginsDirectory + "\patch.aul.json"
+    if ((Test-Path $patchAulJsonPluginsPath) -and (!(Test-Path $patchAulJsonPath))) {
+        Move-Item $patchAulJsonPluginsPath $aviutlExeDirectory -Force
+    } elseif (Test-Path $patchAulJsonPluginsPath) {
+        Remove-Item $patchAulJsonPluginsPath
+    }
+}
 
 # AviUtl ディレクトリ内に patch.aul を (待機) 、AviUtl\license\patch-aul 内にその他のファイルをそれぞれ移動
-Start-Process powershell -ArgumentList "-command Move-Item patch.aul C:\Applications\AviUtl -Force" -WindowStyle Minimized -Wait
-Move-Item * C:\Applications\AviUtl\license\patch-aul -Force
+Start-Process powershell -ArgumentList "-command Move-Item patch.aul $aviutlExeDirectory -Force" -WindowStyle Minimized -Wait
+Move-Item * $patchAulLicenseDirectory -Force
 
 # カレントディレクトリを tmp ディレクトリに変更
 Set-Location ..
@@ -161,8 +174,9 @@ Write-Host "完了"
 Write-Host -NoNewline "L-SMASH Works (Mr-Ojii版) をインストールしています..."
 
 # AviUtl\license\l-smash_works 内に Licenses ディレクトリがあれば削除する (エラーの防止)
-if (Test-Path "C:\Applications\AviUtl\license\l-smash_works\Licenses") {
-    Remove-Item C:\Applications\AviUtl\license\l-smash_works\Licenses -Recurse
+$lSmashWorksLicenseDirectoryLicenses = $LicenseDirectoryRoot + "\l-smash_works\Licenses"
+if (Test-Path $lSmashWorksLicenseDirectoryLicenses) {
+    Remove-Item $lSmashWorksLicenseDirectoryLicenses -Recurse
 }
 
 # L-SMASH Worksのzipファイルを展開 (待機)
@@ -172,12 +186,29 @@ Start-Process powershell -ArgumentList "-command Expand-Archive -Path L-SMASH-Wo
 Set-Location "L-SMASH-Works_*"
 
 # AviUtl\readme, AviUtl\license 内に l-smash_works ディレクトリを作成 (待機)
-Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\readme\l-smash_works, C:\Applications\AviUtl\license\l-smash_works -ItemType Directory -Force" -WindowStyle Minimized -Wait
+$lSmashWorksReadmeDirectory = $ReadmeDirectoryRoot + "\l-smash_works"
+$lSmashWorksLicenseDirectory = $LicenseDirectoryRoot + "\l-smash_works"
+Start-Process powershell -ArgumentList "-command New-Item $lSmashWorksReadmeDirectory, $lSmashWorksLicenseDirectory -ItemType Directory -Force" -WindowStyle Minimized -Wait
+
+# L-SMASH Worksの入っているディレクトリを探し、$lwinputAuiDirectory にパスを保存
+# $inputPipePluginDeleteCheckDirectory は $lwinputAuiDirectory の逆、後に使用
+$lwinputAuiTestPath = $aviutlExeDirectory + "\lwinput.aui"
+New-Variable lwinputAuiDirectory
+New-Variable inputPipePluginDeleteCheckDirectory
+if (Test-Path $lwinputAuiTestPath) {
+    $lwinputAuiDirectory = $aviutlExeDirectory
+    $inputPipePluginDeleteCheckDirectory = $aviutlPluginsDirectory
+} else {
+    $lwinputAuiDirectory = $aviutlPluginsDirectory
+    $inputPipePluginDeleteCheckDirectory = $aviutlExeDirectory
+}
+
+Start-Sleep -Milliseconds 500
 
 # AviUtl\plugins ディレクトリ内に lw*.au* を、AviUtl\readme\l-smash_works 内に READM* を (待機) 、
 # AviUtl\license\l-smash_works 内にその他のファイルをそれぞれ移動
-Start-Process powershell -ArgumentList "-command Move-Item lw*.au* C:\Applications\AviUtl\plugins -Force; Move-Item READM* C:\Applications\AviUtl\readme\l-smash_works -Force" -WindowStyle Minimized -Wait
-Move-Item * C:\Applications\AviUtl\license\l-smash_works -Force
+Start-Process powershell -ArgumentList "-command Move-Item lw*.au* $lwinputAuiDirectory -Force; Move-Item READM* $lSmashWorksReadmeDirectory -Force" -WindowStyle Minimized -Wait
+Move-Item * $lSmashWorksLicenseDirectory -Force
 
 # カレントディレクトリを tmp ディレクトリに変更
 Set-Location ..
@@ -204,15 +235,24 @@ Start-Process powershell -ArgumentList "-command Expand-Archive -Path InputPipeP
 Set-Location "InputPipePlugin_*\InputPipePlugin"
 
 # AviUtl\readme, AviUtl\license 内に inputPipePlugin ディレクトリを作成 (待機)
-Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\readme\inputPipePlugin, C:\Applications\AviUtl\license\inputPipePlugin -ItemType Directory -Force" -WindowStyle Minimized -Wait
+$inputPipePluginReadmeDirectory = $ReadmeDirectoryRoot + "\inputPipePlugin"
+$inputPipePluginLicenseDirectory = $LicenseDirectoryRoot + "\inputPipePlugin"
+Start-Process powershell -ArgumentList "-command New-Item $inputPipePluginReadmeDirectory, $inputPipePluginLicenseDirectory -ItemType Directory -Force" -WindowStyle Minimized -Wait
 
 # AviUtl\license\inputPipePlugin 内に LICENSE を、AviUtl\readme\inputPipePlugin 内に Readme.md を (待機) 、
 # AviUtl\plugins ディレクトリ内にその他のファイルをそれぞれ移動
-Start-Process powershell -ArgumentList "-command Move-Item LICENSE C:\Applications\AviUtl\license\inputPipePlugin -Force; Move-Item Readme.md C:\Applications\AviUtl\readme\inputPipePlugin -Force" -WindowStyle Minimized -Wait
-Move-Item * C:\Applications\AviUtl\plugins -Force
+Start-Process powershell -ArgumentList "-command Move-Item LICENSE $inputPipePluginLicenseDirectory -Force; Move-Item Readme.md $inputPipePluginReadmeDirectory -Force" -WindowStyle Minimized -Wait
+Move-Item * $lwinputAuiDirectory -Force
+
+# トラブルの原因になるファイルの除去
+Set-Location $inputPipePluginDeleteCheckDirectory
+if (Test-Path "InputPipe*") {
+    Remove-Item "InputPipe*"
+}
+Set-Location $scriptFileRoot
 
 # カレントディレクトリを tmp ディレクトリに変更
-Set-Location ..\..
+Set-Location tmp
 
 Write-Host "完了"
 Write-Host -NoNewline "`r`nx264guiExの最新版情報を取得しています..."
@@ -227,12 +267,7 @@ Write-Host -NoNewline "x264guiExをダウンロードしています..."
 Start-Process curl.exe -ArgumentList "-OL $x264guiExUrl" -WindowStyle Minimized -Wait
 
 Write-Host "完了"
-Write-Host -NoNewline "x264guiExをインストールしています..."
-
-# AviUtl\plugins 内に x264guiEx_stg ディレクトリがあれば削除する (エラーの防止)
-if (Test-Path "C:\Applications\AviUtl\plugins\x264guiEx_stg") {
-    Remove-Item C:\Applications\AviUtl\plugins\x264guiEx_stg -Recurse
-}
+Write-Host -NoNewline "x264guiExをインストールしています。`r`n"
 
 # x264guiExのzipファイルを展開 (待機)
 Start-Process powershell -ArgumentList "-command Expand-Archive -Path x264guiEx_*.zip -Force" -WindowStyle Minimized -Wait
@@ -243,31 +278,76 @@ Set-Location "x264guiEx_*\x264guiEx_*"
 # カレントディレクトリをx264guiExのzipファイルを展開したディレクトリ内の plugins ディレクトリに変更
 Set-Location plugins
 
-# AviUtl\plugins 内に現在のディレクトリのファイルを全て移動
-Move-Item * C:\Applications\AviUtl\plugins -Force
+# AviUtl\plugins 内に現在のディレクトリのファイルをプロファイル以外全て移動
+Move-Item "x264guiEx.*" $aviutlPluginsDirectory -Force
+Move-Item auo_setup.auf -Force
+
+# プロファイルを上書きするかどうかユーザーに確認する (既定は 上書きしない)
+# 選択ここから
+
+$x264guiExChoiceTitle = "x264guiExのプロファイルを上書きしますか？"
+$x264guiExChoiceMessage = "プロファイルは更新で新しくなっている可能性がありますが、上書きを実行すると追加したプロファイルやプロファイルへの変更が削除されます。"
+
+$x264guiExTChoiceDescription = "System.Management.Automation.Host.ChoiceDescription"
+$x264guiExChoiceOptions = @(
+    New-Object $x264guiExTChoiceDescription ("はい(&Y)",       "上書きを実行します。")
+    New-Object $x264guiExTChoiceDescription ("いいえ(&N)",     "上書きをせず、スキップして次の処理に進みます。")
+)
+
+$x264guiExChoiceResult = $host.ui.PromptForChoice($x264guiExChoiceTitle, $x264guiExChoiceMessage, $x264guiExChoiceOptions, 1)
+switch ($x264guiExChoiceResult) {
+    0 {
+        Write-Host -NoNewline "`r`nx264guiExのプロファイルを上書きします..."
+
+        # AviUtl\plugins 内に x264guiEx_stg ディレクトリがあれば削除する
+        $x264guiExStgDirectory = $aviutlPluginsDirectory + "\x264guiEx_stg"
+        if (Test-Path $x264guiExStgDirectory) {
+            Remove-Item $x264guiExStgDirectory -Recurse
+        }
+
+        # AviUtl\plugins 内に現在のディレクトリのファイルを全て移動
+        Move-Item * $aviutlPluginsDirectory -Force
+
+        Write-Host "完了"
+        break
+    }
+    1 {
+        Write-Host "`r`nx264guiExのプロファイルの上書きをスキップしました。"
+        break
+    }
+}
+
+# 選択ここまで
 
 # カレントディレクトリをx264guiExのzipファイルを展開したディレクトリ内の exe_files ディレクトリに変更
 Set-Location ..\exe_files
 
 # AviUtl ディレクトリ内に exe_files ディレクトリを作成 (待機)
-Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\exe_files -ItemType Directory -Force" -WindowStyle Minimized -Wait
+$exeFilesDirectory = $aviutlExeDirectory + "\exe_files"
+Start-Process powershell -ArgumentList "-command New-Item $exeFilesDirectory -ItemType Directory -Force" -WindowStyle Minimized -Wait
+
+# AviUtl\exe_files 内に x264_*.exe があれば削除 (待機)
+Set-Location $exeFilesDirectory
+Start-Process powershell -ArgumentList "-command if (Test-Path x264_*.exe) { Remove-Item x264_*.exe }" -WindowStyle Minimized -Wait
+Set-Location $scriptFileRoot
+Set-Location "tmp\x264guiEx_*\x264guiEx_*\exe_files"
 
 # AviUtl\exe_files 内に現在のディレクトリのファイルを全て移動
-Move-Item * C:\Applications\AviUtl\exe_files -Force
+Move-Item * $exeFilesDirectory -Force
 
 # カレントディレクトリをx264guiExのzipファイルを展開したディレクトリに変更
 Set-Location ..
 
 # AviUtl\readme 内に x264guiEx ディレクトリを作成 (待機)
-Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\readme\x264guiEx -ItemType Directory -Force" -WindowStyle Minimized -Wait
+$x264guiExReadmeDirectory = $ReadmeDirectoryRoot + "\x264guiEx"
+Start-Process powershell -ArgumentList "-command New-Item $x264guiExReadmeDirectory -ItemType Directory -Force" -WindowStyle Minimized -Wait
 
 # AviUtl\readme\x264guiEx 内に x264guiEx_readme.txt を移動
-Move-Item x264guiEx_readme.txt C:\Applications\AviUtl\readme\x264guiEx -Force
+Move-Item x264guiEx_readme.txt $x264guiExReadmeDirectory -Force
 
 # カレントディレクトリを tmp ディレクトリに変更
 Set-Location ..\..
 
-Write-Host "完了"
 Write-Host -NoNewline "`r`nVisual C++ 再頒布可能パッケージを確認しています..."
 
 # レジストリからデスクトップアプリの一覧を取得する
@@ -351,48 +431,7 @@ if ($Vc2008App) {
     # 選択ここまで
 }
 
-Write-Host -NoNewline "`r`n設定ファイルをコピーしています..."
-
-# カレントディレクトリを settings ディレクトリに変更
-Set-Location ..\settings
-
-# AviUtl\plugins 内に lsmash.ini を、AviUtl 内にその他のファイルをコピー
-Copy-Item lsmash.ini C:\Applications\AviUtl\plugins
-Copy-Item aviutl.ini C:\Applications\AviUtl
-Copy-Item exedit.ini C:\Applications\AviUtl
-Copy-Item デフォルト.cfg C:\Applications\AviUtl
-
-# カレントディレクトリを tmp ディレクトリに変更
-Set-Location ..\tmp
-
-Write-Host "完了"
-Write-Host -NoNewline "`r`nデスクトップにショートカットファイルを作成しています..."
-
-# WSHを用いてデスクトップにAviUtlのショートカットを作成する
-$ShortcutFolder = [Environment]::GetFolderPath("Desktop")
-$ShortcutFile = Join-Path -Path $ShortcutFolder -ChildPath "AviUtl.lnk"
-$WshShell = New-Object -comObject WScript.Shell
-$Shortcut = $WshShell.CreateShortcut($ShortcutFile)
-$Shortcut.TargetPath = "C:\Applications\AviUtl\aviutl.exe"
-$Shortcut.IconLocation = "C:\Applications\AviUtl\aviutl.exe,0"
-$Shortcut.WorkingDirectory = "."
-$Shortcut.Save()
-
-Write-Host "完了"
-Write-Host -NoNewline "スタートメニューにショートカットファイルを作成しています..."
-
-# WSHを用いてスタートメニューにAviUtlのショートカットを作成する
-$ShortcutFolder = [Environment]::GetFolderPath("Programs")
-$ShortcutFile = Join-Path -Path $ShortcutFolder -ChildPath "AviUtl.lnk"
-$WshShell = New-Object -comObject WScript.Shell
-$Shortcut = $WshShell.CreateShortcut($ShortcutFile)
-$Shortcut.TargetPath = "C:\Applications\AviUtl\aviutl.exe"
-$Shortcut.IconLocation = "C:\Applications\AviUtl\aviutl.exe,0"
-$Shortcut.WorkingDirectory = "."
-$Shortcut.Save()
-
-Write-Host "完了"
-Write-Host -NoNewline "`r`nインストールに使用した不要なファイルを削除しています..."
+Write-Host -NoNewline "`r`n更新に使用した不要なファイルを削除しています..."
 
 # カレントディレクトリをスクリプトファイルのあるディレクトリに変更
 Set-Location ..
@@ -402,18 +441,9 @@ Remove-Item tmp -Recurse
 
 Write-Host "完了"
 
-if (Test-Path "script_files\必須プラグインを更新する.cmd") {
-    # 必須プラグインを更新する.cmd をカレントディレクトリに移動
-    Move-Item "script_files\必須プラグインを更新する.cmd" . -Force
-
-    # aviutl-installer.cmd (このファイル) と settings ディレクトリを script_files ディレクトリに移動
-    Move-Item settings script_files -Force
-    Move-Item aviutl-installer.cmd script_files -Force
-}
-
 # ユーザーの操作を待って終了
-Write-Host -NoNewline "`r`n`r`n`r`nインストールが完了しました！`r`n`r`n`r`nreadmeフォルダを開いて"
+Write-Host -NoNewline "`r`n`r`n`r`n更新が完了しました！`r`n`r`n`r`nreadmeフォルダを開いて"
 Pause
 
 # 終了時にreadmeフォルダを表示
-Invoke-Item "C:\Applications\AviUtl\readme"
+Invoke-Item $ReadmeDirectoryRoot
