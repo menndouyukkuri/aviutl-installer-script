@@ -179,6 +179,30 @@ if (Test-Path $lSmashWorksLicenseDirectoryLicenses) {
     Remove-Item $lSmashWorksLicenseDirectoryLicenses -Recurse
 }
 
+# AviUtl ディレクトリや plugins ディレクトリ内に lwi ディレクトリがあれば中の .lwi ファイルを削除する (エラーの防止)
+$aviutlExelwiDirectory = $aviutlExeDirectory + "\lwi"
+if (Test-Path $aviutlExelwiDirectory) {
+    Set-Location $aviutlExelwiDirectory
+    if (Test-Path "*.lwi") {
+        Remove-Item "*.lwi"
+    }
+
+    # カレントディレクトリを tmp ディレクトリに変更
+    Set-Location $scriptFileRoot
+    Set-Location tmp
+}
+$aviutlPluginslwiDirectory = $aviutlPluginsDirectory + "\lwi"
+if (Test-Path $aviutlPluginslwiDirectory) {
+    Set-Location $aviutlPluginslwiDirectory
+    if (Test-Path "*.lwi") {
+        Remove-Item "*.lwi"
+    }
+
+    # カレントディレクトリを tmp ディレクトリに変更
+    Set-Location $scriptFileRoot
+    Set-Location tmp
+}
+
 # L-SMASH Worksのzipファイルを展開 (待機)
 Start-Process powershell -ArgumentList "-command Expand-Archive -Path L-SMASH-Works_*.zip -Force" -WindowStyle Minimized -Wait
 
