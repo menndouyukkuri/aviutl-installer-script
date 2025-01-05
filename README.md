@@ -12,4 +12,4 @@ Double-click to start the installation.
 
 
 YouTubeの紹介動画：
-[![紹介動画](https://github.com/user-attachments/assets/e9af020a-4f70-4ae0-8031-3fe157a1d5cb)](https://youtu.be/5aKI900iGVo?t=1336)
+[![紹介動画](https://github.com/user-attachments/assets/e9af020a-4f70-4ae0-8031-3fe157a1d5cb)](https://youtu.be/fJYp_nV-yrg)
