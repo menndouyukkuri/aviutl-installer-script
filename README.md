@@ -9,3 +9,7 @@ Double-click to start the installation.
 
 
 ![ss001 - C：￥WINDOWS￥system32￥cmd exe](https://github.com/user-attachments/assets/b19b6d68-9590-42d4-870b-fcdb609f4a54)
+
+
+YouTubeの紹介動画：
+[![紹介動画](https://github.com/user-attachments/assets/e9af020a-4f70-4ae0-8031-3fe157a1d5cb)](https://youtu.be/5aKI900iGVo?t=1336)
