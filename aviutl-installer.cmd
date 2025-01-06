@@ -277,6 +277,8 @@ $installedApps = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersi
 Where-Object { $_.DisplayName -and $_.UninstallString -and -not $_.SystemComponent -and ($_.ReleaseType -notin 'Update','Hotfix') -and -not $_.ParentKeyName } |
 Select-Object DisplayName
 
+# インストールを強制するよう設定 by Atolycs (20250106)
+
 # Microsoft Visual C++ 2015-20xx Redistributable (x86) がインストールされているか確認する
 # ・Visual C++ 再頒布可能パッケージに2020や2021はないので、20[2-9][0-9] としておけば2022以降を指定できる
 $Vc2015App = $installedApps.DisplayName -match "Microsoft Visual C\+\+ 2015-20[2-9][0-9] Redistributable \(x86\)"
@@ -299,10 +301,10 @@ if ($Vc2015App) {
 
     Write-Host "完了"
     Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) のインストーラーを起動します。"
-    Write-Host "インストーラーの指示に従ってインストールを行ってください。`r`n"
 
     # Visual C++ 2015-20xx Redistributable (x86) のインストーラーを実行 (待機)
-    Start-Process -FilePath vc_redist.x86.exe -WindowStyle Minimized -Wait
+	# 自動インストールオプションを追加 by Atolycs (20250106)
+    Start-Process -FilePath vc_redist.x86.exe -ArgumentList "/install /passive" -WindowStyle Minimized -Wait
 
     Write-Host "インストーラーが終了しました。"
 }
@@ -313,42 +315,34 @@ if ($Vc2008App) {
 } else {
     Write-Host "Microsoft Visual C++ 2008 Redistributable - x86 はインストールされていません。"
 
+	# インストールを強制するよう設定 by Atolycs {
     # 選択ここから
 
-    $choiceTitle = "Microsoft Visual C++ 2008 Redistributable - x86 をインストールしますか？"
-    $choiceMessage = "このパッケージは一部のスクリプトの動作に必要です。インストールには管理者権限が必要です。"
+    # $choiceTitle = "Microsoft Visual C++ 2008 Redistributable - x86 をインストールしますか？"
+    # $choiceMessage = "このパッケージは一部のスクリプトの動作に必要です。インストールには管理者権限が必要です。"
 
-    $tChoiceDescription = "System.Management.Automation.Host.ChoiceDescription"
-    $choiceOptions = @(
-        New-Object $tChoiceDescription ("はい(&Y)",       "インストールを実行します。")
-        New-Object $tChoiceDescription ("いいえ(&N)",     "インストールをせず、スキップして次の処理に進みます。")
-    )
+    #$tChoiceDescription = "System.Management.Automation.Host.ChoiceDescription"
+    #$choiceOptions = @(
+    #    New-Object $tChoiceDescription ("はい(&Y)",       "インストールを実行します。")
+    #    New-Object $tChoiceDescription ("いいえ(&N)",     "インストールをせず、スキップして次の処理に進みます。")
+    #)
 
-    $result = $host.ui.PromptForChoice($choiceTitle, $choiceMessage, $choiceOptions, 0)
-    switch ($result) {
-        0 {
-            Write-Host -NoNewline "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 のインストーラーをダウンロードしています..."
+    # }
+	
+    # $result = $host.ui.PromptForChoice($choiceTitle, $choiceMessage, $choiceOptions, 0)
+    Write-Host -NoNewline "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 のインストーラーをダウンロードしています..."
 
-            # Visual C++ 2008 Redistributable - x86 のインストーラーをダウンロード (待機)
-            Start-Process curl.exe -ArgumentList "-OL https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe" -WindowStyle Minimized -Wait
+    # Visual C++ 2008 Redistributable - x86 のインストーラーをダウンロード (待機)
+	Start-Process curl.exe -ArgumentList "-OL https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe" -WindowStyle Minimized -Wait
 
-            Write-Host "完了"
-            Write-Host "Microsoft Visual C++ 2008 Redistributable - x86 のインストーラーを起動します。"
-            Write-Host "インストーラーの指示に従ってインストールを行ってください。"
+	Write-Host "完了"
+	Write-Host "Microsoft Visual C++ 2008 Redistributable - x86 のインストーラーを起動します。"
 
-            # Visual C++ 2008 Redistributable - x86 のインストーラーを実行 (待機)
-            Start-Process -FilePath vcredist_x86.exe -WindowStyle Minimized -Wait
+	# Visual C++ 2008 Redistributable - x86 のインストーラーを実行 (待機)
+	# 自動インストールオプションを追加 by Atolycs (20250106)
+    Start-Process -FilePath vcredist_x86.exe -ArgumentList "/qb" -WindowStyle Minimized -Wait
 
-            Write-Host "インストーラーが終了しました。"
-            break
-        }
-        1 {
-            Write-Host "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 のインストールをスキップしました。"
-            break
-        }
-    }
-
-    # 選択ここまで
+	Write-Host "インストーラーが終了しました。"
 }
 
 Write-Host -NoNewline "`r`n設定ファイルをコピーしています..."
