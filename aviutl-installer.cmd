@@ -277,6 +277,8 @@ $installedApps = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersi
 Where-Object { $_.DisplayName -and $_.UninstallString -and -not $_.SystemComponent -and ($_.ReleaseType -notin 'Update','Hotfix') -and -not $_.ParentKeyName } |
 Select-Object DisplayName
 
+# インストールを強制するよう設定 by Atolycs (20250106)
+
 # Microsoft Visual C++ 2015-20xx Redistributable (x86) がインストールされているか確認する
 # ・Visual C++ 再頒布可能パッケージに2020や2021はないので、20[2-9][0-9] としておけば2022以降を指定できる
 $Vc2015App = $installedApps.DisplayName -match "Microsoft Visual C\+\+ 2015-20[2-9][0-9] Redistributable \(x86\)"
@@ -298,11 +300,12 @@ if ($Vc2015App) {
     Start-Process curl.exe -ArgumentList "-OL https://aka.ms/vs/17/release/vc_redist.x86.exe" -WindowStyle Minimized -Wait
 
     Write-Host "完了"
-    Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) のインストーラーを起動します。"
-    Write-Host "インストーラーの指示に従ってインストールを行ってください。`r`n"
+    Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) のインストールを行います。"
+    Write-Host "デバイスへの変更が必要になります。ユーザーアカウント制御のポップアップが出たら [はい] を押して許可してください。`r`n"
 
     # Visual C++ 2015-20xx Redistributable (x86) のインストーラーを実行 (待機)
-    Start-Process -FilePath vc_redist.x86.exe -WindowStyle Minimized -Wait
+	    # 自動インストールオプションを追加 by Atolycs (20250106)
+    Start-Process -FilePath vc_redist.x86.exe -ArgumentList "/install /passive" -WindowStyle Minimized -Wait
 
     Write-Host "インストーラーが終了しました。"
 }
@@ -333,11 +336,12 @@ if ($Vc2008App) {
             Start-Process curl.exe -ArgumentList "-OL https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe" -WindowStyle Minimized -Wait
 
             Write-Host "完了"
-            Write-Host "Microsoft Visual C++ 2008 Redistributable - x86 のインストーラーを起動します。"
-            Write-Host "インストーラーの指示に従ってインストールを行ってください。"
+            Write-Host "Microsoft Visual C++ 2008 Redistributable - x86 のインストールを行います。"
+            Write-Host "デバイスへの変更が必要になります。ユーザーアカウント制御のポップアップが出たら [はい] を押して許可してください。`r`n"
 
             # Visual C++ 2008 Redistributable - x86 のインストーラーを実行 (待機)
-            Start-Process -FilePath vcredist_x86.exe -WindowStyle Minimized -Wait
+        	    # 自動インストールオプションを追加 by Atolycs (20250106)
+            Start-Process -FilePath vcredist_x86.exe -ArgumentList "/qb" -WindowStyle Minimized -Wait
 
             Write-Host "インストーラーが終了しました。"
             break
