@@ -8,7 +8,8 @@ Double-click to start the installation.
 ダブルクリックすればインストールが始まります。
 
 
-![ss001 - C：￥WINDOWS￥system32￥cmd exe](https://github.com/user-attachments/assets/b19b6d68-9590-42d4-870b-fcdb609f4a54)
+動作中の様子：
+![ss001 - C：￥WINDOWS￥system32￥cmd exe](https://github.com/user-attachments/assets/0028f0cf-a45a-4ee3-864c-697360e5145c)
 
 
 YouTubeの紹介動画：
