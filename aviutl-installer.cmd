@@ -33,7 +33,7 @@ function GithubLatestReleaseUrl ($repo) {
     return($api.assets.browser_download_url)
 }
 
-Write-Host "AviUtl Installer Script (Version 1.0.6_2025-01-08)`r`n`r`n"
+Write-Host "AviUtl Installer Script (Version 1.0.9b1_2025-01-08)`r`n`r`n"
 
 # カレントディレクトリのパスを $scriptFileRoot に保存 (起動方法のせいで $PSScriptRoot が使用できないため)
 $scriptFileRoot = (Get-Location).Path
@@ -62,7 +62,7 @@ Write-Host "完了"
 Write-Host -NoNewline "`r`nAviUtl本体 (version 1.10) をダウンロードしています..."
 
 # AviUtl version 1.10のzipファイルをダウンロード (待機)
-Start-Process curl.exe -ArgumentList "-OL http://spring-fragrance.mints.ne.jp/aviutl/aviutl110.zip" -WindowStyle Minimized -Wait
+Start-Process -FilePath curl.exe -ArgumentList "-OL http://spring-fragrance.mints.ne.jp/aviutl/aviutl110.zip" -WindowStyle Minimized -Wait
 
 Write-Host "完了"
 Write-Host -NoNewline "AviUtl本体をインストールしています..."
@@ -87,7 +87,7 @@ Write-Host "完了"
 Write-Host -NoNewline "`r`n拡張編集Plugin version 0.92をダウンロードしています..."
 
 # 拡張編集Plugin version 0.92のzipファイルをダウンロード (待機)
-Start-Process curl.exe -ArgumentList "-OL http://spring-fragrance.mints.ne.jp/aviutl/exedit92.zip" -WindowStyle Minimized -Wait
+Start-Process -FilePath curl.exe -ArgumentList "-OL http://spring-fragrance.mints.ne.jp/aviutl/exedit92.zip" -WindowStyle Minimized -Wait
 
 Write-Host "完了"
 Write-Host -NoNewline "拡張編集Pluginをインストールしています..."
@@ -121,7 +121,7 @@ Write-Host "完了"
 Write-Host -NoNewline "patch.aul (謎さうなフォーク版) をダウンロードしています..."
 
 # patch.aul (謎さうなフォーク版) のzipファイルをダウンロード (待機)
-Start-Process curl.exe -ArgumentList "-OL $patchAulUrl" -WindowStyle Minimized -Wait
+Start-Process -FilePath curl.exe -ArgumentList "-OL $patchAulUrl" -WindowStyle Minimized -Wait
 
 Write-Host "完了"
 Write-Host -NoNewline "patch.aul (謎さうなフォーク版) をインストールしています..."
@@ -155,7 +155,7 @@ Write-Host "完了"
 Write-Host -NoNewline "L-SMASH Works (Mr-Ojii版) をダウンロードしています..."
 
 # L-SMASH Works (Mr-Ojii版) のzipファイルをダウンロード (待機)
-Start-Process curl.exe -ArgumentList "-OL $lSmashWorksUrl" -WindowStyle Minimized -Wait
+Start-Process -FilePath curl.exe -ArgumentList "-OL $lSmashWorksUrl" -WindowStyle Minimized -Wait
 
 Write-Host "完了"
 Write-Host -NoNewline "L-SMASH Works (Mr-Ojii版) をインストールしています..."
@@ -192,7 +192,7 @@ Write-Host "完了"
 Write-Host -NoNewline "InputPipePluginをダウンロードしています..."
 
 # InputPipePluginのzipファイルをダウンロード (待機)
-Start-Process curl.exe -ArgumentList "-OL $InputPipePluginUrl" -WindowStyle Minimized -Wait
+Start-Process -FilePath curl.exe -ArgumentList "-OL $InputPipePluginUrl" -WindowStyle Minimized -Wait
 
 Write-Host "完了"
 Write-Host -NoNewline "InputPipePluginをインストールしています..."
@@ -224,7 +224,7 @@ Write-Host "完了"
 Write-Host -NoNewline "x264guiExをダウンロードしています..."
 
 # x264guiExのzipファイルをダウンロード (待機)
-Start-Process curl.exe -ArgumentList "-OL $x264guiExUrl" -WindowStyle Minimized -Wait
+Start-Process -FilePath curl.exe -ArgumentList "-OL $x264guiExUrl" -WindowStyle Minimized -Wait
 
 Write-Host "完了"
 Write-Host -NoNewline "x264guiExをインストールしています..."
@@ -267,13 +267,15 @@ Move-Item x264guiEx_readme.txt C:\Applications\AviUtl\readme\x264guiEx -Force
 # カレントディレクトリを tmp ディレクトリに変更
 Set-Location ..\..
 
-Write-Host "完了`r`n"
+Write-Host "`r`nx264guiExのインストールが完了しました。"
 
 # HWエンコーディングの使用可否をチェックし、可能であれば出力プラグインをインストール by Yu-yu0202 (20250107)
+Write-Host "`r`nハードウェアエンコード (NVEnc / VCEEnc / QSVEnc) が使用できるかチェックします。"
 
-Write-Host "ハードウェアエンコードの使用可否をチェックします。`r`n"
+# tmp ディレクトリのパスを $tmpDir に保存
+$tmpDir = Join-Path -Path $scriptFileRoot -ChildPath tmp
 
-Write-Host -NoNewline "チェック用の実行ファイルをダウンロードします(時間がかかる場合があります) ..."
+Write-Host -NoNewline "チェック用のファイルをダウンロードします (時間がかかる場合があります) ..."
 
 $repos = @("rigaya/VCEEnc", "rigaya/NVEnc", "rigaya/QSVEnc")
 foreach ($repo in $repos) {
@@ -283,46 +285,55 @@ foreach ($repo in $repos) {
 
     $repoName = ($repo -split "/")[-1]
 
-    #出力プラグインもダウンロード+展開
+    #出力プラグインをダウンロード+展開
     $downloadUrl = "https://github.com/$repo/releases/download/$tagName/Aviutl_${repoName}_${tagName}.zip"
     $tempZip = Join-Path -Path $tmpDir -ChildPath "Aviutl_${repoName}_${tagName}.zip"
     $extractDir = Join-Path -Path $tmpDir -ChildPath $($repoName)
 
-    Start-Process -FilePath "curl" -ArgumentList "-L", $downloadUrl, "-o", $tempZip -Wait -WindowStyle Minimized
+    Start-Process -FilePath "curl" -ArgumentList "-L", $downloadUrl, "-o", $tempZip -WindowStyle Minimized -Wait
     Start-Process powershell -ArgumentList "-command Expand-Archive -Path $tempZip -Destination $extractDir -Force" -WindowStyle Minimized -Wait
     Remove-Item -Path $tempZip
 }
-Write-Host "完了`r`n"
 
-Write-Host "エンコーダーチェックを行います...`r`n"
+Write-Host "完了"
+Write-Host "`r`nエンコーダーのチェック、および使用可能な出力プラグインのインストールを行います。"
+
 $encoders = [ordered]@{
     "NVEnc"  = "NVEncC.exe"
     "QSVEnc" = "QSVEncC.exe"
     "VCEEnc" = "VCEEncC.exe"
 }
 
+# 画質のよいNVEncから順にQSVEnc、VCEEncとチェックしていき、最初に使用可能なものを確認した時点でそれを導入してforeachを離脱
 foreach ($encoder in $encoders.GetEnumerator()) {
     $encoderPath = Join-Path -Path $tmpDir -ChildPath "$($encoder.Key)\exe_files\$($encoder.Key)C\x86\$($encoder.Value)"
     if (Test-Path -Path $encoderPath) {
         $process = Start-Process -FilePath $encoderPath -ArgumentList "--check-hw" -Wait -WindowStyle Minimized -PassThru
+
         # ExitCodeが0の場合はインストール
         if ($process.ExitCode -eq 0) {
-            Write-Host -NoNewline "$($encoder.Key)が使用可能です。$($encoder.Key)出力をインストールします..."
+            Write-Host -NoNewline "$($encoder.Key)が使用可能です。$($encoder.Key)をインストールします..."
+
             # 展開後のそれぞれのフォルダを移動
             $extdir = Join-Path -Path $tmpDir -ChildPath "$($encoder.Key)"
             Move-Item -Path "$extdir\exe_files\*" -Destination "$AviutlPath\exe_files" -Force; Move-Item -Path "$extdir\plugins\*" -Destination "$AviutlPath\plugins" -Force
             New-Item -ItemType Directory -Path $AviutlPath\readme\$($encoder.Key) -Force | Out-Null
             Move-Item -Path $extdir\*_readme.* -Destination $AviutlPath\readme\$($encoder.Key)\$($encoder.Key).txt -Force
-            Write-Host "完了`r`n"
+            Write-Host "完了"
+
             # 一応、出力プラグインが共存しないようbreakでforeachを抜ける
             break
-        } else {
-            Write-Host "$($encoder.key)は使用不可です。"
+
+        # 最後のVCEEncも使用不可だった場合、ハードウェアエンコードが使用できない旨のメッセージを表示
+        } elseif ($($encoder.Key) -eq "VCEEnc") {
+            Write-Host "ハードウェアエンコードは使用できません。"
         }
+    
+    # エンコーダーの実行ファイルが確認できない場合、エラーメッセージを表示する
+    } else {
+        Write-Host "発生したエラー: エンコーダーのチェックに失敗しました。`r`nエラーの原因　: エンコーダーの実行ファイルが確認できません。"
     }
 }
-
-Write-Host "完了"
 
 Write-Host -NoNewline "`r`nVisual C++ 再頒布可能パッケージを確認しています..."
 
@@ -356,7 +367,7 @@ if ($Vc2015App -and $Vc2008App) {
     Write-Host -NoNewline "Microsoft Visual C++ 2015-20xx Redistributable (x86) のインストーラーをダウンロードしています..."
 
     # Visual C++ 2015-20xx Redistributable (x86) のインストーラーをダウンロード (待機)
-    Start-Process curl.exe -ArgumentList "-OL https://aka.ms/vs/17/release/vc_redist.x86.exe" -WindowStyle Minimized -Wait
+    Start-Process -FilePath curl.exe -ArgumentList "-OL https://aka.ms/vs/17/release/vc_redist.x86.exe" -WindowStyle Minimized -Wait
 
     Write-Host "完了"
     Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) のインストールを行います。"
@@ -390,7 +401,7 @@ if ($Vc2015App -and $Vc2008App) {
             Write-Host -NoNewline "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 のインストーラーをダウンロードしています..."
 
             # Visual C++ 2008 Redistributable - x86 のインストーラーをダウンロード (待機)
-            Start-Process curl.exe -ArgumentList "-OL https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe" -WindowStyle Minimized -Wait
+            Start-Process -FilePath curl.exe -ArgumentList "-OL https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe" -WindowStyle Minimized -Wait
 
             Write-Host "完了"
             Write-Host "Microsoft Visual C++ 2008 Redistributable - x86 のインストールを行います。"
@@ -419,7 +430,7 @@ if ($Vc2015App -and $Vc2008App) {
     Write-Host -NoNewline "Microsoft Visual C++ 2015-20xx Redistributable (x86) のインストーラーをダウンロードしています..."
 
     # Visual C++ 2015-20xx Redistributable (x86) のインストーラーをダウンロード (待機)
-    Start-Process curl.exe -ArgumentList "-OL https://aka.ms/vs/17/release/vc_redist.x86.exe" -WindowStyle Minimized -Wait
+    Start-Process -FilePath curl.exe -ArgumentList "-OL https://aka.ms/vs/17/release/vc_redist.x86.exe" -WindowStyle Minimized -Wait
 
     Write-Host "完了"
     Write-Host "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 はインストールされていません。"
@@ -441,7 +452,7 @@ if ($Vc2015App -and $Vc2008App) {
             Write-Host -NoNewline "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 のインストーラーをダウンロードしています..."
 
             # Visual C++ 2008 Redistributable - x86 のインストーラーをダウンロード (待機)
-            Start-Process curl.exe -ArgumentList "-OL https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe" -WindowStyle Minimized -Wait
+            Start-Process -FilePath curl.exe -ArgumentList "-OL https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe" -WindowStyle Minimized -Wait
 
             Write-Host "完了"
             Write-Host "`r`nMicrosoft Visual C++ 2015-20xx Redistributable (x86) と`r`nMicrosoft Visual C++ 2008 Redistributable - x86 のインストールを行います。"
