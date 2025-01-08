@@ -372,6 +372,7 @@ Move-Item x264guiEx_readme.txt $x264guiExReadmeDirectory -Force
 # カレントディレクトリを tmp ディレクトリに変更
 Set-Location ..\..
 
+Write-Host -NoNewline "`r`nx264guiExのインストールが完了しました。"
 Write-Host -NoNewline "`r`nVisual C++ 再頒布可能パッケージを確認しています..."
 
 # レジストリからデスクトップアプリの一覧を取得する
@@ -390,16 +391,21 @@ $Vc2008App = $installedApps.DisplayName -match "Microsoft Visual C\+\+ 2008 Redi
 
 Write-Host "完了"
 
-# $Vc2015App の結果で処理を分岐する
-if ($Vc2015App) {
+# $Vc2015App と $Vc2008App の結果で処理を分岐する
+
+# 両方インストールされている場合、メッセージだけ表示
+if ($Vc2015App -and $Vc2008App) {
     Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) はインストール済みです。"
-} else {
+    Write-Host "Microsoft Visual C++ 2008 Redistributable - x86 はインストール済みです。"
+
+# 2008のみインストールされている場合、2015を自動インストール
+} elseif ($Vc2008App) {
     Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) はインストールされていません。"
     Write-Host "このパッケージは patch.aul など重要なプラグインの動作に必要です。インストールには管理者権限が必要です。`r`n"
     Write-Host -NoNewline "Microsoft Visual C++ 2015-20xx Redistributable (x86) のインストーラーをダウンロードしています..."
 
     # Visual C++ 2015-20xx Redistributable (x86) のインストーラーをダウンロード (待機)
-    Start-Process -FilePath curl.exe -ArgumentList "-OL https://aka.ms/vs/17/release/vc_redist.x86.exe" -WindowStyle Minimized -Wait
+    Start-Process curl.exe -ArgumentList "-OL https://aka.ms/vs/17/release/vc_redist.x86.exe" -WindowStyle Minimized -Wait
 
     Write-Host "完了"
     Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) のインストールを行います。"
@@ -407,15 +413,13 @@ if ($Vc2015App) {
 
     # Visual C++ 2015-20xx Redistributable (x86) のインストーラーを実行 (待機)
 	    # 自動インストールオプションを追加 by Atolycs (20250106)
-    Start-Process -FilePath vc_redist.x86.exe -ArgumentList "/install /passive" -Wait
+    Start-Process -FilePath vc_redist.x86.exe -ArgumentList "/install /passive" -WindowStyle Minimized -Wait
 
     Write-Host "インストーラーが終了しました。"
-}
+    Write-Host "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 はインストール済みです。"
 
-# $Vc2008App 結果で処理を分岐する
-if ($Vc2008App) {
-    Write-Host "Microsoft Visual C++ 2008 Redistributable - x86 はインストール済みです。"
-} else {
+# 2015のみインストールされている場合、2008のインストールをユーザーに選択させる
+} elseif ($Vc2015App) {
     Write-Host "Microsoft Visual C++ 2008 Redistributable - x86 はインストールされていません。"
 
     # 選択ここから
@@ -435,7 +439,7 @@ if ($Vc2008App) {
             Write-Host -NoNewline "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 のインストーラーをダウンロードしています..."
 
             # Visual C++ 2008 Redistributable - x86 のインストーラーをダウンロード (待機)
-            Start-Process -FilePath curl.exe -ArgumentList "-OL https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe" -WindowStyle Minimized -Wait
+            Start-Process curl.exe -ArgumentList "-OL https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe" -WindowStyle Minimized -Wait
 
             Write-Host "完了"
             Write-Host "Microsoft Visual C++ 2008 Redistributable - x86 のインストールを行います。"
@@ -443,12 +447,81 @@ if ($Vc2008App) {
 
             # Visual C++ 2008 Redistributable - x86 のインストーラーを実行 (待機)
         	    # 自動インストールオプションを追加 by Atolycs (20250106)
-            Start-Process -FilePath vcredist_x86.exe -ArgumentList "/qb" -Wait
+            Start-Process -FilePath vcredist_x86.exe -ArgumentList "/qb" -WindowStyle Minimized -Wait
 
             Write-Host "インストーラーが終了しました。"
             break
         }
         1 {
+            Write-Host "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 のインストールをスキップしました。"
+            break
+        }
+    }
+
+    # 選択ここまで
+
+# 両方インストールされていない場合、2008のインストールをユーザーに選択させ、2008をインストールする場合は両方インストールし、
+# 2008をインストールしない場合は2015のみ自動インストール
+} else  {
+    Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) はインストールされていません。"
+    Write-Host "このパッケージは patch.aul など重要なプラグインの動作に必要です。インストールには管理者権限が必要です。`r`n"
+    Write-Host -NoNewline "Microsoft Visual C++ 2015-20xx Redistributable (x86) のインストーラーをダウンロードしています..."
+
+    # Visual C++ 2015-20xx Redistributable (x86) のインストーラーをダウンロード (待機)
+    Start-Process curl.exe -ArgumentList "-OL https://aka.ms/vs/17/release/vc_redist.x86.exe" -WindowStyle Minimized -Wait
+
+    Write-Host "完了"
+    Write-Host "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 はインストールされていません。"
+
+    # 選択ここから
+
+    $choiceTitle = "Microsoft Visual C++ 2008 Redistributable - x86 をインストールしますか？"
+    $choiceMessage = "このパッケージは一部のスクリプトの動作に必要です。インストールには管理者権限が必要です。"
+
+    $tChoiceDescription = "System.Management.Automation.Host.ChoiceDescription"
+    $choiceOptions = @(
+        New-Object $tChoiceDescription ("はい(&Y)",       "インストールを実行します。")
+        New-Object $tChoiceDescription ("いいえ(&N)",     "インストールをせず、スキップして次の処理に進みます。")
+    )
+
+    $result = $host.ui.PromptForChoice($choiceTitle, $choiceMessage, $choiceOptions, 0)
+    switch ($result) {
+        0 {
+            Write-Host -NoNewline "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 のインストーラーをダウンロードしています..."
+
+            # Visual C++ 2008 Redistributable - x86 のインストーラーをダウンロード (待機)
+            Start-Process curl.exe -ArgumentList "-OL https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe" -WindowStyle Minimized -Wait
+
+            Write-Host "完了"
+            Write-Host "`r`nMicrosoft Visual C++ 2015-20xx Redistributable (x86) と`r`nMicrosoft Visual C++ 2008 Redistributable - x86 のインストールを行います。"
+            Write-Host "デバイスへの変更が必要になります。ユーザーアカウント制御のポップアップが出たら [はい] を押して許可してください。`r`n"
+
+            # VCruntimeInstall2015and2008.cmd の存在するディレクトリを確認
+        	    # VCruntimeInstall2015and2008.cmd は Visual C++ 2015-20xx Redistributable (x86) と
+                # Visual C++ 2008 Redistributable - x86 のインストーラーを順番に実行していくだけのスクリプト
+            $VCruntimeInstallCmdDirectory = Join-Path -Path $scriptFileRoot -ChildPath script_files
+            $VCruntimeInstallCmdPath = Join-Path -Path $VCruntimeInstallCmdDirectory -ChildPath 'VCruntimeInstall2015and2008.cmd'
+            if (!(Test-Path $VCruntimeInstallCmdPath)) {
+                $VCruntimeInstallCmdDirectory = $scriptFileRoot
+            }
+
+            Start-Sleep -Milliseconds 500
+
+            # VCruntimeInstall2015and2008.cmd を管理者権限で実行 (待機)
+            Start-Process -FilePath cmd.exe -ArgumentList "/C cd $VCruntimeInstallCmdDirectory & call VCruntimeInstall2015and2008.cmd & exit" -Verb RunAs -WindowStyle Minimized -Wait
+
+            Write-Host "インストーラーが終了しました。"
+            break
+        }
+        1 {
+            Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) のインストールを行います。"
+            Write-Host "デバイスへの変更が必要になります。ユーザーアカウント制御のポップアップが出たら [はい] を押して許可してください。`r`n"
+
+            # Visual C++ 2015-20xx Redistributable (x86) のインストーラーを実行 (待機)
+	            # 自動インストールオプションを追加 by Atolycs (20250106)
+            Start-Process -FilePath vc_redist.x86.exe -ArgumentList "/install /passive" -WindowStyle Minimized -Wait
+
+            Write-Host "インストーラーが終了しました。"
             Write-Host "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 のインストールをスキップしました。"
             break
         }

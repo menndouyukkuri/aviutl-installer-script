@@ -33,7 +33,7 @@ function GithubLatestReleaseUrl ($repo) {
     return($api.assets.browser_download_url)
 }
 
-Write-Host "AviUtl Installer Script (Version 1.0.5_2025-01-07)`r`n`r`n"
+Write-Host "AviUtl Installer Script (Version 1.0.6_2025-01-08)`r`n`r`n"
 
 # カレントディレクトリのパスを $scriptFileRoot に保存 (起動方法のせいで $PSScriptRoot が使用できないため)
 $scriptFileRoot = (Get-Location).Path
@@ -276,8 +276,6 @@ $installedApps = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersi
                                   'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*' -ErrorAction SilentlyContinue |
 Where-Object { $_.DisplayName -and $_.UninstallString -and -not $_.SystemComponent -and ($_.ReleaseType -notin 'Update','Hotfix') -and -not $_.ParentKeyName } |
 Select-Object DisplayName
-
-# インストールを強制するよう設定 by Atolycs (20250106)
 
 # Microsoft Visual C++ 2015-20xx Redistributable (x86) がインストールされているか確認する
 # ・Visual C++ 再頒布可能パッケージに2020や2021はないので、20[2-9][0-9] としておけば2022以降を指定できる
