@@ -3,7 +3,7 @@
 #
 #   MIT License
 #
-#   Copyright (c) 2025 menndouyukkuri
+#   Copyright (c) 2025 menndouyukkuri, atolycs, Yu-yu0202
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a copy
 #   of this software and associated documentation files (the "Software"), to deal
@@ -24,256 +24,256 @@
 #   SOFTWARE.
 #
 
-# GitHubãƒªãƒã‚¸ãƒˆãƒªã®æœ€æ–°ç‰ˆãƒªãƒªãƒ¼ã‚¹ã®ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰URLã‚’å–å¾—ã™ã‚‹
+# GitHubƒŠƒ|ƒWƒgƒŠ‚ÌÅV”ÅƒŠƒŠ[ƒX‚Ìƒ_ƒEƒ“ƒ[ƒhURL‚ğæ“¾‚·‚é
 function GithubLatestReleaseUrl ($repo) {
-    # GitHubã®APIã‹ã‚‰æœ€æ–°ç‰ˆãƒªãƒªãƒ¼ã‚¹ã®æƒ…å ±ã‚’å–å¾—ã™ã‚‹
+    # GitHub‚ÌAPI‚©‚çÅV”ÅƒŠƒŠ[ƒX‚Ìî•ñ‚ğæ“¾‚·‚é
     $api = Invoke-RestMethod "https://api.github.com/repos/$repo/releases/latest"
 
-    # æœ€æ–°ç‰ˆãƒªãƒªãƒ¼ã‚¹ã®ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰URLã®ã¿ã‚’è¿”ã™
+    # ÅV”ÅƒŠƒŠ[ƒX‚Ìƒ_ƒEƒ“ƒ[ƒhURL‚Ì‚İ‚ğ•Ô‚·
     return($api.assets.browser_download_url)
 }
 
 Write-Host "AviUtl Installer Script (Version 1.0.6_2025-01-08)`r`n`r`n"
 
-# ã‚«ãƒ¬ãƒ³ãƒˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®ãƒ‘ã‚¹ã‚’ $scriptFileRoot ã«ä¿å­˜ (èµ·å‹•æ–¹æ³•ã®ã›ã„ã§ $PSScriptRoot ãŒä½¿ç”¨ã§ããªã„ãŸã‚)
+# ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ‚ÌƒpƒX‚ğ $scriptFileRoot ‚É•Û‘¶ (‹N“®•û–@‚Ì‚¹‚¢‚Å $PSScriptRoot ‚ªg—p‚Å‚«‚È‚¢‚½‚ß)
 $scriptFileRoot = (Get-Location).Path
 
-Write-Host -NoNewline "AviUtlã‚’ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã™ã‚‹ãƒ•ã‚©ãƒ«ãƒ€ã‚’ä½œæˆã—ã¦ã„ã¾ã™..."
+Write-Host -NoNewline "AviUtl‚ğƒCƒ“ƒXƒg[ƒ‹‚·‚éƒtƒHƒ‹ƒ_‚ğì¬‚µ‚Ä‚¢‚Ü‚·..."
 
-# C:\Applications ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ä½œæˆã™ã‚‹ (å¾…æ©Ÿ)
+# C:\Applications ƒfƒBƒŒƒNƒgƒŠ‚ğì¬‚·‚é (‘Ò‹@)
 Start-Process powershell -ArgumentList "-command New-Item C:\Applications -ItemType Directory -Force" -WindowStyle Minimized -Wait
 
-# C:\Applications\AviUtl ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ä½œæˆã™ã‚‹ (å¾…æ©Ÿ)
+# C:\Applications\AviUtl ƒfƒBƒŒƒNƒgƒŠ‚ğì¬‚·‚é (‘Ò‹@)
 Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl -ItemType Directory -Force" -WindowStyle Minimized -Wait
 
-# AviUtl ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªå†…ã« plugins, script, license, readme ã®4ã¤ã®ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ä½œæˆã™ã‚‹ (å¾…æ©Ÿ)
+# AviUtl ƒfƒBƒŒƒNƒgƒŠ“à‚É plugins, script, license, readme ‚Ì4‚Â‚ÌƒfƒBƒŒƒNƒgƒŠ‚ğì¬‚·‚é (‘Ò‹@)
 Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\plugins, C:\Applications\AviUtl\script, C:\Applications\AviUtl\license, C:\Applications\AviUtl\readme -ItemType Directory -Force" -WindowStyle Minimized -Wait
 
-Write-Host "å®Œäº†"
-Write-Host -NoNewline "`r`nä¸€æ™‚çš„ã«ãƒ•ã‚¡ã‚¤ãƒ«ã‚’ä¿ç®¡ã™ã‚‹ãƒ•ã‚©ãƒ«ãƒ€ã‚’ä½œæˆã—ã¦ã„ã¾ã™..."
+Write-Host "Š®—¹"
+Write-Host -NoNewline "`r`nˆê“I‚Éƒtƒ@ƒCƒ‹‚ğ•ÛŠÇ‚·‚éƒtƒHƒ‹ƒ_‚ğì¬‚µ‚Ä‚¢‚Ü‚·..."
 
-# tmp ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ä½œæˆã™ã‚‹ (å¾…æ©Ÿ)
+# tmp ƒfƒBƒŒƒNƒgƒŠ‚ğì¬‚·‚é (‘Ò‹@)
 Start-Process powershell -ArgumentList "-command New-Item tmp -ItemType Directory -Force" -WindowStyle Minimized -Wait
 
-# ã‚«ãƒ¬ãƒ³ãƒˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ tmp ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«å¤‰æ›´
+# ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ‚ğ tmp ƒfƒBƒŒƒNƒgƒŠ‚É•ÏX
 Set-Location tmp
 
-Write-Host "å®Œäº†"
-Write-Host -NoNewline "`r`nAviUtlæœ¬ä½“ (version 1.10) ã‚’ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ã—ã¦ã„ã¾ã™..."
+Write-Host "Š®—¹"
+Write-Host -NoNewline "`r`nAviUtl–{‘Ì (version 1.10) ‚ğƒ_ƒEƒ“ƒ[ƒh‚µ‚Ä‚¢‚Ü‚·..."
 
-# AviUtl version 1.10ã®zipãƒ•ã‚¡ã‚¤ãƒ«ã‚’ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ (å¾…æ©Ÿ)
+# AviUtl version 1.10‚Ìzipƒtƒ@ƒCƒ‹‚ğƒ_ƒEƒ“ƒ[ƒh (‘Ò‹@)
 Start-Process curl.exe -ArgumentList "-OL http://spring-fragrance.mints.ne.jp/aviutl/aviutl110.zip" -WindowStyle Minimized -Wait
 
-Write-Host "å®Œäº†"
-Write-Host -NoNewline "AviUtlæœ¬ä½“ã‚’ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã—ã¦ã„ã¾ã™..."
+Write-Host "Š®—¹"
+Write-Host -NoNewline "AviUtl–{‘Ì‚ğƒCƒ“ƒXƒg[ƒ‹‚µ‚Ä‚¢‚Ü‚·..."
 
-# AviUtlã®zipãƒ•ã‚¡ã‚¤ãƒ«ã‚’å±•é–‹ (å¾…æ©Ÿ)
+# AviUtl‚Ìzipƒtƒ@ƒCƒ‹‚ğ“WŠJ (‘Ò‹@)
 Start-Process powershell -ArgumentList "-command Expand-Archive -Path aviutl110.zip -Force" -WindowStyle Minimized -Wait
 
-# ã‚«ãƒ¬ãƒ³ãƒˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ aviutl110 ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«å¤‰æ›´
+# ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ‚ğ aviutl110 ƒfƒBƒŒƒNƒgƒŠ‚É•ÏX
 Set-Location aviutl110
 
-# AviUtl\readme å†…ã« aviutl ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ä½œæˆ (å¾…æ©Ÿ)
+# AviUtl\readme “à‚É aviutl ƒfƒBƒŒƒNƒgƒŠ‚ğì¬ (‘Ò‹@)
 Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\readme\aviutl -ItemType Directory -Force" -WindowStyle Minimized -Wait
 
-# AviUtl ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªå†…ã« aviutl.exe ã‚’ã€AviUtl\readme\aviutl å†…ã« aviutl.txt ã‚’ãã‚Œãã‚Œç§»å‹•
+# AviUtl ƒfƒBƒŒƒNƒgƒŠ“à‚É aviutl.exe ‚ğAAviUtl\readme\aviutl “à‚É aviutl.txt ‚ğ‚»‚ê‚¼‚êˆÚ“®
 Move-Item aviutl.exe C:\Applications\AviUtl -Force
 Move-Item aviutl.txt C:\Applications\AviUtl\readme\aviutl -Force
 
-# ã‚«ãƒ¬ãƒ³ãƒˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ tmp ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«å¤‰æ›´
+# ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ‚ğ tmp ƒfƒBƒŒƒNƒgƒŠ‚É•ÏX
 Set-Location ..
 
-Write-Host "å®Œäº†"
-Write-Host -NoNewline "`r`næ‹¡å¼µç·¨é›†Plugin version 0.92ã‚’ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ã—ã¦ã„ã¾ã™..."
+Write-Host "Š®—¹"
+Write-Host -NoNewline "`r`nŠg’£•ÒWPlugin version 0.92‚ğƒ_ƒEƒ“ƒ[ƒh‚µ‚Ä‚¢‚Ü‚·..."
 
-# æ‹¡å¼µç·¨é›†Plugin version 0.92ã®zipãƒ•ã‚¡ã‚¤ãƒ«ã‚’ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ (å¾…æ©Ÿ)
+# Šg’£•ÒWPlugin version 0.92‚Ìzipƒtƒ@ƒCƒ‹‚ğƒ_ƒEƒ“ƒ[ƒh (‘Ò‹@)
 Start-Process curl.exe -ArgumentList "-OL http://spring-fragrance.mints.ne.jp/aviutl/exedit92.zip" -WindowStyle Minimized -Wait
 
-Write-Host "å®Œäº†"
-Write-Host -NoNewline "æ‹¡å¼µç·¨é›†Pluginã‚’ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã—ã¦ã„ã¾ã™..."
+Write-Host "Š®—¹"
+Write-Host -NoNewline "Šg’£•ÒWPlugin‚ğƒCƒ“ƒXƒg[ƒ‹‚µ‚Ä‚¢‚Ü‚·..."
 
-# æ‹¡å¼µç·¨é›†Pluginã®zipãƒ•ã‚¡ã‚¤ãƒ«ã‚’å±•é–‹ (å¾…æ©Ÿ)
+# Šg’£•ÒWPlugin‚Ìzipƒtƒ@ƒCƒ‹‚ğ“WŠJ (‘Ò‹@)
 Start-Process powershell -ArgumentList "-command Expand-Archive -Path exedit92.zip -Force" -WindowStyle Minimized -Wait
 
-# ã‚«ãƒ¬ãƒ³ãƒˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ exedit92 ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«å¤‰æ›´
+# ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ‚ğ exedit92 ƒfƒBƒŒƒNƒgƒŠ‚É•ÏX
 Set-Location exedit92
 
-# AviUtl\readme å†…ã« exedit ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ä½œæˆ (å¾…æ©Ÿ)
+# AviUtl\readme “à‚É exedit ƒfƒBƒŒƒNƒgƒŠ‚ğì¬ (‘Ò‹@)
 Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\readme\exedit -ItemType Directory -Force" -WindowStyle Minimized -Wait
 
-# exedit.ini ã¯ä½¿ç”¨ã›ãšã€ã‹ã¤ã“ã®å¾Œã®å‡¦ç†ã§é‚ªé­”ã«ãªã‚‹ã®ã§å‰Šé™¤ã™ã‚‹ (å¾…æ©Ÿ)
+# exedit.ini ‚Íg—p‚¹‚¸A‚©‚Â‚±‚ÌŒã‚Ìˆ—‚Å×–‚‚É‚È‚é‚Ì‚Åíœ‚·‚é (‘Ò‹@)
 Start-Process powershell -ArgumentList "-command Remove-Item exedit.ini" -WindowStyle Minimized -Wait
 
-# AviUtl\readme\exedit å†…ã« exedit.txt, lua.txt ã‚’ (å¾…æ©Ÿ) ã€AviUtl ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªå†…ã«ãã®ä»–ã®ãƒ•ã‚¡ã‚¤ãƒ«ã‚’ãã‚Œãã‚Œç§»å‹•
+# AviUtl\readme\exedit “à‚É exedit.txt, lua.txt ‚ğ (‘Ò‹@) AAviUtl ƒfƒBƒŒƒNƒgƒŠ“à‚É‚»‚Ì‘¼‚Ìƒtƒ@ƒCƒ‹‚ğ‚»‚ê‚¼‚êˆÚ“®
 Start-Process powershell -ArgumentList "-command Move-Item *.txt C:\Applications\AviUtl\readme\exedit -Force" -WindowStyle Minimized -Wait
 Move-Item * C:\Applications\AviUtl -Force
 
-# ã‚«ãƒ¬ãƒ³ãƒˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ tmp ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«å¤‰æ›´
+# ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ‚ğ tmp ƒfƒBƒŒƒNƒgƒŠ‚É•ÏX
 Set-Location ..
 
-Write-Host "å®Œäº†"
-Write-Host -NoNewline "`r`npatch.aul (è¬ã•ã†ãªãƒ•ã‚©ãƒ¼ã‚¯ç‰ˆ) ã®æœ€æ–°ç‰ˆæƒ…å ±ã‚’å–å¾—ã—ã¦ã„ã¾ã™..."
+Write-Host "Š®—¹"
+Write-Host -NoNewline "`r`npatch.aul (“ä‚³‚¤‚ÈƒtƒH[ƒN”Å) ‚ÌÅV”Åî•ñ‚ğæ“¾‚µ‚Ä‚¢‚Ü‚·..."
 
-# patch.aul (è¬ã•ã†ãªãƒ•ã‚©ãƒ¼ã‚¯ç‰ˆ) ã®æœ€æ–°ç‰ˆã®ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰URLã‚’å–å¾—
+# patch.aul (“ä‚³‚¤‚ÈƒtƒH[ƒN”Å) ‚ÌÅV”Å‚Ìƒ_ƒEƒ“ƒ[ƒhURL‚ğæ“¾
 $patchAulUrl = GithubLatestReleaseUrl "nazonoSAUNA/patch.aul"
 
-Write-Host "å®Œäº†"
-Write-Host -NoNewline "patch.aul (è¬ã•ã†ãªãƒ•ã‚©ãƒ¼ã‚¯ç‰ˆ) ã‚’ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ã—ã¦ã„ã¾ã™..."
+Write-Host "Š®—¹"
+Write-Host -NoNewline "patch.aul (“ä‚³‚¤‚ÈƒtƒH[ƒN”Å) ‚ğƒ_ƒEƒ“ƒ[ƒh‚µ‚Ä‚¢‚Ü‚·..."
 
-# patch.aul (è¬ã•ã†ãªãƒ•ã‚©ãƒ¼ã‚¯ç‰ˆ) ã®zipãƒ•ã‚¡ã‚¤ãƒ«ã‚’ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ (å¾…æ©Ÿ)
+# patch.aul (“ä‚³‚¤‚ÈƒtƒH[ƒN”Å) ‚Ìzipƒtƒ@ƒCƒ‹‚ğƒ_ƒEƒ“ƒ[ƒh (‘Ò‹@)
 Start-Process curl.exe -ArgumentList "-OL $patchAulUrl" -WindowStyle Minimized -Wait
 
-Write-Host "å®Œäº†"
-Write-Host -NoNewline "patch.aul (è¬ã•ã†ãªãƒ•ã‚©ãƒ¼ã‚¯ç‰ˆ) ã‚’ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã—ã¦ã„ã¾ã™..."
+Write-Host "Š®—¹"
+Write-Host -NoNewline "patch.aul (“ä‚³‚¤‚ÈƒtƒH[ƒN”Å) ‚ğƒCƒ“ƒXƒg[ƒ‹‚µ‚Ä‚¢‚Ü‚·..."
 
-# patch.aulã®zipãƒ•ã‚¡ã‚¤ãƒ«ã‚’å±•é–‹ (å¾…æ©Ÿ)
+# patch.aul‚Ìzipƒtƒ@ƒCƒ‹‚ğ“WŠJ (‘Ò‹@)
 Start-Process powershell -ArgumentList "-command Expand-Archive -Path patch.aul_*.zip -Force" -WindowStyle Minimized -Wait
 
-# ã‚«ãƒ¬ãƒ³ãƒˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’patch.aulã®zipãƒ•ã‚¡ã‚¤ãƒ«ã‚’å±•é–‹ã—ãŸãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«å¤‰æ›´
+# ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ‚ğpatch.aul‚Ìzipƒtƒ@ƒCƒ‹‚ğ“WŠJ‚µ‚½ƒfƒBƒŒƒNƒgƒŠ‚É•ÏX
 Set-Location "patch.aul_*"
 
-# AviUtl\license å†…ã« patch-aul ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ä½œæˆ (å¾…æ©Ÿ)
+# AviUtl\license “à‚É patch-aul ƒfƒBƒŒƒNƒgƒŠ‚ğì¬ (‘Ò‹@)
 Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\license\patch-aul -ItemType Directory -Force" -WindowStyle Minimized -Wait
 
-# AviUtl ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªå†…ã« patch.aul ã‚’ (å¾…æ©Ÿ) ã€AviUtl\license\patch-aul å†…ã«ãã®ä»–ã®ãƒ•ã‚¡ã‚¤ãƒ«ã‚’ãã‚Œãã‚Œç§»å‹•
+# AviUtl ƒfƒBƒŒƒNƒgƒŠ“à‚É patch.aul ‚ğ (‘Ò‹@) AAviUtl\license\patch-aul “à‚É‚»‚Ì‘¼‚Ìƒtƒ@ƒCƒ‹‚ğ‚»‚ê‚¼‚êˆÚ“®
 Start-Process powershell -ArgumentList "-command Move-Item patch.aul C:\Applications\AviUtl -Force" -WindowStyle Minimized -Wait
 Move-Item * C:\Applications\AviUtl\license\patch-aul -Force
 
-# ã‚«ãƒ¬ãƒ³ãƒˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ tmp ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«å¤‰æ›´
+# ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ‚ğ tmp ƒfƒBƒŒƒNƒgƒŠ‚É•ÏX
 Set-Location ..
 
-Write-Host "å®Œäº†"
-Write-Host -NoNewline "`r`nL-SMASH Works (Mr-Ojiiç‰ˆ) ã®æœ€æ–°ç‰ˆæƒ…å ±ã‚’å–å¾—ã—ã¦ã„ã¾ã™..."
+Write-Host "Š®—¹"
+Write-Host -NoNewline "`r`nL-SMASH Works (Mr-Ojii”Å) ‚ÌÅV”Åî•ñ‚ğæ“¾‚µ‚Ä‚¢‚Ü‚·..."
 
-# L-SMASH Works (Mr-Ojiiç‰ˆ) ã®æœ€æ–°ç‰ˆã®ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰URLã‚’å–å¾—
+# L-SMASH Works (Mr-Ojii”Å) ‚ÌÅV”Å‚Ìƒ_ƒEƒ“ƒ[ƒhURL‚ğæ“¾
 $lSmashWorksAllUrl = GithubLatestReleaseUrl "Mr-Ojii/L-SMASH-Works-Auto-Builds"
 
-# è¤‡æ•°ã‚ã‚‹ä¸­ã‹ã‚‰AviUtlç”¨ã®ã‚‚ã®ã®ã¿æ®‹ã™
+# •¡”‚ ‚é’†‚©‚çAviUtl—p‚Ì‚à‚Ì‚Ì‚İc‚·
 $lSmashWorksUrl = $lSmashWorksAllUrl | Where-Object {$_ -like "*Mr-Ojii_vimeo*"}
 
-Write-Host "å®Œäº†"
-Write-Host -NoNewline "L-SMASH Works (Mr-Ojiiç‰ˆ) ã‚’ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ã—ã¦ã„ã¾ã™..."
+Write-Host "Š®—¹"
+Write-Host -NoNewline "L-SMASH Works (Mr-Ojii”Å) ‚ğƒ_ƒEƒ“ƒ[ƒh‚µ‚Ä‚¢‚Ü‚·..."
 
-# L-SMASH Works (Mr-Ojiiç‰ˆ) ã®zipãƒ•ã‚¡ã‚¤ãƒ«ã‚’ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ (å¾…æ©Ÿ)
+# L-SMASH Works (Mr-Ojii”Å) ‚Ìzipƒtƒ@ƒCƒ‹‚ğƒ_ƒEƒ“ƒ[ƒh (‘Ò‹@)
 Start-Process curl.exe -ArgumentList "-OL $lSmashWorksUrl" -WindowStyle Minimized -Wait
 
-Write-Host "å®Œäº†"
-Write-Host -NoNewline "L-SMASH Works (Mr-Ojiiç‰ˆ) ã‚’ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã—ã¦ã„ã¾ã™..."
+Write-Host "Š®—¹"
+Write-Host -NoNewline "L-SMASH Works (Mr-Ojii”Å) ‚ğƒCƒ“ƒXƒg[ƒ‹‚µ‚Ä‚¢‚Ü‚·..."
 
-# AviUtl\license\l-smash_works å†…ã« Licenses ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªãŒã‚ã‚Œã°å‰Šé™¤ã™ã‚‹ (ã‚¨ãƒ©ãƒ¼ã®é˜²æ­¢)
+# AviUtl\license\l-smash_works “à‚É Licenses ƒfƒBƒŒƒNƒgƒŠ‚ª‚ ‚ê‚Îíœ‚·‚é (ƒGƒ‰[‚Ì–h~)
 if (Test-Path "C:\Applications\AviUtl\license\l-smash_works\Licenses") {
     Remove-Item C:\Applications\AviUtl\license\l-smash_works\Licenses -Recurse
 }
 
-# L-SMASH Worksã®zipãƒ•ã‚¡ã‚¤ãƒ«ã‚’å±•é–‹ (å¾…æ©Ÿ)
+# L-SMASH Works‚Ìzipƒtƒ@ƒCƒ‹‚ğ“WŠJ (‘Ò‹@)
 Start-Process powershell -ArgumentList "-command Expand-Archive -Path L-SMASH-Works_*.zip -Force" -WindowStyle Minimized -Wait
 
-# ã‚«ãƒ¬ãƒ³ãƒˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’L-SMASH Worksã®zipãƒ•ã‚¡ã‚¤ãƒ«ã‚’å±•é–‹ã—ãŸãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«å¤‰æ›´
+# ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ‚ğL-SMASH Works‚Ìzipƒtƒ@ƒCƒ‹‚ğ“WŠJ‚µ‚½ƒfƒBƒŒƒNƒgƒŠ‚É•ÏX
 Set-Location "L-SMASH-Works_*"
 
-# AviUtl\readme, AviUtl\license å†…ã« l-smash_works ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ä½œæˆ (å¾…æ©Ÿ)
+# AviUtl\readme, AviUtl\license “à‚É l-smash_works ƒfƒBƒŒƒNƒgƒŠ‚ğì¬ (‘Ò‹@)
 Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\readme\l-smash_works, C:\Applications\AviUtl\license\l-smash_works -ItemType Directory -Force" -WindowStyle Minimized -Wait
 
-# AviUtl\plugins ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªå†…ã« lw*.au* ã‚’ã€AviUtl\readme\l-smash_works å†…ã« READM* ã‚’ (å¾…æ©Ÿ) ã€
-# AviUtl\license\l-smash_works å†…ã«ãã®ä»–ã®ãƒ•ã‚¡ã‚¤ãƒ«ã‚’ãã‚Œãã‚Œç§»å‹•
+# AviUtl\plugins ƒfƒBƒŒƒNƒgƒŠ“à‚É lw*.au* ‚ğAAviUtl\readme\l-smash_works “à‚É READM* ‚ğ (‘Ò‹@) A
+# AviUtl\license\l-smash_works “à‚É‚»‚Ì‘¼‚Ìƒtƒ@ƒCƒ‹‚ğ‚»‚ê‚¼‚êˆÚ“®
 Start-Process powershell -ArgumentList "-command Move-Item lw*.au* C:\Applications\AviUtl\plugins -Force; Move-Item READM* C:\Applications\AviUtl\readme\l-smash_works -Force" -WindowStyle Minimized -Wait
 Move-Item * C:\Applications\AviUtl\license\l-smash_works -Force
 
-# ã‚«ãƒ¬ãƒ³ãƒˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ tmp ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«å¤‰æ›´
+# ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ‚ğ tmp ƒfƒBƒŒƒNƒgƒŠ‚É•ÏX
 Set-Location ..
 
-Write-Host "å®Œäº†"
-Write-Host -NoNewline "`r`nInputPipePluginã®æœ€æ–°ç‰ˆæƒ…å ±ã‚’å–å¾—ã—ã¦ã„ã¾ã™..."
+Write-Host "Š®—¹"
+Write-Host -NoNewline "`r`nInputPipePlugin‚ÌÅV”Åî•ñ‚ğæ“¾‚µ‚Ä‚¢‚Ü‚·..."
 
-# InputPipePluginã®æœ€æ–°ç‰ˆã®ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰URLã‚’å–å¾—
+# InputPipePlugin‚ÌÅV”Å‚Ìƒ_ƒEƒ“ƒ[ƒhURL‚ğæ“¾
 $InputPipePluginUrl = GithubLatestReleaseUrl "amate/InputPipePlugin"
 
-Write-Host "å®Œäº†"
-Write-Host -NoNewline "InputPipePluginã‚’ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ã—ã¦ã„ã¾ã™..."
+Write-Host "Š®—¹"
+Write-Host -NoNewline "InputPipePlugin‚ğƒ_ƒEƒ“ƒ[ƒh‚µ‚Ä‚¢‚Ü‚·..."
 
-# InputPipePluginã®zipãƒ•ã‚¡ã‚¤ãƒ«ã‚’ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ (å¾…æ©Ÿ)
+# InputPipePlugin‚Ìzipƒtƒ@ƒCƒ‹‚ğƒ_ƒEƒ“ƒ[ƒh (‘Ò‹@)
 Start-Process curl.exe -ArgumentList "-OL $InputPipePluginUrl" -WindowStyle Minimized -Wait
 
-Write-Host "å®Œäº†"
-Write-Host -NoNewline "InputPipePluginã‚’ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã—ã¦ã„ã¾ã™..."
+Write-Host "Š®—¹"
+Write-Host -NoNewline "InputPipePlugin‚ğƒCƒ“ƒXƒg[ƒ‹‚µ‚Ä‚¢‚Ü‚·..."
 
-# InputPipePluginã®zipãƒ•ã‚¡ã‚¤ãƒ«ã‚’å±•é–‹ (å¾…æ©Ÿ)
+# InputPipePlugin‚Ìzipƒtƒ@ƒCƒ‹‚ğ“WŠJ (‘Ò‹@)
 Start-Process powershell -ArgumentList "-command Expand-Archive -Path InputPipePlugin_*.zip -Force" -WindowStyle Minimized -Wait
 
-# ã‚«ãƒ¬ãƒ³ãƒˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’InputPipePluginã®zipãƒ•ã‚¡ã‚¤ãƒ«ã‚’å±•é–‹ã—ãŸãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«å¤‰æ›´
+# ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ‚ğInputPipePlugin‚Ìzipƒtƒ@ƒCƒ‹‚ğ“WŠJ‚µ‚½ƒfƒBƒŒƒNƒgƒŠ‚É•ÏX
 Set-Location "InputPipePlugin_*\InputPipePlugin"
 
-# AviUtl\readme, AviUtl\license å†…ã« inputPipePlugin ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ä½œæˆ (å¾…æ©Ÿ)
+# AviUtl\readme, AviUtl\license “à‚É inputPipePlugin ƒfƒBƒŒƒNƒgƒŠ‚ğì¬ (‘Ò‹@)
 Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\readme\inputPipePlugin, C:\Applications\AviUtl\license\inputPipePlugin -ItemType Directory -Force" -WindowStyle Minimized -Wait
 
-# AviUtl\license\inputPipePlugin å†…ã« LICENSE ã‚’ã€AviUtl\readme\inputPipePlugin å†…ã« Readme.md ã‚’ (å¾…æ©Ÿ) ã€
-# AviUtl\plugins ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªå†…ã«ãã®ä»–ã®ãƒ•ã‚¡ã‚¤ãƒ«ã‚’ãã‚Œãã‚Œç§»å‹•
+# AviUtl\license\inputPipePlugin “à‚É LICENSE ‚ğAAviUtl\readme\inputPipePlugin “à‚É Readme.md ‚ğ (‘Ò‹@) A
+# AviUtl\plugins ƒfƒBƒŒƒNƒgƒŠ“à‚É‚»‚Ì‘¼‚Ìƒtƒ@ƒCƒ‹‚ğ‚»‚ê‚¼‚êˆÚ“®
 Start-Process powershell -ArgumentList "-command Move-Item LICENSE C:\Applications\AviUtl\license\inputPipePlugin -Force; Move-Item Readme.md C:\Applications\AviUtl\readme\inputPipePlugin -Force" -WindowStyle Minimized -Wait
 Move-Item * C:\Applications\AviUtl\plugins -Force
 
-# ã‚«ãƒ¬ãƒ³ãƒˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ tmp ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«å¤‰æ›´
+# ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ‚ğ tmp ƒfƒBƒŒƒNƒgƒŠ‚É•ÏX
 Set-Location ..\..
 
-Write-Host "å®Œäº†"
-Write-Host -NoNewline "`r`nx264guiExã®æœ€æ–°ç‰ˆæƒ…å ±ã‚’å–å¾—ã—ã¦ã„ã¾ã™..."
+Write-Host "Š®—¹"
+Write-Host -NoNewline "`r`nx264guiEx‚ÌÅV”Åî•ñ‚ğæ“¾‚µ‚Ä‚¢‚Ü‚·..."
 
-# x264guiExã®æœ€æ–°ç‰ˆã®ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰URLã‚’å–å¾—
+# x264guiEx‚ÌÅV”Å‚Ìƒ_ƒEƒ“ƒ[ƒhURL‚ğæ“¾
 $x264guiExUrl = GithubLatestReleaseUrl "rigaya/x264guiEx"
 
-Write-Host "å®Œäº†"
-Write-Host -NoNewline "x264guiExã‚’ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ã—ã¦ã„ã¾ã™..."
+Write-Host "Š®—¹"
+Write-Host -NoNewline "x264guiEx‚ğƒ_ƒEƒ“ƒ[ƒh‚µ‚Ä‚¢‚Ü‚·..."
 
-# x264guiExã®zipãƒ•ã‚¡ã‚¤ãƒ«ã‚’ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ (å¾…æ©Ÿ)
+# x264guiEx‚Ìzipƒtƒ@ƒCƒ‹‚ğƒ_ƒEƒ“ƒ[ƒh (‘Ò‹@)
 Start-Process curl.exe -ArgumentList "-OL $x264guiExUrl" -WindowStyle Minimized -Wait
 
-Write-Host "å®Œäº†"
-Write-Host -NoNewline "x264guiExã‚’ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã—ã¦ã„ã¾ã™..."
+Write-Host "Š®—¹"
+Write-Host -NoNewline "x264guiEx‚ğƒCƒ“ƒXƒg[ƒ‹‚µ‚Ä‚¢‚Ü‚·..."
 
-# AviUtl\plugins å†…ã« x264guiEx_stg ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªãŒã‚ã‚Œã°å‰Šé™¤ã™ã‚‹ (ã‚¨ãƒ©ãƒ¼ã®é˜²æ­¢)
+# AviUtl\plugins “à‚É x264guiEx_stg ƒfƒBƒŒƒNƒgƒŠ‚ª‚ ‚ê‚Îíœ‚·‚é (ƒGƒ‰[‚Ì–h~)
 if (Test-Path "C:\Applications\AviUtl\plugins\x264guiEx_stg") {
     Remove-Item C:\Applications\AviUtl\plugins\x264guiEx_stg -Recurse
 }
 
-# x264guiExã®zipãƒ•ã‚¡ã‚¤ãƒ«ã‚’å±•é–‹ (å¾…æ©Ÿ)
+# x264guiEx‚Ìzipƒtƒ@ƒCƒ‹‚ğ“WŠJ (‘Ò‹@)
 Start-Process powershell -ArgumentList "-command Expand-Archive -Path x264guiEx_*.zip -Force" -WindowStyle Minimized -Wait
 
-# ã‚«ãƒ¬ãƒ³ãƒˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’x264guiExã®zipãƒ•ã‚¡ã‚¤ãƒ«ã‚’å±•é–‹ã—ãŸãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«å¤‰æ›´
+# ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ‚ğx264guiEx‚Ìzipƒtƒ@ƒCƒ‹‚ğ“WŠJ‚µ‚½ƒfƒBƒŒƒNƒgƒŠ‚É•ÏX
 Set-Location "x264guiEx_*\x264guiEx_*"
 
-# ã‚«ãƒ¬ãƒ³ãƒˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’x264guiExã®zipãƒ•ã‚¡ã‚¤ãƒ«ã‚’å±•é–‹ã—ãŸãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªå†…ã® plugins ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«å¤‰æ›´
+# ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ‚ğx264guiEx‚Ìzipƒtƒ@ƒCƒ‹‚ğ“WŠJ‚µ‚½ƒfƒBƒŒƒNƒgƒŠ“à‚Ì plugins ƒfƒBƒŒƒNƒgƒŠ‚É•ÏX
 Set-Location plugins
 
-# AviUtl\plugins å†…ã«ç¾åœ¨ã®ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®ãƒ•ã‚¡ã‚¤ãƒ«ã‚’å…¨ã¦ç§»å‹•
+# AviUtl\plugins “à‚ÉŒ»İ‚ÌƒfƒBƒŒƒNƒgƒŠ‚Ìƒtƒ@ƒCƒ‹‚ğ‘S‚ÄˆÚ“®
 Move-Item * C:\Applications\AviUtl\plugins -Force
 
-# ã‚«ãƒ¬ãƒ³ãƒˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’x264guiExã®zipãƒ•ã‚¡ã‚¤ãƒ«ã‚’å±•é–‹ã—ãŸãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªå†…ã® exe_files ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«å¤‰æ›´
+# ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ‚ğx264guiEx‚Ìzipƒtƒ@ƒCƒ‹‚ğ“WŠJ‚µ‚½ƒfƒBƒŒƒNƒgƒŠ“à‚Ì exe_files ƒfƒBƒŒƒNƒgƒŠ‚É•ÏX
 Set-Location ..\exe_files
 
-# AviUtl ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªå†…ã« exe_files ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ä½œæˆ (å¾…æ©Ÿ)
+# AviUtl ƒfƒBƒŒƒNƒgƒŠ“à‚É exe_files ƒfƒBƒŒƒNƒgƒŠ‚ğì¬ (‘Ò‹@)
 Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\exe_files -ItemType Directory -Force" -WindowStyle Minimized -Wait
 
-# AviUtl\exe_files å†…ã«ç¾åœ¨ã®ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®ãƒ•ã‚¡ã‚¤ãƒ«ã‚’å…¨ã¦ç§»å‹•
+# AviUtl\exe_files “à‚ÉŒ»İ‚ÌƒfƒBƒŒƒNƒgƒŠ‚Ìƒtƒ@ƒCƒ‹‚ğ‘S‚ÄˆÚ“®
 Move-Item * C:\Applications\AviUtl\exe_files -Force
 
-# ã‚«ãƒ¬ãƒ³ãƒˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’x264guiExã®zipãƒ•ã‚¡ã‚¤ãƒ«ã‚’å±•é–‹ã—ãŸãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«å¤‰æ›´
+# ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ‚ğx264guiEx‚Ìzipƒtƒ@ƒCƒ‹‚ğ“WŠJ‚µ‚½ƒfƒBƒŒƒNƒgƒŠ‚É•ÏX
 Set-Location ..
 
-# AviUtl\readme å†…ã« x264guiEx ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ä½œæˆ (å¾…æ©Ÿ)
+# AviUtl\readme “à‚É x264guiEx ƒfƒBƒŒƒNƒgƒŠ‚ğì¬ (‘Ò‹@)
 Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\readme\x264guiEx -ItemType Directory -Force" -WindowStyle Minimized -Wait
 
-# AviUtl\readme\x264guiEx å†…ã« x264guiEx_readme.txt ã‚’ç§»å‹•
+# AviUtl\readme\x264guiEx “à‚É x264guiEx_readme.txt ‚ğˆÚ“®
 Move-Item x264guiEx_readme.txt C:\Applications\AviUtl\readme\x264guiEx -Force
 
-# ã‚«ãƒ¬ãƒ³ãƒˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ tmp ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«å¤‰æ›´
+# ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ‚ğ tmp ƒfƒBƒŒƒNƒgƒŠ‚É•ÏX
 Set-Location ..\..
 
-Write-Host "å®Œäº†`r`n"
+Write-Host "Š®—¹`r`n"
 
-# HWã‚¨ãƒ³ã‚³ãƒ¼ãƒ‡ã‚£ãƒ³ã‚°ã®ä½¿ç”¨å¯å¦ã‚’ãƒã‚§ãƒƒã‚¯ã—ã€å¯èƒ½ã§ã‚ã‚Œã°å‡ºåŠ›ãƒ—ãƒ©ã‚°ã‚¤ãƒ³ã‚’ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ« by Yu-yu0202 (20250107)
+# HWƒGƒ“ƒR[ƒfƒBƒ“ƒO‚Ìg—p‰Â”Û‚ğƒ`ƒFƒbƒN‚µA‰Â”\‚Å‚ ‚ê‚Îo—Íƒvƒ‰ƒOƒCƒ“‚ğƒCƒ“ƒXƒg[ƒ‹ by Yu-yu0202 (20250107)
 
-Write-Host "ãƒãƒ¼ãƒ‰ã‚¦ã‚§ã‚¢ã‚¨ãƒ³ã‚³ãƒ¼ãƒ‰ã®ä½¿ç”¨å¯å¦ã‚’ãƒã‚§ãƒƒã‚¯ã—ã¾ã™ã€‚`r`n"
+Write-Host "ƒn[ƒhƒEƒFƒAƒGƒ“ƒR[ƒh‚Ìg—p‰Â”Û‚ğƒ`ƒFƒbƒN‚µ‚Ü‚·B`r`n"
 
-Write-Host -NoNewline "ãƒã‚§ãƒƒã‚¯ç”¨ã®å®Ÿè¡Œãƒ•ã‚¡ã‚¤ãƒ«ã‚’ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ã—ã¾ã™(æ™‚é–“ãŒã‹ã‹ã‚‹å ´åˆãŒã‚ã‚Šã¾ã™) ..."
+Write-Host -NoNewline "ƒ`ƒFƒbƒN—p‚ÌÀsƒtƒ@ƒCƒ‹‚ğƒ_ƒEƒ“ƒ[ƒh‚µ‚Ü‚·(ŠÔ‚ª‚©‚©‚éê‡‚ª‚ ‚è‚Ü‚·) ..."
 
 $repos = @("rigaya/VCEEnc", "rigaya/NVEnc", "rigaya/QSVEnc")
 foreach ($repo in $repos) {
@@ -283,7 +283,7 @@ foreach ($repo in $repos) {
 
     $repoName = ($repo -split "/")[-1]
 
-    #å‡ºåŠ›ãƒ—ãƒ©ã‚°ã‚¤ãƒ³ã‚‚ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰+å±•é–‹
+    #o—Íƒvƒ‰ƒOƒCƒ“‚àƒ_ƒEƒ“ƒ[ƒh+“WŠJ
     $downloadUrl = "https://github.com/$repo/releases/download/$tagName/Aviutl_${repoName}_${tagName}.zip"
     $tempZip = Join-Path -Path $tmpDir -ChildPath "Aviutl_${repoName}_${tagName}.zip"
     $extractDir = Join-Path -Path $tmpDir -ChildPath $($repoName)
@@ -292,9 +292,9 @@ foreach ($repo in $repos) {
     Start-Process powershell -ArgumentList "-command Expand-Archive -Path $tempZip -Destination $extractDir -Force" -WindowStyle Minimized -Wait
     Remove-Item -Path $tempZip
 }
-Write-Host "å®Œäº†`r`n"
+Write-Host "Š®—¹`r`n"
 
-Write-Host "ã‚¨ãƒ³ã‚³ãƒ¼ãƒ€ãƒ¼ãƒã‚§ãƒƒã‚¯ã‚’è¡Œã„ã¾ã™...`r`n"
+Write-Host "ƒGƒ“ƒR[ƒ_[ƒ`ƒFƒbƒN‚ğs‚¢‚Ü‚·...`r`n"
 $encoders = [ordered]@{
     "NVEnc"  = "NVEncC.exe"
     "QSVEnc" = "QSVEncC.exe"
@@ -305,151 +305,151 @@ foreach ($encoder in $encoders.GetEnumerator()) {
     $encoderPath = Join-Path -Path $tmpDir -ChildPath "$($encoder.Key)\exe_files\$($encoder.Key)C\x86\$($encoder.Value)"
     if (Test-Path -Path $encoderPath) {
         $process = Start-Process -FilePath $encoderPath -ArgumentList "--check-hw" -Wait -WindowStyle Minimized -PassThru
-        # ExitCodeãŒ0ã®å ´åˆã¯ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«
+        # ExitCode‚ª0‚Ìê‡‚ÍƒCƒ“ƒXƒg[ƒ‹
         if ($process.ExitCode -eq 0) {
-            Write-Host -NoNewline "$($encoder.Key)ãŒä½¿ç”¨å¯èƒ½ã§ã™ã€‚$($encoder.Key)å‡ºåŠ›ã‚’ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã—ã¾ã™..."
-            # å±•é–‹å¾Œã®ãã‚Œãã‚Œã®ãƒ•ã‚©ãƒ«ãƒ€ã‚’ç§»å‹•
+            Write-Host -NoNewline "$($encoder.Key)‚ªg—p‰Â”\‚Å‚·B$($encoder.Key)o—Í‚ğƒCƒ“ƒXƒg[ƒ‹‚µ‚Ü‚·..."
+            # “WŠJŒã‚Ì‚»‚ê‚¼‚ê‚ÌƒtƒHƒ‹ƒ_‚ğˆÚ“®
             $extdir = Join-Path -Path $tmpDir -ChildPath "$($encoder.Key)"
             Move-Item -Path "$extdir\exe_files\*" -Destination "$AviutlPath\exe_files" -Force; Move-Item -Path "$extdir\plugins\*" -Destination "$AviutlPath\plugins" -Force
             New-Item -ItemType Directory -Path $AviutlPath\readme\$($encoder.Key) -Force | Out-Null
             Move-Item -Path $extdir\*_readme.* -Destination $AviutlPath\readme\$($encoder.Key)\$($encoder.Key).txt -Force
-            Write-Host "å®Œäº†`r`n"
-            # ä¸€å¿œã€å‡ºåŠ›ãƒ—ãƒ©ã‚°ã‚¤ãƒ³ãŒå…±å­˜ã—ãªã„ã‚ˆã†breakã§foreachã‚’æŠœã‘ã‚‹
+            Write-Host "Š®—¹`r`n"
+            # ˆê‰Ao—Íƒvƒ‰ƒOƒCƒ“‚ª‹¤‘¶‚µ‚È‚¢‚æ‚¤break‚Åforeach‚ğ”²‚¯‚é
             break
         } else {
-            Write-Host "$($encoder.key)ã¯ä½¿ç”¨ä¸å¯ã§ã™ã€‚"
+            Write-Host "$($encoder.key)‚Íg—p•s‰Â‚Å‚·B"
         }
     }
 }
 
-Write-Host "å®Œäº†"
+Write-Host "Š®—¹"
 
-Write-Host -NoNewline "`r`nVisual C++ å†é ’å¸ƒå¯èƒ½ãƒ‘ãƒƒã‚±ãƒ¼ã‚¸ã‚’ç¢ºèªã—ã¦ã„ã¾ã™..."
+Write-Host -NoNewline "`r`nVisual C++ Ä”Ğ•z‰Â”\ƒpƒbƒP[ƒW‚ğŠm”F‚µ‚Ä‚¢‚Ü‚·..."
 
-# ãƒ¬ã‚¸ã‚¹ãƒˆãƒªã‹ã‚‰ãƒ‡ã‚¹ã‚¯ãƒˆãƒƒãƒ—ã‚¢ãƒ—ãƒªã®ä¸€è¦§ã‚’å–å¾—ã™ã‚‹
+# ƒŒƒWƒXƒgƒŠ‚©‚çƒfƒXƒNƒgƒbƒvƒAƒvƒŠ‚Ìˆê——‚ğæ“¾‚·‚é
 $installedApps = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*',
                                   'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*',
                                   'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*' -ErrorAction SilentlyContinue |
 Where-Object { $_.DisplayName -and $_.UninstallString -and -not $_.SystemComponent -and ($_.ReleaseType -notin 'Update','Hotfix') -and -not $_.ParentKeyName } |
 Select-Object DisplayName
 
-# Microsoft Visual C++ 2015-20xx Redistributable (x86) ãŒã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã•ã‚Œã¦ã„ã‚‹ã‹ç¢ºèªã™ã‚‹
-# ãƒ»Visual C++ å†é ’å¸ƒå¯èƒ½ãƒ‘ãƒƒã‚±ãƒ¼ã‚¸ã«2020ã‚„2021ã¯ãªã„ã®ã§ã€20[2-9][0-9] ã¨ã—ã¦ãŠã‘ã°2022ä»¥é™ã‚’æŒ‡å®šã§ãã‚‹
+# Microsoft Visual C++ 2015-20xx Redistributable (x86) ‚ªƒCƒ“ƒXƒg[ƒ‹‚³‚ê‚Ä‚¢‚é‚©Šm”F‚·‚é
+# EVisual C++ Ä”Ğ•z‰Â”\ƒpƒbƒP[ƒW‚É2020‚â2021‚Í‚È‚¢‚Ì‚ÅA20[2-9][0-9] ‚Æ‚µ‚Ä‚¨‚¯‚Î2022ˆÈ~‚ğw’è‚Å‚«‚é
 $Vc2015App = $installedApps.DisplayName -match "Microsoft Visual C\+\+ 2015-20[2-9][0-9] Redistributable \(x86\)"
 
-# Microsoft Visual C++ 2008 Redistributable - x86 ãŒã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã•ã‚Œã¦ã„ã‚‹ã‹ç¢ºèªã™ã‚‹
+# Microsoft Visual C++ 2008 Redistributable - x86 ‚ªƒCƒ“ƒXƒg[ƒ‹‚³‚ê‚Ä‚¢‚é‚©Šm”F‚·‚é
 $Vc2008App = $installedApps.DisplayName -match "Microsoft Visual C\+\+ 2008 Redistributable - x86"
 
-Write-Host "å®Œäº†"
+Write-Host "Š®—¹"
 
-# $Vc2015App ã¨ $Vc2008App ã®çµæœã§å‡¦ç†ã‚’åˆ†å²ã™ã‚‹
+# $Vc2015App ‚Æ $Vc2008App ‚ÌŒ‹‰Ê‚Åˆ—‚ğ•ªŠò‚·‚é
 
-# ä¸¡æ–¹ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã•ã‚Œã¦ã„ã‚‹å ´åˆã€ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã ã‘è¡¨ç¤º
+# —¼•ûƒCƒ“ƒXƒg[ƒ‹‚³‚ê‚Ä‚¢‚éê‡AƒƒbƒZ[ƒW‚¾‚¯•\¦
 if ($Vc2015App -and $Vc2008App) {
-    Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) ã¯ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«æ¸ˆã¿ã§ã™ã€‚"
-    Write-Host "Microsoft Visual C++ 2008 Redistributable - x86 ã¯ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«æ¸ˆã¿ã§ã™ã€‚"
+    Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) ‚ÍƒCƒ“ƒXƒg[ƒ‹Ï‚İ‚Å‚·B"
+    Write-Host "Microsoft Visual C++ 2008 Redistributable - x86 ‚ÍƒCƒ“ƒXƒg[ƒ‹Ï‚İ‚Å‚·B"
 
-# 2008ã®ã¿ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã•ã‚Œã¦ã„ã‚‹å ´åˆã€2015ã‚’è‡ªå‹•ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«
+# 2008‚Ì‚İƒCƒ“ƒXƒg[ƒ‹‚³‚ê‚Ä‚¢‚éê‡A2015‚ğ©“®ƒCƒ“ƒXƒg[ƒ‹
 } elseif ($Vc2008App) {
-    Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) ã¯ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã•ã‚Œã¦ã„ã¾ã›ã‚“ã€‚"
-    Write-Host "ã“ã®ãƒ‘ãƒƒã‚±ãƒ¼ã‚¸ã¯ patch.aul ãªã©é‡è¦ãªãƒ—ãƒ©ã‚°ã‚¤ãƒ³ã®å‹•ä½œã«å¿…è¦ã§ã™ã€‚ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã«ã¯ç®¡ç†è€…æ¨©é™ãŒå¿…è¦ã§ã™ã€‚`r`n"
-    Write-Host -NoNewline "Microsoft Visual C++ 2015-20xx Redistributable (x86) ã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ©ãƒ¼ã‚’ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ã—ã¦ã„ã¾ã™..."
+    Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) ‚ÍƒCƒ“ƒXƒg[ƒ‹‚³‚ê‚Ä‚¢‚Ü‚¹‚ñB"
+    Write-Host "‚±‚ÌƒpƒbƒP[ƒW‚Í patch.aul ‚È‚Çd—v‚Èƒvƒ‰ƒOƒCƒ“‚Ì“®ì‚É•K—v‚Å‚·BƒCƒ“ƒXƒg[ƒ‹‚É‚ÍŠÇ—ÒŒ ŒÀ‚ª•K—v‚Å‚·B`r`n"
+    Write-Host -NoNewline "Microsoft Visual C++ 2015-20xx Redistributable (x86) ‚ÌƒCƒ“ƒXƒg[ƒ‰[‚ğƒ_ƒEƒ“ƒ[ƒh‚µ‚Ä‚¢‚Ü‚·..."
 
-    # Visual C++ 2015-20xx Redistributable (x86) ã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ©ãƒ¼ã‚’ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ (å¾…æ©Ÿ)
+    # Visual C++ 2015-20xx Redistributable (x86) ‚ÌƒCƒ“ƒXƒg[ƒ‰[‚ğƒ_ƒEƒ“ƒ[ƒh (‘Ò‹@)
     Start-Process curl.exe -ArgumentList "-OL https://aka.ms/vs/17/release/vc_redist.x86.exe" -WindowStyle Minimized -Wait
 
-    Write-Host "å®Œäº†"
-    Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) ã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã‚’è¡Œã„ã¾ã™ã€‚"
-    Write-Host "ãƒ‡ãƒã‚¤ã‚¹ã¸ã®å¤‰æ›´ãŒå¿…è¦ã«ãªã‚Šã¾ã™ã€‚ãƒ¦ãƒ¼ã‚¶ãƒ¼ã‚¢ã‚«ã‚¦ãƒ³ãƒˆåˆ¶å¾¡ã®ãƒãƒƒãƒ—ã‚¢ãƒƒãƒ—ãŒå‡ºãŸã‚‰ [ã¯ã„] ã‚’æŠ¼ã—ã¦è¨±å¯ã—ã¦ãã ã•ã„ã€‚`r`n"
+    Write-Host "Š®—¹"
+    Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) ‚ÌƒCƒ“ƒXƒg[ƒ‹‚ğs‚¢‚Ü‚·B"
+    Write-Host "ƒfƒoƒCƒX‚Ö‚Ì•ÏX‚ª•K—v‚É‚È‚è‚Ü‚·Bƒ†[ƒU[ƒAƒJƒEƒ“ƒg§Œä‚Ìƒ|ƒbƒvƒAƒbƒv‚ªo‚½‚ç [‚Í‚¢] ‚ğ‰Ÿ‚µ‚Ä‹–‰Â‚µ‚Ä‚­‚¾‚³‚¢B`r`n"
 
-    # Visual C++ 2015-20xx Redistributable (x86) ã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ©ãƒ¼ã‚’å®Ÿè¡Œ (å¾…æ©Ÿ)
-	    # è‡ªå‹•ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã‚ªãƒ—ã‚·ãƒ§ãƒ³ã‚’è¿½åŠ  by Atolycs (20250106)
+    # Visual C++ 2015-20xx Redistributable (x86) ‚ÌƒCƒ“ƒXƒg[ƒ‰[‚ğÀs (‘Ò‹@)
+	    # ©“®ƒCƒ“ƒXƒg[ƒ‹ƒIƒvƒVƒ‡ƒ“‚ğ’Ç‰Á by Atolycs (20250106)
     Start-Process -FilePath vc_redist.x86.exe -ArgumentList "/install /passive" -WindowStyle Minimized -Wait
 
-    Write-Host "ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ©ãƒ¼ãŒçµ‚äº†ã—ã¾ã—ãŸã€‚"
-    Write-Host "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 ã¯ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«æ¸ˆã¿ã§ã™ã€‚"
+    Write-Host "ƒCƒ“ƒXƒg[ƒ‰[‚ªI—¹‚µ‚Ü‚µ‚½B"
+    Write-Host "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 ‚ÍƒCƒ“ƒXƒg[ƒ‹Ï‚İ‚Å‚·B"
 
-# 2015ã®ã¿ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã•ã‚Œã¦ã„ã‚‹å ´åˆã€2008ã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã‚’ãƒ¦ãƒ¼ã‚¶ãƒ¼ã«é¸æŠã•ã›ã‚‹
+# 2015‚Ì‚İƒCƒ“ƒXƒg[ƒ‹‚³‚ê‚Ä‚¢‚éê‡A2008‚ÌƒCƒ“ƒXƒg[ƒ‹‚ğƒ†[ƒU[‚É‘I‘ğ‚³‚¹‚é
 } elseif ($Vc2015App) {
-    Write-Host "Microsoft Visual C++ 2008 Redistributable - x86 ã¯ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã•ã‚Œã¦ã„ã¾ã›ã‚“ã€‚"
+    Write-Host "Microsoft Visual C++ 2008 Redistributable - x86 ‚ÍƒCƒ“ƒXƒg[ƒ‹‚³‚ê‚Ä‚¢‚Ü‚¹‚ñB"
 
-    # é¸æŠã“ã“ã‹ã‚‰
+    # ‘I‘ğ‚±‚±‚©‚ç
 
-    $choiceTitle = "Microsoft Visual C++ 2008 Redistributable - x86 ã‚’ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã—ã¾ã™ã‹ï¼Ÿ"
-    $choiceMessage = "ã“ã®ãƒ‘ãƒƒã‚±ãƒ¼ã‚¸ã¯ä¸€éƒ¨ã®ã‚¹ã‚¯ãƒªãƒ—ãƒˆã®å‹•ä½œã«å¿…è¦ã§ã™ã€‚ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã«ã¯ç®¡ç†è€…æ¨©é™ãŒå¿…è¦ã§ã™ã€‚"
+    $choiceTitle = "Microsoft Visual C++ 2008 Redistributable - x86 ‚ğƒCƒ“ƒXƒg[ƒ‹‚µ‚Ü‚·‚©H"
+    $choiceMessage = "‚±‚ÌƒpƒbƒP[ƒW‚Íˆê•”‚ÌƒXƒNƒŠƒvƒg‚Ì“®ì‚É•K—v‚Å‚·BƒCƒ“ƒXƒg[ƒ‹‚É‚ÍŠÇ—ÒŒ ŒÀ‚ª•K—v‚Å‚·B"
 
     $tChoiceDescription = "System.Management.Automation.Host.ChoiceDescription"
     $choiceOptions = @(
-        New-Object $tChoiceDescription ("ã¯ã„(&Y)",       "ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã‚’å®Ÿè¡Œã—ã¾ã™ã€‚")
-        New-Object $tChoiceDescription ("ã„ã„ãˆ(&N)",     "ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã‚’ã›ãšã€ã‚¹ã‚­ãƒƒãƒ—ã—ã¦æ¬¡ã®å‡¦ç†ã«é€²ã¿ã¾ã™ã€‚")
+        New-Object $tChoiceDescription ("‚Í‚¢(&Y)",       "ƒCƒ“ƒXƒg[ƒ‹‚ğÀs‚µ‚Ü‚·B")
+        New-Object $tChoiceDescription ("‚¢‚¢‚¦(&N)",     "ƒCƒ“ƒXƒg[ƒ‹‚ğ‚¹‚¸AƒXƒLƒbƒv‚µ‚ÄŸ‚Ìˆ—‚Éi‚İ‚Ü‚·B")
     )
 
     $result = $host.ui.PromptForChoice($choiceTitle, $choiceMessage, $choiceOptions, 0)
     switch ($result) {
         0 {
-            Write-Host -NoNewline "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 ã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ©ãƒ¼ã‚’ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ã—ã¦ã„ã¾ã™..."
+            Write-Host -NoNewline "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 ‚ÌƒCƒ“ƒXƒg[ƒ‰[‚ğƒ_ƒEƒ“ƒ[ƒh‚µ‚Ä‚¢‚Ü‚·..."
 
-            # Visual C++ 2008 Redistributable - x86 ã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ©ãƒ¼ã‚’ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ (å¾…æ©Ÿ)
+            # Visual C++ 2008 Redistributable - x86 ‚ÌƒCƒ“ƒXƒg[ƒ‰[‚ğƒ_ƒEƒ“ƒ[ƒh (‘Ò‹@)
             Start-Process curl.exe -ArgumentList "-OL https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe" -WindowStyle Minimized -Wait
 
-            Write-Host "å®Œäº†"
-            Write-Host "Microsoft Visual C++ 2008 Redistributable - x86 ã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã‚’è¡Œã„ã¾ã™ã€‚"
-            Write-Host "ãƒ‡ãƒã‚¤ã‚¹ã¸ã®å¤‰æ›´ãŒå¿…è¦ã«ãªã‚Šã¾ã™ã€‚ãƒ¦ãƒ¼ã‚¶ãƒ¼ã‚¢ã‚«ã‚¦ãƒ³ãƒˆåˆ¶å¾¡ã®ãƒãƒƒãƒ—ã‚¢ãƒƒãƒ—ãŒå‡ºãŸã‚‰ [ã¯ã„] ã‚’æŠ¼ã—ã¦è¨±å¯ã—ã¦ãã ã•ã„ã€‚`r`n"
+            Write-Host "Š®—¹"
+            Write-Host "Microsoft Visual C++ 2008 Redistributable - x86 ‚ÌƒCƒ“ƒXƒg[ƒ‹‚ğs‚¢‚Ü‚·B"
+            Write-Host "ƒfƒoƒCƒX‚Ö‚Ì•ÏX‚ª•K—v‚É‚È‚è‚Ü‚·Bƒ†[ƒU[ƒAƒJƒEƒ“ƒg§Œä‚Ìƒ|ƒbƒvƒAƒbƒv‚ªo‚½‚ç [‚Í‚¢] ‚ğ‰Ÿ‚µ‚Ä‹–‰Â‚µ‚Ä‚­‚¾‚³‚¢B`r`n"
 
-            # Visual C++ 2008 Redistributable - x86 ã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ©ãƒ¼ã‚’å®Ÿè¡Œ (å¾…æ©Ÿ)
-        	    # è‡ªå‹•ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã‚ªãƒ—ã‚·ãƒ§ãƒ³ã‚’è¿½åŠ  by Atolycs (20250106)
+            # Visual C++ 2008 Redistributable - x86 ‚ÌƒCƒ“ƒXƒg[ƒ‰[‚ğÀs (‘Ò‹@)
+        	    # ©“®ƒCƒ“ƒXƒg[ƒ‹ƒIƒvƒVƒ‡ƒ“‚ğ’Ç‰Á by Atolycs (20250106)
             Start-Process -FilePath vcredist_x86.exe -ArgumentList "/qb" -WindowStyle Minimized -Wait
 
-            Write-Host "ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ©ãƒ¼ãŒçµ‚äº†ã—ã¾ã—ãŸã€‚"
+            Write-Host "ƒCƒ“ƒXƒg[ƒ‰[‚ªI—¹‚µ‚Ü‚µ‚½B"
             break
         }
         1 {
-            Write-Host "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 ã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã‚’ã‚¹ã‚­ãƒƒãƒ—ã—ã¾ã—ãŸã€‚"
+            Write-Host "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 ‚ÌƒCƒ“ƒXƒg[ƒ‹‚ğƒXƒLƒbƒv‚µ‚Ü‚µ‚½B"
             break
         }
     }
 
-    # é¸æŠã“ã“ã¾ã§
+    # ‘I‘ğ‚±‚±‚Ü‚Å
 
-# ä¸¡æ–¹ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã•ã‚Œã¦ã„ãªã„å ´åˆã€2008ã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã‚’ãƒ¦ãƒ¼ã‚¶ãƒ¼ã«é¸æŠã•ã›ã€2008ã‚’ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã™ã‚‹å ´åˆã¯ä¸¡æ–¹ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã—ã€
-# 2008ã‚’ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã—ãªã„å ´åˆã¯2015ã®ã¿è‡ªå‹•ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«
+# —¼•ûƒCƒ“ƒXƒg[ƒ‹‚³‚ê‚Ä‚¢‚È‚¢ê‡A2008‚ÌƒCƒ“ƒXƒg[ƒ‹‚ğƒ†[ƒU[‚É‘I‘ğ‚³‚¹A2008‚ğƒCƒ“ƒXƒg[ƒ‹‚·‚éê‡‚Í—¼•ûƒCƒ“ƒXƒg[ƒ‹‚µA
+# 2008‚ğƒCƒ“ƒXƒg[ƒ‹‚µ‚È‚¢ê‡‚Í2015‚Ì‚İ©“®ƒCƒ“ƒXƒg[ƒ‹
 } else  {
-    Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) ã¯ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã•ã‚Œã¦ã„ã¾ã›ã‚“ã€‚"
-    Write-Host "ã“ã®ãƒ‘ãƒƒã‚±ãƒ¼ã‚¸ã¯ patch.aul ãªã©é‡è¦ãªãƒ—ãƒ©ã‚°ã‚¤ãƒ³ã®å‹•ä½œã«å¿…è¦ã§ã™ã€‚ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã«ã¯ç®¡ç†è€…æ¨©é™ãŒå¿…è¦ã§ã™ã€‚`r`n"
-    Write-Host -NoNewline "Microsoft Visual C++ 2015-20xx Redistributable (x86) ã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ©ãƒ¼ã‚’ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ã—ã¦ã„ã¾ã™..."
+    Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) ‚ÍƒCƒ“ƒXƒg[ƒ‹‚³‚ê‚Ä‚¢‚Ü‚¹‚ñB"
+    Write-Host "‚±‚ÌƒpƒbƒP[ƒW‚Í patch.aul ‚È‚Çd—v‚Èƒvƒ‰ƒOƒCƒ“‚Ì“®ì‚É•K—v‚Å‚·BƒCƒ“ƒXƒg[ƒ‹‚É‚ÍŠÇ—ÒŒ ŒÀ‚ª•K—v‚Å‚·B`r`n"
+    Write-Host -NoNewline "Microsoft Visual C++ 2015-20xx Redistributable (x86) ‚ÌƒCƒ“ƒXƒg[ƒ‰[‚ğƒ_ƒEƒ“ƒ[ƒh‚µ‚Ä‚¢‚Ü‚·..."
 
-    # Visual C++ 2015-20xx Redistributable (x86) ã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ©ãƒ¼ã‚’ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ (å¾…æ©Ÿ)
+    # Visual C++ 2015-20xx Redistributable (x86) ‚ÌƒCƒ“ƒXƒg[ƒ‰[‚ğƒ_ƒEƒ“ƒ[ƒh (‘Ò‹@)
     Start-Process curl.exe -ArgumentList "-OL https://aka.ms/vs/17/release/vc_redist.x86.exe" -WindowStyle Minimized -Wait
 
-    Write-Host "å®Œäº†"
-    Write-Host "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 ã¯ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã•ã‚Œã¦ã„ã¾ã›ã‚“ã€‚"
+    Write-Host "Š®—¹"
+    Write-Host "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 ‚ÍƒCƒ“ƒXƒg[ƒ‹‚³‚ê‚Ä‚¢‚Ü‚¹‚ñB"
 
-    # é¸æŠã“ã“ã‹ã‚‰
+    # ‘I‘ğ‚±‚±‚©‚ç
 
-    $choiceTitle = "Microsoft Visual C++ 2008 Redistributable - x86 ã‚’ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã—ã¾ã™ã‹ï¼Ÿ"
-    $choiceMessage = "ã“ã®ãƒ‘ãƒƒã‚±ãƒ¼ã‚¸ã¯ä¸€éƒ¨ã®ã‚¹ã‚¯ãƒªãƒ—ãƒˆã®å‹•ä½œã«å¿…è¦ã§ã™ã€‚ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã«ã¯ç®¡ç†è€…æ¨©é™ãŒå¿…è¦ã§ã™ã€‚"
+    $choiceTitle = "Microsoft Visual C++ 2008 Redistributable - x86 ‚ğƒCƒ“ƒXƒg[ƒ‹‚µ‚Ü‚·‚©H"
+    $choiceMessage = "‚±‚ÌƒpƒbƒP[ƒW‚Íˆê•”‚ÌƒXƒNƒŠƒvƒg‚Ì“®ì‚É•K—v‚Å‚·BƒCƒ“ƒXƒg[ƒ‹‚É‚ÍŠÇ—ÒŒ ŒÀ‚ª•K—v‚Å‚·B"
 
     $tChoiceDescription = "System.Management.Automation.Host.ChoiceDescription"
     $choiceOptions = @(
-        New-Object $tChoiceDescription ("ã¯ã„(&Y)",       "ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã‚’å®Ÿè¡Œã—ã¾ã™ã€‚")
-        New-Object $tChoiceDescription ("ã„ã„ãˆ(&N)",     "ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã‚’ã›ãšã€ã‚¹ã‚­ãƒƒãƒ—ã—ã¦æ¬¡ã®å‡¦ç†ã«é€²ã¿ã¾ã™ã€‚")
+        New-Object $tChoiceDescription ("‚Í‚¢(&Y)",       "ƒCƒ“ƒXƒg[ƒ‹‚ğÀs‚µ‚Ü‚·B")
+        New-Object $tChoiceDescription ("‚¢‚¢‚¦(&N)",     "ƒCƒ“ƒXƒg[ƒ‹‚ğ‚¹‚¸AƒXƒLƒbƒv‚µ‚ÄŸ‚Ìˆ—‚Éi‚İ‚Ü‚·B")
     )
 
     $result = $host.ui.PromptForChoice($choiceTitle, $choiceMessage, $choiceOptions, 0)
     switch ($result) {
         0 {
-            Write-Host -NoNewline "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 ã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ©ãƒ¼ã‚’ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ã—ã¦ã„ã¾ã™..."
+            Write-Host -NoNewline "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 ‚ÌƒCƒ“ƒXƒg[ƒ‰[‚ğƒ_ƒEƒ“ƒ[ƒh‚µ‚Ä‚¢‚Ü‚·..."
 
-            # Visual C++ 2008 Redistributable - x86 ã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ©ãƒ¼ã‚’ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ (å¾…æ©Ÿ)
+            # Visual C++ 2008 Redistributable - x86 ‚ÌƒCƒ“ƒXƒg[ƒ‰[‚ğƒ_ƒEƒ“ƒ[ƒh (‘Ò‹@)
             Start-Process curl.exe -ArgumentList "-OL https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe" -WindowStyle Minimized -Wait
 
-            Write-Host "å®Œäº†"
-            Write-Host "`r`nMicrosoft Visual C++ 2015-20xx Redistributable (x86) ã¨`r`nMicrosoft Visual C++ 2008 Redistributable - x86 ã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã‚’è¡Œã„ã¾ã™ã€‚"
-            Write-Host "ãƒ‡ãƒã‚¤ã‚¹ã¸ã®å¤‰æ›´ãŒå¿…è¦ã«ãªã‚Šã¾ã™ã€‚ãƒ¦ãƒ¼ã‚¶ãƒ¼ã‚¢ã‚«ã‚¦ãƒ³ãƒˆåˆ¶å¾¡ã®ãƒãƒƒãƒ—ã‚¢ãƒƒãƒ—ãŒå‡ºãŸã‚‰ [ã¯ã„] ã‚’æŠ¼ã—ã¦è¨±å¯ã—ã¦ãã ã•ã„ã€‚`r`n"
+            Write-Host "Š®—¹"
+            Write-Host "`r`nMicrosoft Visual C++ 2015-20xx Redistributable (x86) ‚Æ`r`nMicrosoft Visual C++ 2008 Redistributable - x86 ‚ÌƒCƒ“ƒXƒg[ƒ‹‚ğs‚¢‚Ü‚·B"
+            Write-Host "ƒfƒoƒCƒX‚Ö‚Ì•ÏX‚ª•K—v‚É‚È‚è‚Ü‚·Bƒ†[ƒU[ƒAƒJƒEƒ“ƒg§Œä‚Ìƒ|ƒbƒvƒAƒbƒv‚ªo‚½‚ç [‚Í‚¢] ‚ğ‰Ÿ‚µ‚Ä‹–‰Â‚µ‚Ä‚­‚¾‚³‚¢B`r`n"
 
-            # VCruntimeInstall2015and2008.cmd ã®å­˜åœ¨ã™ã‚‹ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ç¢ºèª
-        	    # VCruntimeInstall2015and2008.cmd ã¯ Visual C++ 2015-20xx Redistributable (x86) ã¨
-                # Visual C++ 2008 Redistributable - x86 ã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ©ãƒ¼ã‚’é †ç•ªã«å®Ÿè¡Œã—ã¦ã„ãã ã‘ã®ã‚¹ã‚¯ãƒªãƒ—ãƒˆ
+            # VCruntimeInstall2015and2008.cmd ‚Ì‘¶İ‚·‚éƒfƒBƒŒƒNƒgƒŠ‚ğŠm”F
+        	    # VCruntimeInstall2015and2008.cmd ‚Í Visual C++ 2015-20xx Redistributable (x86) ‚Æ
+                # Visual C++ 2008 Redistributable - x86 ‚ÌƒCƒ“ƒXƒg[ƒ‰[‚ğ‡”Ô‚ÉÀs‚µ‚Ä‚¢‚­‚¾‚¯‚ÌƒXƒNƒŠƒvƒg
             $VCruntimeInstallCmdDirectory = Join-Path -Path $scriptFileRoot -ChildPath script_files
             $VCruntimeInstallCmdPath = Join-Path -Path $VCruntimeInstallCmdDirectory -ChildPath 'VCruntimeInstall2015and2008.cmd'
             if (!(Test-Path $VCruntimeInstallCmdPath)) {
@@ -458,47 +458,47 @@ if ($Vc2015App -and $Vc2008App) {
 
             Start-Sleep -Milliseconds 500
 
-            # VCruntimeInstall2015and2008.cmd ã‚’ç®¡ç†è€…æ¨©é™ã§å®Ÿè¡Œ (å¾…æ©Ÿ)
+            # VCruntimeInstall2015and2008.cmd ‚ğŠÇ—ÒŒ ŒÀ‚ÅÀs (‘Ò‹@)
             Start-Process -FilePath cmd.exe -ArgumentList "/C cd $VCruntimeInstallCmdDirectory & call VCruntimeInstall2015and2008.cmd & exit" -Verb RunAs -WindowStyle Minimized -Wait
 
-            Write-Host "ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ©ãƒ¼ãŒçµ‚äº†ã—ã¾ã—ãŸã€‚"
+            Write-Host "ƒCƒ“ƒXƒg[ƒ‰[‚ªI—¹‚µ‚Ü‚µ‚½B"
             break
         }
         1 {
-            Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) ã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã‚’è¡Œã„ã¾ã™ã€‚"
-            Write-Host "ãƒ‡ãƒã‚¤ã‚¹ã¸ã®å¤‰æ›´ãŒå¿…è¦ã«ãªã‚Šã¾ã™ã€‚ãƒ¦ãƒ¼ã‚¶ãƒ¼ã‚¢ã‚«ã‚¦ãƒ³ãƒˆåˆ¶å¾¡ã®ãƒãƒƒãƒ—ã‚¢ãƒƒãƒ—ãŒå‡ºãŸã‚‰ [ã¯ã„] ã‚’æŠ¼ã—ã¦è¨±å¯ã—ã¦ãã ã•ã„ã€‚`r`n"
+            Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) ‚ÌƒCƒ“ƒXƒg[ƒ‹‚ğs‚¢‚Ü‚·B"
+            Write-Host "ƒfƒoƒCƒX‚Ö‚Ì•ÏX‚ª•K—v‚É‚È‚è‚Ü‚·Bƒ†[ƒU[ƒAƒJƒEƒ“ƒg§Œä‚Ìƒ|ƒbƒvƒAƒbƒv‚ªo‚½‚ç [‚Í‚¢] ‚ğ‰Ÿ‚µ‚Ä‹–‰Â‚µ‚Ä‚­‚¾‚³‚¢B`r`n"
 
-            # Visual C++ 2015-20xx Redistributable (x86) ã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ©ãƒ¼ã‚’å®Ÿè¡Œ (å¾…æ©Ÿ)
-	            # è‡ªå‹•ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã‚ªãƒ—ã‚·ãƒ§ãƒ³ã‚’è¿½åŠ  by Atolycs (20250106)
+            # Visual C++ 2015-20xx Redistributable (x86) ‚ÌƒCƒ“ƒXƒg[ƒ‰[‚ğÀs (‘Ò‹@)
+	            # ©“®ƒCƒ“ƒXƒg[ƒ‹ƒIƒvƒVƒ‡ƒ“‚ğ’Ç‰Á by Atolycs (20250106)
             Start-Process -FilePath vc_redist.x86.exe -ArgumentList "/install /passive" -WindowStyle Minimized -Wait
 
-            Write-Host "ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ©ãƒ¼ãŒçµ‚äº†ã—ã¾ã—ãŸã€‚"
-            Write-Host "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 ã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã‚’ã‚¹ã‚­ãƒƒãƒ—ã—ã¾ã—ãŸã€‚"
+            Write-Host "ƒCƒ“ƒXƒg[ƒ‰[‚ªI—¹‚µ‚Ü‚µ‚½B"
+            Write-Host "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 ‚ÌƒCƒ“ƒXƒg[ƒ‹‚ğƒXƒLƒbƒv‚µ‚Ü‚µ‚½B"
             break
         }
     }
 
-    # é¸æŠã“ã“ã¾ã§
+    # ‘I‘ğ‚±‚±‚Ü‚Å
 }
 
-Write-Host -NoNewline "`r`nè¨­å®šãƒ•ã‚¡ã‚¤ãƒ«ã‚’ã‚³ãƒ”ãƒ¼ã—ã¦ã„ã¾ã™..."
+Write-Host -NoNewline "`r`nİ’èƒtƒ@ƒCƒ‹‚ğƒRƒs[‚µ‚Ä‚¢‚Ü‚·..."
 
-# ã‚«ãƒ¬ãƒ³ãƒˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ settings ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«å¤‰æ›´
+# ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ‚ğ settings ƒfƒBƒŒƒNƒgƒŠ‚É•ÏX
 Set-Location ..\settings
 
-# AviUtl\plugins å†…ã« lsmash.ini ã‚’ã€AviUtl å†…ã«ãã®ä»–ã®ãƒ•ã‚¡ã‚¤ãƒ«ã‚’ã‚³ãƒ”ãƒ¼
+# AviUtl\plugins “à‚É lsmash.ini ‚ğAAviUtl “à‚É‚»‚Ì‘¼‚Ìƒtƒ@ƒCƒ‹‚ğƒRƒs[
 Copy-Item lsmash.ini C:\Applications\AviUtl\plugins
 Copy-Item aviutl.ini C:\Applications\AviUtl
 Copy-Item exedit.ini C:\Applications\AviUtl
-Copy-Item ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆ.cfg C:\Applications\AviUtl
+Copy-Item ƒfƒtƒHƒ‹ƒg.cfg C:\Applications\AviUtl
 
-# ã‚«ãƒ¬ãƒ³ãƒˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ tmp ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«å¤‰æ›´
+# ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ‚ğ tmp ƒfƒBƒŒƒNƒgƒŠ‚É•ÏX
 Set-Location ..\tmp
 
-Write-Host "å®Œäº†"
-Write-Host -NoNewline "`r`nãƒ‡ã‚¹ã‚¯ãƒˆãƒƒãƒ—ã«ã‚·ãƒ§ãƒ¼ãƒˆã‚«ãƒƒãƒˆãƒ•ã‚¡ã‚¤ãƒ«ã‚’ä½œæˆã—ã¦ã„ã¾ã™..."
+Write-Host "Š®—¹"
+Write-Host -NoNewline "`r`nƒfƒXƒNƒgƒbƒv‚ÉƒVƒ‡[ƒgƒJƒbƒgƒtƒ@ƒCƒ‹‚ğì¬‚µ‚Ä‚¢‚Ü‚·..."
 
-# WSHã‚’ç”¨ã„ã¦ãƒ‡ã‚¹ã‚¯ãƒˆãƒƒãƒ—ã«AviUtlã®ã‚·ãƒ§ãƒ¼ãƒˆã‚«ãƒƒãƒˆã‚’ä½œæˆã™ã‚‹
+# WSH‚ğ—p‚¢‚ÄƒfƒXƒNƒgƒbƒv‚ÉAviUtl‚ÌƒVƒ‡[ƒgƒJƒbƒg‚ğì¬‚·‚é
 $ShortcutFolder = [Environment]::GetFolderPath("Desktop")
 $ShortcutFile = Join-Path -Path $ShortcutFolder -ChildPath "AviUtl.lnk"
 $WshShell = New-Object -comObject WScript.Shell
@@ -508,10 +508,10 @@ $Shortcut.IconLocation = "C:\Applications\AviUtl\aviutl.exe,0"
 $Shortcut.WorkingDirectory = "."
 $Shortcut.Save()
 
-Write-Host "å®Œäº†"
-Write-Host -NoNewline "ã‚¹ã‚¿ãƒ¼ãƒˆãƒ¡ãƒ‹ãƒ¥ãƒ¼ã«ã‚·ãƒ§ãƒ¼ãƒˆã‚«ãƒƒãƒˆãƒ•ã‚¡ã‚¤ãƒ«ã‚’ä½œæˆã—ã¦ã„ã¾ã™..."
+Write-Host "Š®—¹"
+Write-Host -NoNewline "ƒXƒ^[ƒgƒƒjƒ…[‚ÉƒVƒ‡[ƒgƒJƒbƒgƒtƒ@ƒCƒ‹‚ğì¬‚µ‚Ä‚¢‚Ü‚·..."
 
-# WSHã‚’ç”¨ã„ã¦ã‚¹ã‚¿ãƒ¼ãƒˆãƒ¡ãƒ‹ãƒ¥ãƒ¼ã«AviUtlã®ã‚·ãƒ§ãƒ¼ãƒˆã‚«ãƒƒãƒˆã‚’ä½œæˆã™ã‚‹
+# WSH‚ğ—p‚¢‚ÄƒXƒ^[ƒgƒƒjƒ…[‚ÉAviUtl‚ÌƒVƒ‡[ƒgƒJƒbƒg‚ğì¬‚·‚é
 $ShortcutFolder = [Environment]::GetFolderPath("Programs")
 $ShortcutFile = Join-Path -Path $ShortcutFolder -ChildPath "AviUtl.lnk"
 $WshShell = New-Object -comObject WScript.Shell
@@ -521,29 +521,29 @@ $Shortcut.IconLocation = "C:\Applications\AviUtl\aviutl.exe,0"
 $Shortcut.WorkingDirectory = "."
 $Shortcut.Save()
 
-Write-Host "å®Œäº†"
-Write-Host -NoNewline "`r`nã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã«ä½¿ç”¨ã—ãŸä¸è¦ãªãƒ•ã‚¡ã‚¤ãƒ«ã‚’å‰Šé™¤ã—ã¦ã„ã¾ã™..."
+Write-Host "Š®—¹"
+Write-Host -NoNewline "`r`nƒCƒ“ƒXƒg[ƒ‹‚Ég—p‚µ‚½•s—v‚Èƒtƒ@ƒCƒ‹‚ğíœ‚µ‚Ä‚¢‚Ü‚·..."
 
-# ã‚«ãƒ¬ãƒ³ãƒˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ã‚¹ã‚¯ãƒªãƒ—ãƒˆãƒ•ã‚¡ã‚¤ãƒ«ã®ã‚ã‚‹ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«å¤‰æ›´
+# ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ‚ğƒXƒNƒŠƒvƒgƒtƒ@ƒCƒ‹‚Ì‚ ‚éƒfƒBƒŒƒNƒgƒŠ‚É•ÏX
 Set-Location ..
 
-# tmp ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’å‰Šé™¤
+# tmp ƒfƒBƒŒƒNƒgƒŠ‚ğíœ
 Remove-Item tmp -Recurse
 
-Write-Host "å®Œäº†"
+Write-Host "Š®—¹"
 
-if (Test-Path "script_files\å¿…é ˆãƒ—ãƒ©ã‚°ã‚¤ãƒ³ã‚’æ›´æ–°ã™ã‚‹.cmd") {
-    # å¿…é ˆãƒ—ãƒ©ã‚°ã‚¤ãƒ³ã‚’æ›´æ–°ã™ã‚‹.cmd ã‚’ã‚«ãƒ¬ãƒ³ãƒˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«ç§»å‹•
-    Move-Item "script_files\å¿…é ˆãƒ—ãƒ©ã‚°ã‚¤ãƒ³ã‚’æ›´æ–°ã™ã‚‹.cmd" . -Force
+if (Test-Path "script_files\•K{ƒvƒ‰ƒOƒCƒ“‚ğXV‚·‚é.cmd") {
+    # •K{ƒvƒ‰ƒOƒCƒ“‚ğXV‚·‚é.cmd ‚ğƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ‚ÉˆÚ“®
+    Move-Item "script_files\•K{ƒvƒ‰ƒOƒCƒ“‚ğXV‚·‚é.cmd" . -Force
 
-    # aviutl-installer.cmd (ã“ã®ãƒ•ã‚¡ã‚¤ãƒ«) ã¨ settings ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ script_files ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«ç§»å‹•
+    # aviutl-installer.cmd (‚±‚Ìƒtƒ@ƒCƒ‹) ‚Æ settings ƒfƒBƒŒƒNƒgƒŠ‚ğ script_files ƒfƒBƒŒƒNƒgƒŠ‚ÉˆÚ“®
     Move-Item settings script_files -Force
     Move-Item aviutl-installer.cmd script_files -Force
 }
 
-# ãƒ¦ãƒ¼ã‚¶ãƒ¼ã®æ“ä½œã‚’å¾…ã£ã¦çµ‚äº†
-Write-Host -NoNewline "`r`n`r`n`r`nã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ãŒå®Œäº†ã—ã¾ã—ãŸï¼`r`n`r`n`r`nreadmeãƒ•ã‚©ãƒ«ãƒ€ã‚’é–‹ã„ã¦"
+# ƒ†[ƒU[‚Ì‘€ì‚ğ‘Ò‚Á‚ÄI—¹
+Write-Host -NoNewline "`r`n`r`n`r`nƒCƒ“ƒXƒg[ƒ‹‚ªŠ®—¹‚µ‚Ü‚µ‚½I`r`n`r`n`r`nreadmeƒtƒHƒ‹ƒ_‚ğŠJ‚¢‚Ä"
 Pause
 
-# çµ‚äº†æ™‚ã«readmeãƒ•ã‚©ãƒ«ãƒ€ã‚’è¡¨ç¤º
+# I—¹‚ÉreadmeƒtƒHƒ‹ƒ_‚ğ•\¦
 Invoke-Item "C:\Applications\AviUtl\readme"
