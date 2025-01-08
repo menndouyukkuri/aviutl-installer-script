@@ -275,7 +275,7 @@ Write-Host "`r`nƒn[ƒhƒEƒFƒAƒGƒ“ƒR[ƒh (NVEnc / VCEEnc / QSVEnc) ‚ªg—p‚Å‚«‚é‚©ƒ
 # tmp ƒfƒBƒŒƒNƒgƒŠ‚ÌƒpƒX‚ğ $tmpDir ‚É•Û‘¶
 $tmpDir = Join-Path -Path $scriptFileRoot -ChildPath tmp
 
-Write-Host -NoNewline "ƒ`ƒFƒbƒN—p‚Ìƒtƒ@ƒCƒ‹‚ğƒ_ƒEƒ“ƒ[ƒh‚µ‚Ü‚· (ŠÔ‚ª‚©‚©‚éê‡‚ª‚ ‚è‚Ü‚·) ..."
+Write-Host -NoNewline "•K—v‚Èƒtƒ@ƒCƒ‹‚ğƒ_ƒEƒ“ƒ[ƒh‚µ‚Ü‚· (”•ª‚©‚©‚éê‡‚ª‚ ‚è‚Ü‚·) ..."
 
 $repos = @("rigaya/VCEEnc", "rigaya/NVEnc", "rigaya/QSVEnc")
 foreach ($repo in $repos) {
