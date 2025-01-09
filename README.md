@@ -47,7 +47,7 @@ YouTubeの紹介動画:
 
 # en
 ## About AviUtl Installer Script
-This is a collection of scripts created with the purpose of simplifying the complex and difficult task for beginners of setting up several essential plugins for AviUtl and the AviUtl main body for video editing, so that it can be done by executing just one file.
+This is a collection of scripts created with the purpose of simplifying the complex and difficult task for beginners of install and setting up the AviUtl main body and several essential plugins for video editing using AviUtl, so that it can be done by executing just one file.
 
 To make it easier to run in many environments, it is in .cmd (batchfile) format, but the contents are mostly PowerShell scripts.
 
