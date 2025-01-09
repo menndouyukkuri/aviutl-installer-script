@@ -30,7 +30,7 @@ YouTubeの紹介動画:
 [![紹介動画](https://github.com/user-attachments/assets/c0dbb594-0c99-4ac0-96e1-fc51f924ba78)](https://youtu.be/fJYp_nV-yrg)
 
 ### ライセンス
-[MIT License](https://github.com/menndouyukkuri/aviutl-installer-script/blob/main/LICENSE)です。
+[MIT License](../LICENSE)です。
 
 大雑把に言えば
 * このライセンスがついたソフトは誰でも無償で無制限、どんな用途にでも使えます。
@@ -38,7 +38,7 @@ YouTubeの紹介動画:
 * 提供者側は一切いかなる責任も負いません。利用は自己責任です。
 
 といった感じのライセンスです。\
-この説明は法的に正しい文章ではないので、これ大丈夫かな？と思ったら[MIT Licenseの本文](https://github.com/menndouyukkuri/aviutl-installer-script/blob/main/LICENSE)を読んでください。
+この説明は法的に正しい文章ではないので、これ大丈夫かな？と思ったら[MIT Licenseの本文](../LICENSE)を読んでください。
 
 ### 不具合を見つけた・こんな機能が欲しい
 [Issues](https://github.com/menndouyukkuri/aviutl-installer-script/issues)に書き込んでください。

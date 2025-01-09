@@ -23,7 +23,7 @@ YouTube introduction video (Japanese language only):
 [![紹介動画](https://github.com/user-attachments/assets/c0dbb594-0c99-4ac0-96e1-fc51f924ba78)](https://youtu.be/fJYp_nV-yrg)
 
 ### License
-The license for this software is the [MIT License](https://github.com/menndouyukkuri/aviutl-installer-script/blob/main/LICENSE).
+The license for this software is the [MIT License](./LICENSE).
 
 In general terms:
 * Software with this license can be used by anyone for free and without limitation, for any purpose.
@@ -31,7 +31,7 @@ In general terms:
 * The provider assumes no responsibility whatsoever. Use is at your own risk.
 
 This is the general idea of the license.\
-This explanation is not a legally accurate statement, so if you have any doubts, please read the [full text of the MIT License](https://github.com/menndouyukkuri/aviutl-installer-script/blob/main/LICENSE).
+This explanation is not a legally accurate statement, so if you have any doubts, please read the [full text of the MIT License](./LICENSE).
 
 ### I found a bug / I want this feature
 Please write it in the [Issues](https://github.com/menndouyukkuri/aviutl-installer-script/issues).
