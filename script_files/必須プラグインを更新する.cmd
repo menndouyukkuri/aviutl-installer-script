@@ -374,7 +374,29 @@ Move-Item x264guiEx_readme.txt $x264guiExReadmeDirectory -Force
 # カレントディレクトリを tmp ディレクトリに変更
 Set-Location ..\..
 
-Write-Host -NoNewline "`r`nx264guiExのインストールが完了しました。"
+Write-Host "`r`nx264guiExのインストールが完了しました。"
+
+#LuaJITの更新 by Yu-yu0202 (20250109)
+
+# tmp ディレクトリのパスを $tmpDir に保存
+$tmpDir = Join-Path -Path $scriptFileRoot -ChildPath tmp
+
+Write-Host -NoNewline "`r`nLuaJITをインストールしています..."
+$apiUrl = "https://api.github.com/repos/Per-Terra/LuaJIT-Auto-Builds/releases/latest"
+$response = Invoke-RestMethod -Uri $apiUrl
+$tagName = $response.tag_name
+$downloadUrl = "https://github.com/Per-Terra/LuaJIT-Auto-Builds/releases/download/$tagName/LuaJIT_2.1_Win_x86.zip"
+$tempZip = Join-Path -Path $tmpDir -ChildPath "LuaJIT_2.1_Win_x86.zip"
+$extractDir = Join-Path -Path $tmpDir -ChildPath "LuaJIT"
+
+Start-Process -FilePath "curl" -ArgumentList "-L", $downloadUrl, "-o", $tempZip -WindowStyle Minimized -Wait
+Start-Process powershell -ArgumentList "-command Expand-Archive -Path $tempZip -Destination $extractDir -Force" -WindowStyle Minimized -Wait
+Remove-Item -Path $tempZip
+
+Move-Item -Path "$extractDir\lua51.dll" -Destination  $aviutlExeDirectory -Force
+
+Write-Host "完了"
+
 Write-Host -NoNewline "`r`nVisual C++ 再頒布可能パッケージを確認しています..."
 
 # レジストリからデスクトップアプリの一覧を取得する

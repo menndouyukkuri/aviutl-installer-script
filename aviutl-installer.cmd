@@ -26,11 +26,11 @@
 
 # GitHubリポジトリの最新版リリースのダウンロードURLを取得する
 function GithubLatestReleaseUrl ($repo) {
-    # GitHubのAPIから最新版リリースの情報を取得する
-    $api = Invoke-RestMethod "https://api.github.com/repos/$repo/releases/latest"
+	# GitHubのAPIから最新版リリースの情報を取得する
+	$api = Invoke-RestMethod "https://api.github.com/repos/$repo/releases/latest"
 
-    # 最新版リリースのダウンロードURLのみを返す
-    return($api.assets.browser_download_url)
+	# 最新版リリースのダウンロードURLのみを返す
+	return($api.assets.browser_download_url)
 }
 
 $DisplayNameOfThisScript = "AviUtl Installer Script (Version 1.0.9_2025-01-08)"
@@ -164,7 +164,7 @@ Write-Host -NoNewline "L-SMASH Works (Mr-Ojii版) をインストールしています..."
 
 # AviUtl\license\l-smash_works 内に Licenses ディレクトリがあれば削除する (エラーの防止)
 if (Test-Path "C:\Applications\AviUtl\license\l-smash_works\Licenses") {
-    Remove-Item C:\Applications\AviUtl\license\l-smash_works\Licenses -Recurse
+	Remove-Item C:\Applications\AviUtl\license\l-smash_works\Licenses -Recurse
 }
 
 # L-SMASH Worksのzipファイルを展開 (待機)
@@ -233,7 +233,7 @@ Write-Host -NoNewline "x264guiExをインストールしています..."
 
 # AviUtl\plugins 内に x264guiEx_stg ディレクトリがあれば削除する (エラーの防止)
 if (Test-Path "C:\Applications\AviUtl\plugins\x264guiEx_stg") {
-    Remove-Item C:\Applications\AviUtl\plugins\x264guiEx_stg -Recurse
+	Remove-Item C:\Applications\AviUtl\plugins\x264guiEx_stg -Recurse
 }
 
 # x264guiExのzipファイルを展開 (待機)
@@ -271,78 +271,103 @@ Set-Location ..\..
 
 Write-Host "`r`nx264guiExのインストールが完了しました。"
 
-# HWエンコーディングの使用可否をチェックし、可能であれば出力プラグインをインストール by Yu-yu0202 (20250107)
-Write-Host "`r`nハードウェアエンコード (NVEnc / VCEEnc / QSVEnc) が使用できるかチェックします。"
+#LuaJITのインストール by Yu-yu0202 (20250109)
 
 # tmp ディレクトリのパスを $tmpDir に保存
 $tmpDir = Join-Path -Path $scriptFileRoot -ChildPath tmp
+
+# Aviutlのインストールパスを $AviutlPath に保存
+$AviutlPath = Join-Path -Path "C:\Applications" -ChildPath "AviUtl"
+
+Write-Host -NoNewline "`r`nLuaJITをインストールしています..."
+$apiUrl = "https://api.github.com/repos/Per-Terra/LuaJIT-Auto-Builds/releases/latest"
+$response = Invoke-RestMethod -Uri $apiUrl
+$tagName = $response.tag_name
+$downloadUrl = "https://github.com/Per-Terra/LuaJIT-Auto-Builds/releases/download/$tagName/LuaJIT_2.1_Win_x86.zip"
+$tempZip = Join-Path -Path $tmpDir -ChildPath "LuaJIT_2.1_Win_x86.zip"
+$extractDir = Join-Path -Path $tmpDir -ChildPath "LuaJIT"
+
+Start-Process -FilePath "curl" -ArgumentList "-L", $downloadUrl, "-o", $tempZip -WindowStyle Minimized -Wait
+Start-Process powershell -ArgumentList "-command Expand-Archive -Path $tempZip -Destination $extractDir -Force" -WindowStyle Minimized -Wait
+Remove-Item -Path $tempZip
+
+Move-Item -Path "$extractDir\lua51.dll" -Destination $AviutlPath -Force
+
+Write-Host "完了"
+
+
+# HWエンコーディングの使用可否をチェックし、可能であれば出力プラグインをインストール by Yu-yu0202 (20250107)
+Write-Host "`r`nハードウェアエンコード (NVEnc / VCEEnc / QSVEnc) が使用できるかチェックします。"
+
+
+
 
 Write-Host -NoNewline "必要なファイルをダウンロードします (数分かかる場合があります) ..."
 
 $repos = @("rigaya/VCEEnc", "rigaya/NVEnc", "rigaya/QSVEnc")
 foreach ($repo in $repos) {
-    $apiUrl = "https://api.github.com/repos/$repo/releases/latest"
-    $response = Invoke-RestMethod -Uri $apiUrl
-    $tagName = $response.tag_name
+	$apiUrl = "https://api.github.com/repos/$repo/releases/latest"
+	$response = Invoke-RestMethod -Uri $apiUrl
+	$tagName = $response.tag_name
 
-    $repoName = ($repo -split "/")[-1]
+	$repoName = ($repo -split "/")[-1]
 
-    #出力プラグインをダウンロード+展開
-    $downloadUrl = "https://github.com/$repo/releases/download/$tagName/Aviutl_${repoName}_${tagName}.zip"
-    $tempZip = Join-Path -Path $tmpDir -ChildPath "Aviutl_${repoName}_${tagName}.zip"
-    $extractDir = Join-Path -Path $tmpDir -ChildPath $($repoName)
+	#出力プラグインをダウンロード+展開
+	$downloadUrl = "https://github.com/$repo/releases/download/$tagName/Aviutl_${repoName}_${tagName}.zip"
+	$tempZip = Join-Path -Path $tmpDir -ChildPath "Aviutl_${repoName}_${tagName}.zip"
+	$extractDir = Join-Path -Path $tmpDir -ChildPath $($repoName)
 
-    Start-Process -FilePath "curl" -ArgumentList "-L", $downloadUrl, "-o", $tempZip -WindowStyle Minimized -Wait
-    Start-Process powershell -ArgumentList "-command Expand-Archive -Path $tempZip -Destination $extractDir -Force" -WindowStyle Minimized -Wait
-    Remove-Item -Path $tempZip
+	Start-Process -FilePath "curl" -ArgumentList "-L", $downloadUrl, "-o", $tempZip -WindowStyle Minimized -Wait
+	Start-Process powershell -ArgumentList "-command Expand-Archive -Path $tempZip -Destination $extractDir -Force" -WindowStyle Minimized -Wait
+	Remove-Item -Path $tempZip
 }
 
 Write-Host "完了"
 Write-Host "`r`nエンコーダーのチェック、および使用可能な出力プラグインのインストールを行います。"
 
 $encoders = [ordered]@{
-    "NVEnc"  = "NVEncC.exe"
-    "QSVEnc" = "QSVEncC.exe"
-    "VCEEnc" = "VCEEncC.exe"
+	"NVEnc"  = "NVEncC.exe"
+	"QSVEnc" = "QSVEncC.exe"
+	"VCEEnc" = "VCEEncC.exe"
 }
 
 # 画質のよいNVEncから順にQSVEnc、VCEEncとチェックしていき、最初に使用可能なものを確認した時点でそれを導入してforeachを離脱
 foreach ($encoder in $encoders.GetEnumerator()) {
-    $encoderPath = Join-Path -Path $tmpDir -ChildPath "$($encoder.Key)\exe_files\$($encoder.Key)C\x86\$($encoder.Value)"
-    if (Test-Path -Path $encoderPath) {
-        $process = Start-Process -FilePath $encoderPath -ArgumentList "--check-hw" -Wait -WindowStyle Minimized -PassThru
+	$encoderPath = Join-Path -Path $tmpDir -ChildPath "$($encoder.Key)\exe_files\$($encoder.Key)C\x86\$($encoder.Value)"
+	if (Test-Path -Path $encoderPath) {
+		$process = Start-Process -FilePath $encoderPath -ArgumentList "--check-hw" -Wait -WindowStyle Minimized -PassThru
 
-        # ExitCodeが0の場合はインストール
-        if ($process.ExitCode -eq 0) {
-            Write-Host -NoNewline "$($encoder.Key)が使用可能です。$($encoder.Key)をインストールします..."
+		# ExitCodeが0の場合はインストール
+		if ($process.ExitCode -eq 0) {
+			Write-Host -NoNewline "$($encoder.Key)が使用可能です。$($encoder.Key)をインストールします..."
 
-            # 展開後のそれぞれのフォルダを移動
-            $extdir = Join-Path -Path $tmpDir -ChildPath "$($encoder.Key)"
-            Move-Item -Path "$extdir\exe_files\*" -Destination "$AviutlPath\exe_files" -Force; Move-Item -Path "$extdir\plugins\*" -Destination "$AviutlPath\plugins" -Force
-            New-Item -ItemType Directory -Path $AviutlPath\readme\$($encoder.Key) -Force | Out-Null
-            Move-Item -Path $extdir\*_readme.* -Destination $AviutlPath\readme\$($encoder.Key)\$($encoder.Key).txt -Force
-            Write-Host "完了"
+			# 展開後のそれぞれのフォルダを移動
+			$extdir = Join-Path -Path $tmpDir -ChildPath "$($encoder.Key)"
+			Move-Item -Path "$extdir\exe_files\*" -Destination "$AviutlPath\exe_files" -Force; Move-Item -Path "$extdir\plugins\*" -Destination "$AviutlPath\plugins" -Force
+			New-Item -ItemType Directory -Path $AviutlPath\readme\$($encoder.Key) -Force | Out-Null
+			Move-Item -Path $extdir\*_readme.* -Destination $AviutlPath\readme\$($encoder.Key)\$($encoder.Key).txt -Force
+			Write-Host "完了"
 
-            # 一応、出力プラグインが共存しないようbreakでforeachを抜ける
-            break
+			# 一応、出力プラグインが共存しないようbreakでforeachを抜ける
+			break
 
-        # 最後のVCEEncも使用不可だった場合、ハードウェアエンコードが使用できない旨のメッセージを表示
-        } elseif ($($encoder.Key) -eq "VCEEnc") {
-            Write-Host "ハードウェアエンコードは使用できません。"
-        }
-    
-    # エンコーダーの実行ファイルが確認できない場合、エラーメッセージを表示する
-    } else {
-        Write-Host "発生したエラー: エンコーダーのチェックに失敗しました。`r`nエラーの原因　: エンコーダーの実行ファイルが確認できません。"
-    }
+		# 最後のVCEEncも使用不可だった場合、ハードウェアエンコードが使用できない旨のメッセージを表示
+		} elseif ($($encoder.Key) -eq "VCEEnc") {
+			Write-Host "ハードウェアエンコードは使用できません。"
+		}
+	
+	# エンコーダーの実行ファイルが確認できない場合、エラーメッセージを表示する
+	} else {
+		Write-Host "発生したエラー: エンコーダーのチェックに失敗しました。`r`nエラーの原因　: エンコーダーの実行ファイルが確認できません。"
+	}
 }
 
 Write-Host -NoNewline "`r`nVisual C++ 再頒布可能パッケージを確認しています..."
 
 # レジストリからデスクトップアプリの一覧を取得する
 $installedApps = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*',
-                                  'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*',
-                                  'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*' -ErrorAction SilentlyContinue |
+								  'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*',
+								  'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*' -ErrorAction SilentlyContinue |
 Where-Object { $_.DisplayName -and $_.UninstallString -and -not $_.SystemComponent -and ($_.ReleaseType -notin 'Update','Hotfix') -and -not $_.ParentKeyName } |
 Select-Object DisplayName
 
@@ -359,139 +384,139 @@ Write-Host "完了"
 
 # 両方インストールされている場合、メッセージだけ表示
 if ($Vc2015App -and $Vc2008App) {
-    Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) はインストール済みです。"
-    Write-Host "Microsoft Visual C++ 2008 Redistributable - x86 はインストール済みです。"
+	Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) はインストール済みです。"
+	Write-Host "Microsoft Visual C++ 2008 Redistributable - x86 はインストール済みです。"
 
 # 2008のみインストールされている場合、2015を自動インストール
 } elseif ($Vc2008App) {
-    Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) はインストールされていません。"
-    Write-Host "このパッケージは patch.aul など重要なプラグインの動作に必要です。インストールには管理者権限が必要です。`r`n"
-    Write-Host -NoNewline "Microsoft Visual C++ 2015-20xx Redistributable (x86) のインストーラーをダウンロードしています..."
+	Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) はインストールされていません。"
+	Write-Host "このパッケージは patch.aul など重要なプラグインの動作に必要です。インストールには管理者権限が必要です。`r`n"
+	Write-Host -NoNewline "Microsoft Visual C++ 2015-20xx Redistributable (x86) のインストーラーをダウンロードしています..."
 
-    # Visual C++ 2015-20xx Redistributable (x86) のインストーラーをダウンロード (待機)
-    Start-Process -FilePath curl.exe -ArgumentList "-OL https://aka.ms/vs/17/release/vc_redist.x86.exe" -WindowStyle Minimized -Wait
+	# Visual C++ 2015-20xx Redistributable (x86) のインストーラーをダウンロード (待機)
+	Start-Process -FilePath curl.exe -ArgumentList "-OL https://aka.ms/vs/17/release/vc_redist.x86.exe" -WindowStyle Minimized -Wait
 
-    Write-Host "完了"
-    Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) のインストールを行います。"
-    Write-Host "デバイスへの変更が必要になります。ユーザーアカウント制御のポップアップが出たら [はい] を押して許可してください。`r`n"
+	Write-Host "完了"
+	Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) のインストールを行います。"
+	Write-Host "デバイスへの変更が必要になります。ユーザーアカウント制御のポップアップが出たら [はい] を押して許可してください。`r`n"
 
-    # Visual C++ 2015-20xx Redistributable (x86) のインストーラーを実行 (待機)
-	    # 自動インストールオプションを追加 by Atolycs (20250106)
-    Start-Process -FilePath vc_redist.x86.exe -ArgumentList "/install /passive" -WindowStyle Minimized -Wait
+	# Visual C++ 2015-20xx Redistributable (x86) のインストーラーを実行 (待機)
+		# 自動インストールオプションを追加 by Atolycs (20250106)
+	Start-Process -FilePath vc_redist.x86.exe -ArgumentList "/install /passive" -WindowStyle Minimized -Wait
 
-    Write-Host "インストーラーが終了しました。"
-    Write-Host "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 はインストール済みです。"
+	Write-Host "インストーラーが終了しました。"
+	Write-Host "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 はインストール済みです。"
 
 # 2015のみインストールされている場合、2008のインストールをユーザーに選択させる
 } elseif ($Vc2015App) {
-    Write-Host "Microsoft Visual C++ 2008 Redistributable - x86 はインストールされていません。"
+	Write-Host "Microsoft Visual C++ 2008 Redistributable - x86 はインストールされていません。"
 
-    # 選択ここから
+	# 選択ここから
 
-    $choiceTitle = "Microsoft Visual C++ 2008 Redistributable - x86 をインストールしますか？"
-    $choiceMessage = "このパッケージは一部のスクリプトの動作に必要です。インストールには管理者権限が必要です。"
+	$choiceTitle = "Microsoft Visual C++ 2008 Redistributable - x86 をインストールしますか？"
+	$choiceMessage = "このパッケージは一部のスクリプトの動作に必要です。インストールには管理者権限が必要です。"
 
-    $tChoiceDescription = "System.Management.Automation.Host.ChoiceDescription"
-    $choiceOptions = @(
-        New-Object $tChoiceDescription ("はい(&Y)",       "インストールを実行します。")
-        New-Object $tChoiceDescription ("いいえ(&N)",     "インストールをせず、スキップして次の処理に進みます。")
-    )
+	$tChoiceDescription = "System.Management.Automation.Host.ChoiceDescription"
+	$choiceOptions = @(
+		New-Object $tChoiceDescription ("はい(&Y)",       "インストールを実行します。")
+		New-Object $tChoiceDescription ("いいえ(&N)",     "インストールをせず、スキップして次の処理に進みます。")
+	)
 
-    $result = $host.ui.PromptForChoice($choiceTitle, $choiceMessage, $choiceOptions, 0)
-    switch ($result) {
-        0 {
-            Write-Host -NoNewline "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 のインストーラーをダウンロードしています..."
+	$result = $host.ui.PromptForChoice($choiceTitle, $choiceMessage, $choiceOptions, 0)
+	switch ($result) {
+		0 {
+			Write-Host -NoNewline "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 のインストーラーをダウンロードしています..."
 
-            # Visual C++ 2008 Redistributable - x86 のインストーラーをダウンロード (待機)
-            Start-Process -FilePath curl.exe -ArgumentList "-OL https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe" -WindowStyle Minimized -Wait
+			# Visual C++ 2008 Redistributable - x86 のインストーラーをダウンロード (待機)
+			Start-Process -FilePath curl.exe -ArgumentList "-OL https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe" -WindowStyle Minimized -Wait
 
-            Write-Host "完了"
-            Write-Host "Microsoft Visual C++ 2008 Redistributable - x86 のインストールを行います。"
-            Write-Host "デバイスへの変更が必要になります。ユーザーアカウント制御のポップアップが出たら [はい] を押して許可してください。`r`n"
+			Write-Host "完了"
+			Write-Host "Microsoft Visual C++ 2008 Redistributable - x86 のインストールを行います。"
+			Write-Host "デバイスへの変更が必要になります。ユーザーアカウント制御のポップアップが出たら [はい] を押して許可してください。`r`n"
 
-            # Visual C++ 2008 Redistributable - x86 のインストーラーを実行 (待機)
-        	    # 自動インストールオプションを追加 by Atolycs (20250106)
-            Start-Process -FilePath vcredist_x86.exe -ArgumentList "/qb" -WindowStyle Minimized -Wait
+			# Visual C++ 2008 Redistributable - x86 のインストーラーを実行 (待機)
+				# 自動インストールオプションを追加 by Atolycs (20250106)
+			Start-Process -FilePath vcredist_x86.exe -ArgumentList "/qb" -WindowStyle Minimized -Wait
 
-            Write-Host "インストーラーが終了しました。"
-            break
-        }
-        1 {
-            Write-Host "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 のインストールをスキップしました。"
-            break
-        }
-    }
+			Write-Host "インストーラーが終了しました。"
+			break
+		}
+		1 {
+			Write-Host "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 のインストールをスキップしました。"
+			break
+		}
+	}
 
-    # 選択ここまで
+	# 選択ここまで
 
 # 両方インストールされていない場合、2008のインストールをユーザーに選択させ、2008をインストールする場合は両方インストールし、
 # 2008をインストールしない場合は2015のみ自動インストール
 } else  {
-    Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) はインストールされていません。"
-    Write-Host "このパッケージは patch.aul など重要なプラグインの動作に必要です。インストールには管理者権限が必要です。`r`n"
-    Write-Host -NoNewline "Microsoft Visual C++ 2015-20xx Redistributable (x86) のインストーラーをダウンロードしています..."
+	Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) はインストールされていません。"
+	Write-Host "このパッケージは patch.aul など重要なプラグインの動作に必要です。インストールには管理者権限が必要です。`r`n"
+	Write-Host -NoNewline "Microsoft Visual C++ 2015-20xx Redistributable (x86) のインストーラーをダウンロードしています..."
 
-    # Visual C++ 2015-20xx Redistributable (x86) のインストーラーをダウンロード (待機)
-    Start-Process -FilePath curl.exe -ArgumentList "-OL https://aka.ms/vs/17/release/vc_redist.x86.exe" -WindowStyle Minimized -Wait
+	# Visual C++ 2015-20xx Redistributable (x86) のインストーラーをダウンロード (待機)
+	Start-Process -FilePath curl.exe -ArgumentList "-OL https://aka.ms/vs/17/release/vc_redist.x86.exe" -WindowStyle Minimized -Wait
 
-    Write-Host "完了"
-    Write-Host "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 はインストールされていません。"
+	Write-Host "完了"
+	Write-Host "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 はインストールされていません。"
 
-    # 選択ここから
+	# 選択ここから
 
-    $choiceTitle = "Microsoft Visual C++ 2008 Redistributable - x86 をインストールしますか？"
-    $choiceMessage = "このパッケージは一部のスクリプトの動作に必要です。インストールには管理者権限が必要です。"
+	$choiceTitle = "Microsoft Visual C++ 2008 Redistributable - x86 をインストールしますか？"
+	$choiceMessage = "このパッケージは一部のスクリプトの動作に必要です。インストールには管理者権限が必要です。"
 
-    $tChoiceDescription = "System.Management.Automation.Host.ChoiceDescription"
-    $choiceOptions = @(
-        New-Object $tChoiceDescription ("はい(&Y)",       "インストールを実行します。")
-        New-Object $tChoiceDescription ("いいえ(&N)",     "インストールをせず、スキップして次の処理に進みます。")
-    )
+	$tChoiceDescription = "System.Management.Automation.Host.ChoiceDescription"
+	$choiceOptions = @(
+		New-Object $tChoiceDescription ("はい(&Y)",       "インストールを実行します。")
+		New-Object $tChoiceDescription ("いいえ(&N)",     "インストールをせず、スキップして次の処理に進みます。")
+	)
 
-    $result = $host.ui.PromptForChoice($choiceTitle, $choiceMessage, $choiceOptions, 0)
-    switch ($result) {
-        0 {
-            Write-Host -NoNewline "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 のインストーラーをダウンロードしています..."
+	$result = $host.ui.PromptForChoice($choiceTitle, $choiceMessage, $choiceOptions, 0)
+	switch ($result) {
+		0 {
+			Write-Host -NoNewline "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 のインストーラーをダウンロードしています..."
 
-            # Visual C++ 2008 Redistributable - x86 のインストーラーをダウンロード (待機)
-            Start-Process -FilePath curl.exe -ArgumentList "-OL https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe" -WindowStyle Minimized -Wait
+			# Visual C++ 2008 Redistributable - x86 のインストーラーをダウンロード (待機)
+			Start-Process -FilePath curl.exe -ArgumentList "-OL https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe" -WindowStyle Minimized -Wait
 
-            Write-Host "完了"
-            Write-Host "`r`nMicrosoft Visual C++ 2015-20xx Redistributable (x86) と`r`nMicrosoft Visual C++ 2008 Redistributable - x86 のインストールを行います。"
-            Write-Host "デバイスへの変更が必要になります。ユーザーアカウント制御のポップアップが出たら [はい] を押して許可してください。`r`n"
+			Write-Host "完了"
+			Write-Host "`r`nMicrosoft Visual C++ 2015-20xx Redistributable (x86) と`r`nMicrosoft Visual C++ 2008 Redistributable - x86 のインストールを行います。"
+			Write-Host "デバイスへの変更が必要になります。ユーザーアカウント制御のポップアップが出たら [はい] を押して許可してください。`r`n"
 
-            # VCruntimeInstall2015and2008.cmd の存在するディレクトリを確認
-        	    # VCruntimeInstall2015and2008.cmd は Visual C++ 2015-20xx Redistributable (x86) と
-                # Visual C++ 2008 Redistributable - x86 のインストーラーを順番に実行していくだけのスクリプト
-            $VCruntimeInstallCmdDirectory = Join-Path -Path $scriptFileRoot -ChildPath script_files
-            $VCruntimeInstallCmdPath = Join-Path -Path $VCruntimeInstallCmdDirectory -ChildPath 'VCruntimeInstall2015and2008.cmd'
-            if (!(Test-Path $VCruntimeInstallCmdPath)) {
-                $VCruntimeInstallCmdDirectory = $scriptFileRoot
-            }
+			# VCruntimeInstall2015and2008.cmd の存在するディレクトリを確認
+				# VCruntimeInstall2015and2008.cmd は Visual C++ 2015-20xx Redistributable (x86) と
+				# Visual C++ 2008 Redistributable - x86 のインストーラーを順番に実行していくだけのスクリプト
+			$VCruntimeInstallCmdDirectory = Join-Path -Path $scriptFileRoot -ChildPath script_files
+			$VCruntimeInstallCmdPath = Join-Path -Path $VCruntimeInstallCmdDirectory -ChildPath 'VCruntimeInstall2015and2008.cmd'
+			if (!(Test-Path $VCruntimeInstallCmdPath)) {
+				$VCruntimeInstallCmdDirectory = $scriptFileRoot
+			}
 
-            Start-Sleep -Milliseconds 500
+			Start-Sleep -Milliseconds 500
 
-            # VCruntimeInstall2015and2008.cmd を管理者権限で実行 (待機)
-            Start-Process -FilePath cmd.exe -ArgumentList "/C cd $VCruntimeInstallCmdDirectory & call VCruntimeInstall2015and2008.cmd & exit" -Verb RunAs -WindowStyle Minimized -Wait
+			# VCruntimeInstall2015and2008.cmd を管理者権限で実行 (待機)
+			Start-Process -FilePath cmd.exe -ArgumentList "/C cd $VCruntimeInstallCmdDirectory & call VCruntimeInstall2015and2008.cmd & exit" -Verb RunAs -WindowStyle Minimized -Wait
 
-            Write-Host "インストーラーが終了しました。"
-            break
-        }
-        1 {
-            Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) のインストールを行います。"
-            Write-Host "デバイスへの変更が必要になります。ユーザーアカウント制御のポップアップが出たら [はい] を押して許可してください。`r`n"
+			Write-Host "インストーラーが終了しました。"
+			break
+		}
+		1 {
+			Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) のインストールを行います。"
+			Write-Host "デバイスへの変更が必要になります。ユーザーアカウント制御のポップアップが出たら [はい] を押して許可してください。`r`n"
 
-            # Visual C++ 2015-20xx Redistributable (x86) のインストーラーを実行 (待機)
-	            # 自動インストールオプションを追加 by Atolycs (20250106)
-            Start-Process -FilePath vc_redist.x86.exe -ArgumentList "/install /passive" -WindowStyle Minimized -Wait
+			# Visual C++ 2015-20xx Redistributable (x86) のインストーラーを実行 (待機)
+				# 自動インストールオプションを追加 by Atolycs (20250106)
+			Start-Process -FilePath vc_redist.x86.exe -ArgumentList "/install /passive" -WindowStyle Minimized -Wait
 
-            Write-Host "インストーラーが終了しました。"
-            Write-Host "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 のインストールをスキップしました。"
-            break
-        }
-    }
+			Write-Host "インストーラーが終了しました。"
+			Write-Host "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 のインストールをスキップしました。"
+			break
+		}
+	}
 
-    # 選択ここまで
+	# 選択ここまで
 }
 
 Write-Host -NoNewline "`r`n設定ファイルをコピーしています..."
@@ -546,12 +571,12 @@ Remove-Item tmp -Recurse
 Write-Host "完了"
 
 if (Test-Path "script_files\必須プラグインを更新する.cmd") {
-    # 必須プラグインを更新する.cmd をカレントディレクトリに移動
-    Move-Item "script_files\必須プラグインを更新する.cmd" . -Force
+	# 必須プラグインを更新する.cmd をカレントディレクトリに移動
+	Move-Item "script_files\必須プラグインを更新する.cmd" . -Force
 
-    # aviutl-installer.cmd (このファイル) と settings ディレクトリを script_files ディレクトリに移動
-    Move-Item settings script_files -Force
-    Move-Item aviutl-installer.cmd script_files -Force
+	# aviutl-installer.cmd (このファイル) と settings ディレクトリを script_files ディレクトリに移動
+	Move-Item settings script_files -Force
+	Move-Item aviutl-installer.cmd script_files -Force
 }
 
 # ユーザーの操作を待って終了
