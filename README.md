@@ -1,3 +1,4 @@
+# ja
 ## AviUtl Installer Scriptについて
 AviUtl本体とAviUtlで動画編集をするなら必須と言っていいレベルのいくつかのプラグインを導入して初期設定する、初心者には複雑で難解な作業を1つのファイルを実行するだけで済ませようという目的で作られているスクリプトの詰め合わせです。
 
@@ -44,6 +45,7 @@ YouTubeの紹介動画:
 ただし、**書き込んだからといって必ずすぐにどうにかなるわけではありません**し、**開発者も同じ人間であり礼儀を払う必要がある**ということを覚えておいてください。\
 あまりに攻撃的なIssueは内容を確認せずクローズする方針なので、解決したいという気持ちがあるなら丁寧に書いてください。
 
+# en
 ## About AviUtl Installer Script
 This is a collection of scripts created with the purpose of simplifying the complex and difficult task for beginners of setting up several essential plugins for AviUtl and the AviUtl main body for video editing, so that it can be done by executing just one file.
 
