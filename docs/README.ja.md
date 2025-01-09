@@ -1,4 +1,4 @@
-[Here](../README.md) is the English version of the README.
+The English version of the README is [here](../README.md).
 
 ## AviUtl Installer Scriptについて
 AviUtl本体とAviUtlで動画編集をするなら必須と言っていいレベルのいくつかのプラグインを導入して初期設定する、初心者には複雑で難解な作業を1つのファイルを実行するだけで済ませようという目的で作られているスクリプトの詰め合わせです。
