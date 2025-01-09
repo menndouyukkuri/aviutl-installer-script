@@ -33,7 +33,9 @@ function GithubLatestReleaseUrl ($repo) {
     return($api.assets.browser_download_url)
 }
 
-Write-Host "AviUtl Installer Script (Version 1.0.9b1_2025-01-08)`r`n`r`n"
+$DisplayNameOfThisScript = "AviUtl Installer Script (Version 1.0.9b1_2025-01-08)"
+$Host.UI.RawUI.WindowTitle = $DisplayNameOfThisScript
+Write-Host "$($DisplayNameOfThisScript)`r`n`r`n"
 
 # カレントディレクトリのパスを $scriptFileRoot に保存 (起動方法のせいで $PSScriptRoot が使用できないため)
 $scriptFileRoot = (Get-Location).Path
