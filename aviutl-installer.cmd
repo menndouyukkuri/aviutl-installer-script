@@ -33,7 +33,7 @@ function GithubLatestReleaseUrl ($repo) {
     return($api.assets.browser_download_url)
 }
 
-$DisplayNameOfThisScript = "AviUtl Installer Script (Version 1.0.9b1_2025-01-08)"
+$DisplayNameOfThisScript = "AviUtl Installer Script (Version 1.0.9_2025-01-08)"
 $Host.UI.RawUI.WindowTitle = $DisplayNameOfThisScript
 Write-Host "$($DisplayNameOfThisScript)`r`n`r`n"
 
