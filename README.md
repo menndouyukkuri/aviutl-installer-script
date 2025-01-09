@@ -2,7 +2,7 @@
 ## AviUtl Installer Scriptについて
 AviUtl本体とAviUtlで動画編集をするなら必須と言っていいレベルのいくつかのプラグインを導入して初期設定する、初心者には複雑で難解な作業を1つのファイルを実行するだけで済ませようという目的で作られているスクリプトの詰め合わせです。
 
-多くの環境で実行しやすくするために .cmd (バッチファイル) となっていますが、中身はほとんどPowerShellのスクリプトです。
+多くの環境で実行しやすくするために .cmd (バッチファイル) となっていますが、中身はほとんど Windows PowerShell (5.x) のスクリプトです。
 
 ### 動作環境
 Windows 10 April 2018 Update (バージョン 1803) 以降\
@@ -49,7 +49,7 @@ YouTubeの紹介動画:
 ## About AviUtl Installer Script
 This is a collection of scripts created with the purpose of simplifying the complex and difficult task for beginners of install and setting up the AviUtl main body and several essential plugins for video editing using AviUtl, so that it can be done by executing just one file.
 
-To make it easier to run in many environments, it is in .cmd (batchfile) format, but the contents are mostly PowerShell scripts.
+To make it easier to run in many environments, it is in .cmd (batchfile) format, but the contents are mostly Windows PowerShell (5.x) scripts.
 
 ### Operating Environment
 Windows 10 April 2018 Update (version 1803) or later\
