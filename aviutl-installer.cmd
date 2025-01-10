@@ -33,7 +33,7 @@ function GithubLatestReleaseUrl ($repo) {
 	return($api.assets.browser_download_url)
 }
 
-$DisplayNameOfThisScript = "AviUtl Installer Script (Version 1.0.9_2025-01-08)"
+$DisplayNameOfThisScript = "AviUtl Installer Script (Version 1.0.9_2025-01-10)"
 $Host.UI.RawUI.WindowTitle = $DisplayNameOfThisScript
 Write-Host "$($DisplayNameOfThisScript)`r`n`r`n"
 
@@ -271,96 +271,130 @@ Set-Location ..\..
 
 Write-Host "`r`nx264guiExのインストールが完了しました。"
 
+
 #LuaJITのインストール by Yu-yu0202 (20250109)
+	# 不具合が直らなかったため再実装 by menndouyukkuri (20250110)
+Write-Host -NoNewline "`r`nLuaJITの最新版情報を取得しています..."
 
-# tmp ディレクトリのパスを $tmpDir に保存
-$tmpDir = Join-Path -Path $scriptFileRoot -ChildPath tmp
+# LuaJITの最新版のダウンロードURLを取得
+$luaJitAllUrl = GithubLatestReleaseUrl "Per-Terra/LuaJIT-Auto-Builds"
 
-# Aviutlのインストールパスを $AviutlPath に保存
-$AviutlPath = Join-Path -Path "C:\Applications" -ChildPath "AviUtl"
+# 複数ある中からAviUtl用のもののみ残す
+$luaJitUrl = $luaJitAllUrl | Where-Object {$_ -like "*LuaJIT_2.1_Win_x86.zip"}
 
-Write-Host -NoNewline "`r`nLuaJITをインストールしています..."
-$apiUrl = "https://api.github.com/repos/Per-Terra/LuaJIT-Auto-Builds/releases/latest"
-$response = Invoke-RestMethod -Uri $apiUrl
-$tagName = $response.tag_name
-$downloadUrl = "https://github.com/Per-Terra/LuaJIT-Auto-Builds/releases/download/$tagName/LuaJIT_2.1_Win_x86.zip"
-$tempZip = Join-Path -Path $tmpDir -ChildPath "LuaJIT_2.1_Win_x86.zip"
-$extractDir = Join-Path -Path $tmpDir -ChildPath "LuaJIT"
+Write-Host "完了"
+Write-Host -NoNewline "LuaJITをダウンロードしています..."
 
-Start-Process -FilePath "curl" -ArgumentList "-L", $downloadUrl, "-o", $tempZip -WindowStyle Minimized -Wait
-Start-Process powershell -ArgumentList "-command Expand-Archive -Path $tempZip -Destination $extractDir -Force" -WindowStyle Minimized -Wait
-Remove-Item -Path $tempZip
+# LuaJITのzipファイルをダウンロード (待機)
+Start-Process -FilePath curl.exe -ArgumentList "-OL $luaJitUrl" -WindowStyle Minimized -Wait
 
-Move-Item -Path "$extractDir\lua51.dll" -Destination $AviutlPath -Force
+Write-Host "完了"
+Write-Host -NoNewline "LuaJITをインストールしています..."
+
+# AviUtl ディレクトリに既にある lua51.dll (拡張編集Pluginのもの) をリネームしてバックアップする
+Move-Item "C:\Applications\AviUtl\lua51.dll" "C:\Applications\AviUtl\exedit_lua51.dll" -Force
+
+# AviUtl\readme\LuaJIT 内に doc ディレクトリがあれば削除する (エラーの防止)
+if (Test-Path "C:\Applications\AviUtl\readme\LuaJIT\doc") {
+	Remove-Item C:\Applications\AviUtl\readme\LuaJIT\doc -Recurse
+}
+
+# LuaJITのzipファイルを展開 (待機)
+Start-Process powershell -ArgumentList "-command Expand-Archive -Path 'LuaJIT_2.1_Win_x86.zip' -Force" -WindowStyle Minimized -Wait
+
+# カレントディレクトリをLuaJITのzipファイルを展開したディレクトリに変更
+Set-Location "LuaJIT_2.1_Win_x86"
+
+# AviUtl\readme, AviUtl\license 内に LuaJIT ディレクトリを作成 (待機)
+Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\readme\LuaJIT, C:\Applications\AviUtl\license\LuaJIT -ItemType Directory -Force" -WindowStyle Minimized -Wait
+
+# AviUtl ディレクトリ内に lua51.dll を、AviUtl\readme\LuaJIT 内に README と doc を、AviUtl\license\LuaJIT 内に
+# COPYRIGHT と About-This-Build.txt をそれぞれ移動
+Move-Item "lua51.dll" C:\Applications\AviUtl -Force
+Move-Item README C:\Applications\AviUtl\readme\LuaJIT -Force
+Move-Item doc C:\Applications\AviUtl\readme\LuaJIT -Force
+Move-Item COPYRIGHT C:\Applications\AviUtl\license\LuaJIT -Force
+Move-Item "About-This-Build.txt" C:\Applications\AviUtl\license\LuaJIT -Force
+
+# カレントディレクトリを tmp ディレクトリに変更
+Set-Location ..
 
 Write-Host "完了"
 
 
 # HWエンコーディングの使用可否をチェックし、可能であれば出力プラグインをインストール by Yu-yu0202 (20250107)
-Write-Host "`r`nハードウェアエンコード (NVEnc / VCEEnc / QSVEnc) が使用できるかチェックします。"
 
+Write-Host "`r`nハードウェアエンコード (NVEnc / QSVEnc / VCEEnc) が使用できるかチェックします。"
+Write-Host -NoNewline "必要なファイルをダウンロードしています (数分かかる場合があります) ..."
 
+$hwEncoderRepos = @("rigaya/NVEnc", "rigaya/QSVEnc", "rigaya/VCEEnc")
+foreach ($hwRepo in $hwEncoderRepos) {
+	# あとで使うのでリポジトリ名を取っておく
+	$repoName = ($hwRepo -split "/")[-1]
 
+	# 最新版のダウンロードURLを取得
+	$downloadAllUrl = GithubLatestReleaseUrl $hwRepo
 
-Write-Host -NoNewline "必要なファイルをダウンロードします (数分かかる場合があります) ..."
+	# 複数ある中からAviUtl用のもののみ残す
+	$downloadUrl = $downloadAllUrl | Where-Object {$_ -like "*Aviutl*"}
 
-$repos = @("rigaya/VCEEnc", "rigaya/NVEnc", "rigaya/QSVEnc")
-foreach ($repo in $repos) {
-	$apiUrl = "https://api.github.com/repos/$repo/releases/latest"
-	$response = Invoke-RestMethod -Uri $apiUrl
-	$tagName = $response.tag_name
+	# zipファイルをダウンロード (待機)
+	Start-Process -FilePath curl.exe -ArgumentList "-OL $downloadUrl" -WindowStyle Minimized -Wait
 
-	$repoName = ($repo -split "/")[-1]
-
-	#出力プラグインをダウンロード+展開
-	$downloadUrl = "https://github.com/$repo/releases/download/$tagName/Aviutl_${repoName}_${tagName}.zip"
-	$tempZip = Join-Path -Path $tmpDir -ChildPath "Aviutl_${repoName}_${tagName}.zip"
-	$extractDir = Join-Path -Path $tmpDir -ChildPath $($repoName)
-
-	Start-Process -FilePath "curl" -ArgumentList "-L", $downloadUrl, "-o", $tempZip -WindowStyle Minimized -Wait
-	Start-Process powershell -ArgumentList "-command Expand-Archive -Path $tempZip -Destination $extractDir -Force" -WindowStyle Minimized -Wait
-	Remove-Item -Path $tempZip
+	# zipファイルを展開 (待機)
+	Start-Process powershell -ArgumentList "-command Expand-Archive -Path Aviutl_${repoName}_*.zip -Force" -WindowStyle Minimized -Wait
 }
 
 Write-Host "完了"
 Write-Host "`r`nエンコーダーのチェック、および使用可能な出力プラグインのインストールを行います。"
 
-$encoders = [ordered]@{
+$hwEncoders = [ordered]@{
 	"NVEnc"  = "NVEncC.exe"
 	"QSVEnc" = "QSVEncC.exe"
 	"VCEEnc" = "VCEEncC.exe"
 }
 
 # 画質のよいNVEncから順にQSVEnc、VCEEncとチェックしていき、最初に使用可能なものを確認した時点でそれを導入してforeachを離脱
-foreach ($encoder in $encoders.GetEnumerator()) {
-	$encoderPath = Join-Path -Path $tmpDir -ChildPath "$($encoder.Key)\exe_files\$($encoder.Key)C\x86\$($encoder.Value)"
-	if (Test-Path -Path $encoderPath) {
+foreach ($hwEncoder in $hwEncoders.GetEnumerator()) {
+	# エンコーダーの実行ファイルのパスを格納
+	Set-Location "Aviutl_$($hwEncoder.Key)_*"
+	$extdir = (Get-Location).Path
+	$encoderPath = Join-Path -Path $extdir -ChildPath "exe_files\$($hwEncoder.Key)C\x86\$($hwEncoder.Value)"
+	Set-Location ..
+
+	# エンコーダーの実行ファイルの有無を確認
+	if (Test-Path $encoderPath) {
+		# ハードウェアエンコードできるかチェック
 		$process = Start-Process -FilePath $encoderPath -ArgumentList "--check-hw" -Wait -WindowStyle Minimized -PassThru
 
 		# ExitCodeが0の場合はインストール
 		if ($process.ExitCode -eq 0) {
-			Write-Host -NoNewline "$($encoder.Key)が使用可能です。$($encoder.Key)をインストールします..."
+			Write-Host -NoNewline "$($hwEncoder.Key)が使用可能です。$($hwEncoder.Key)をインストールしています..."
 
-			# 展開後のそれぞれのフォルダを移動
-			$extdir = Join-Path -Path $tmpDir -ChildPath "$($encoder.Key)"
-			Move-Item -Path "$extdir\exe_files\*" -Destination "$AviutlPath\exe_files" -Force; Move-Item -Path "$extdir\plugins\*" -Destination "$AviutlPath\plugins" -Force
-			New-Item -ItemType Directory -Path $AviutlPath\readme\$($encoder.Key) -Force | Out-Null
-			Move-Item -Path $extdir\*_readme.* -Destination $AviutlPath\readme\$($encoder.Key)\$($encoder.Key).txt -Force
+			# readme ディレクトリを作成
+			New-Item -ItemType Directory -Path C:\Applications\AviUtl\readme\$($hwEncoder.Key) -Force | Out-Null
+
+			# 展開後のそれぞれのファイルを移動
+			Move-Item -Path "$extdir\exe_files\*" -Destination C:\Applications\AviUtl\exe_files -Force
+			Move-Item -Path "$extdir\plugins\*" -Destination C:\Applications\AviUtl\plugins -Force
+			Move-Item -Path "$extdir\*.bat" -Destination C:\Applications\AviUtl -Force
+			Move-Item -Path "$extdir\*_readme.txt" -Destination C:\Applications\AviUtl\readme\$($hwEncoder.Key) -Force
 			Write-Host "完了"
 
 			# 一応、出力プラグインが共存しないようbreakでforeachを抜ける
 			break
 
 		# 最後のVCEEncも使用不可だった場合、ハードウェアエンコードが使用できない旨のメッセージを表示
-		} elseif ($($encoder.Key) -eq "VCEEnc") {
-			Write-Host "ハードウェアエンコードは使用できません。"
+		} elseif ($($hwEncoder.Key) -eq "VCEEnc") {
+			Write-Host "この環境ではハードウェアエンコードは使用できません。"
 		}
-	
+
 	# エンコーダーの実行ファイルが確認できない場合、エラーメッセージを表示する
 	} else {
-		Write-Host "発生したエラー: エンコーダーのチェックに失敗しました。`r`nエラーの原因　: エンコーダーの実行ファイルが確認できません。"
+		Write-Host "発生したエラー: エンコーダーのチェックに失敗しました。`r`nエラーの原因　: $($hwEncoder.Key)の実行ファイルが確認できません。"
 	}
 }
+
 
 Write-Host -NoNewline "`r`nVisual C++ 再頒布可能パッケージを確認しています..."
 
@@ -418,8 +452,8 @@ if ($Vc2015App -and $Vc2008App) {
 
 	$tChoiceDescription = "System.Management.Automation.Host.ChoiceDescription"
 	$choiceOptions = @(
-		New-Object $tChoiceDescription ("はい(&Y)",       "インストールを実行します。")
-		New-Object $tChoiceDescription ("いいえ(&N)",     "インストールをせず、スキップして次の処理に進みます。")
+		New-Object $tChoiceDescription ("はい(&Y)",  "インストールを実行します。")
+		New-Object $tChoiceDescription ("いいえ(&N)", "インストールをせず、スキップして次の処理に進みます。")
 	)
 
 	$result = $host.ui.PromptForChoice($choiceTitle, $choiceMessage, $choiceOptions, 0)
@@ -469,8 +503,8 @@ if ($Vc2015App -and $Vc2008App) {
 
 	$tChoiceDescription = "System.Management.Automation.Host.ChoiceDescription"
 	$choiceOptions = @(
-		New-Object $tChoiceDescription ("はい(&Y)",       "インストールを実行します。")
-		New-Object $tChoiceDescription ("いいえ(&N)",     "インストールをせず、スキップして次の処理に進みます。")
+		New-Object $tChoiceDescription ("はい(&Y)",  "インストールを実行します。")
+		New-Object $tChoiceDescription ("いいえ(&N)", "インストールをせず、スキップして次の処理に進みます。")
 	)
 
 	$result = $host.ui.PromptForChoice($choiceTitle, $choiceMessage, $choiceOptions, 0)
