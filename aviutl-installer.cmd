@@ -440,7 +440,7 @@ Write-Host "完了"
 # HWエンコーディングの使用可否をチェックし、可能であれば出力プラグインをインストール by Yu-yu0202 (20250107)
 
 Write-Host "`r`nハードウェアエンコード (NVEnc / QSVEnc / VCEEnc) が使用できるかチェックします。"
-Write-Host -NoNewline "必要なファイルをダウンロードしています (数分かかる場合があります) "
+Write-Host -NoNewline "必要なファイルをダウンロードしています (数分かかる場合があります)"
 
 $hwEncoderRepos = @("rigaya/NVEnc", "rigaya/QSVEnc", "rigaya/VCEEnc")
 foreach ($hwRepo in $hwEncoderRepos) {
