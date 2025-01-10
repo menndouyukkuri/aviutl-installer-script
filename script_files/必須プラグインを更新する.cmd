@@ -35,7 +35,7 @@ function GithubLatestReleaseUrl ($repo) {
 
 $Host.UI.RawUI.WindowTitle = "必須プラグインを更新する.cmd"
 
-Write-Host "必須プラグイン (patch.aul・L-SMASH Works・InputPipePlugin・x264guiEx) の更新を開始します。`r`n`r`n"
+Write-Host "必須プラグイン (patch.aul・L-SMASH Works・InputPipePlugin・x264guiEx) および LuaJIT、ifheif の更新を開始します。`r`n`r`n"
 
 # カレントディレクトリのパスを $scriptFileRoot に保存 (起動方法のせいで $PSScriptRoot が使用できないため)
 $scriptFileRoot = (Get-Location).Path
@@ -83,10 +83,10 @@ $aviutlPluginsDirectory = Join-Path -Path $aviutlExeDirectory -ChildPath plugins
 $aviutlScriptDirectory = Join-Path -Path $aviutlExeDirectory -ChildPath script
 $LicenseDirectoryRoot = Join-Path -Path $aviutlExeDirectory -ChildPath license
 $ReadmeDirectoryRoot = Join-Path -Path $aviutlExeDirectory -ChildPath readme
-Start-Process powershell -ArgumentList "-command New-Item $aviutlPluginsDirectory, $aviutlScriptDirectory, $LicenseDirectoryRoot, $ReadmeDirectoryRoot -ItemType Directory -Force" -WindowStyle Minimized -Wait
+Start-Process powershell -ArgumentList "-command New-Item $aviutlPluginsDirectory, $aviutlScriptDirectory, $LicenseDirectoryRoot, $ReadmeDirectoryRoot -ItemType Directory -Force" -WindowStyle Hidden -Wait
 
 # tmp ディレクトリを作成する (待機)
-Start-Process powershell -ArgumentList "-command New-Item tmp -ItemType Directory -Force" -WindowStyle Minimized -Wait
+Start-Process powershell -ArgumentList "-command New-Item tmp -ItemType Directory -Force" -WindowStyle Hidden -Wait
 
 Write-Host "完了"
 Write-Host -NoNewline "`r`n拡張編集Pluginのインストールされているディレクトリを確認しています..."
@@ -122,20 +122,20 @@ Write-Host "完了"
 Write-Host -NoNewline "patch.aul (謎さうなフォーク版) をダウンロードしています..."
 
 # patch.aul (謎さうなフォーク版) のzipファイルをダウンロード (待機)
-Start-Process -FilePath curl.exe -ArgumentList "-OL $patchAulUrl" -WindowStyle Minimized -Wait
+Start-Process -FilePath curl.exe -ArgumentList "-OL $patchAulUrl" -WindowStyle Hidden -Wait
 
 Write-Host "完了"
 Write-Host -NoNewline "patch.aul (謎さうなフォーク版) をインストールしています..."
 
 # patch.aulのzipファイルを展開 (待機)
-Start-Process powershell -ArgumentList "-command Expand-Archive -Path patch.aul_*.zip -Force" -WindowStyle Minimized -Wait
+Start-Process powershell -ArgumentList "-command Expand-Archive -Path patch.aul_*.zip -Force" -WindowStyle Hidden -Wait
 
 # カレントディレクトリをpatch.aulのzipファイルを展開したディレクトリに変更
 Set-Location "patch.aul_*"
 
 # AviUtl\license 内に patch-aul ディレクトリを作成 (待機)
 $patchAulLicenseDirectory = Join-Path -Path $LicenseDirectoryRoot -ChildPath patch-aul
-Start-Process powershell -ArgumentList "-command New-Item $patchAulLicenseDirectory -ItemType Directory -Force" -WindowStyle Minimized -Wait
+Start-Process powershell -ArgumentList "-command New-Item $patchAulLicenseDirectory -ItemType Directory -Force" -WindowStyle Hidden -Wait
 
 # patch.aul が plugins ディレクトリ内にある場合、削除して patch.aul.json を移動させる (エラーの防止)
 $patchAulPluginsPath = Join-Path -Path $aviutlPluginsDirectory -ChildPath patch.aul
@@ -151,11 +151,30 @@ if (Test-Path $patchAulPluginsPath) {
 }
 
 # AviUtl ディレクトリ内に patch.aul を (待機) 、AviUtl\license\patch-aul 内にその他のファイルをそれぞれ移動
-Start-Process powershell -ArgumentList "-command Move-Item patch.aul $aviutlExeDirectory -Force" -WindowStyle Minimized -Wait
+Start-Process powershell -ArgumentList "-command Move-Item patch.aul $aviutlExeDirectory -Force" -WindowStyle Hidden -Wait
 Move-Item * $patchAulLicenseDirectory -Force
 
 # カレントディレクトリを tmp ディレクトリに変更
 Set-Location ..
+
+Write-Host "完了"
+Write-Host -NoNewline "`r`npatch.aul (謎さうなフォーク版) と競合するプラグインの有無を確認しています..."
+
+# bakusoku.auf を確認し、あったら削除
+if (Test-Path "${aviutlExeDirectory}\bakusoku.auf") {
+	Remove-Item "${aviutlExeDirectory}\bakusoku.auf"
+}
+if (Test-Path "${aviutlPluginsDirectory}\bakusoku.auf") {
+	Remove-Item "${aviutlPluginsDirectory}\bakusoku.auf"
+}
+
+# Boost.auf を確認し、あったら削除
+if (Test-Path "${aviutlExeDirectory}\Boost.auf") {
+	Remove-Item "${aviutlExeDirectory}\Boost.auf"
+}
+if (Test-Path "${aviutlPluginsDirectory}\Boost.auf") {
+	Remove-Item "${aviutlPluginsDirectory}\Boost.auf"
+}
 
 Write-Host "完了"
 Write-Host -NoNewline "`r`nL-SMASH Works (Mr-Ojii版) の最新版情報を取得しています..."
@@ -170,7 +189,7 @@ Write-Host "完了"
 Write-Host -NoNewline "L-SMASH Works (Mr-Ojii版) をダウンロードしています..."
 
 # L-SMASH Works (Mr-Ojii版) のzipファイルをダウンロード (待機)
-Start-Process -FilePath curl.exe -ArgumentList "-OL $lSmashWorksUrl" -WindowStyle Minimized -Wait
+Start-Process -FilePath curl.exe -ArgumentList "-OL $lSmashWorksUrl" -WindowStyle Hidden -Wait
 
 Write-Host "完了"
 Write-Host -NoNewline "L-SMASH Works (Mr-Ojii版) をインストールしています..."
@@ -206,7 +225,7 @@ if (Test-Path $aviutlPluginslwiDirectory) {
 }
 
 # L-SMASH Worksのzipファイルを展開 (待機)
-Start-Process powershell -ArgumentList "-command Expand-Archive -Path L-SMASH-Works_*.zip -Force" -WindowStyle Minimized -Wait
+Start-Process powershell -ArgumentList "-command Expand-Archive -Path L-SMASH-Works_*.zip -Force" -WindowStyle Hidden -Wait
 
 # カレントディレクトリをL-SMASH Worksのzipファイルを展開したディレクトリに変更
 Set-Location "L-SMASH-Works_*"
@@ -214,7 +233,7 @@ Set-Location "L-SMASH-Works_*"
 # AviUtl\readme, AviUtl\license 内に l-smash_works ディレクトリを作成 (待機)
 $lSmashWorksReadmeDirectory = Join-Path -Path $ReadmeDirectoryRoot -ChildPath l-smash_works
 $lSmashWorksLicenseDirectory = Join-Path -Path $LicenseDirectoryRoot -ChildPath l-smash_works
-Start-Process powershell -ArgumentList "-command New-Item $lSmashWorksReadmeDirectory, $lSmashWorksLicenseDirectory -ItemType Directory -Force" -WindowStyle Minimized -Wait
+Start-Process powershell -ArgumentList "-command New-Item $lSmashWorksReadmeDirectory, $lSmashWorksLicenseDirectory -ItemType Directory -Force" -WindowStyle Hidden -Wait
 
 # L-SMASH Worksの入っているディレクトリを探し、$lwinputAuiDirectory にパスを保存
 # $inputPipePluginDeleteCheckDirectory は $lwinputAuiDirectory の逆、後に使用
@@ -233,7 +252,7 @@ Start-Sleep -Milliseconds 500
 
 # AviUtl\plugins ディレクトリ内に lw*.au* を、AviUtl\readme\l-smash_works 内に READM* を (待機) 、
 # AviUtl\license\l-smash_works 内にその他のファイルをそれぞれ移動
-Start-Process powershell -ArgumentList "-command Move-Item lw*.au* $lwinputAuiDirectory -Force; Move-Item READM* $lSmashWorksReadmeDirectory -Force" -WindowStyle Minimized -Wait
+Start-Process powershell -ArgumentList "-command Move-Item lw*.au* $lwinputAuiDirectory -Force; Move-Item READM* $lSmashWorksReadmeDirectory -Force" -WindowStyle Hidden -Wait
 Move-Item * $lSmashWorksLicenseDirectory -Force
 
 # カレントディレクトリを tmp ディレクトリに変更
@@ -249,13 +268,13 @@ Write-Host "完了"
 Write-Host -NoNewline "InputPipePluginをダウンロードしています..."
 
 # InputPipePluginのzipファイルをダウンロード (待機)
-Start-Process -FilePath curl.exe -ArgumentList "-OL $InputPipePluginUrl" -WindowStyle Minimized -Wait
+Start-Process -FilePath curl.exe -ArgumentList "-OL $InputPipePluginUrl" -WindowStyle Hidden -Wait
 
 Write-Host "完了"
 Write-Host -NoNewline "InputPipePluginをインストールしています..."
 
 # InputPipePluginのzipファイルを展開 (待機)
-Start-Process powershell -ArgumentList "-command Expand-Archive -Path InputPipePlugin_*.zip -Force" -WindowStyle Minimized -Wait
+Start-Process powershell -ArgumentList "-command Expand-Archive -Path InputPipePlugin_*.zip -Force" -WindowStyle Hidden -Wait
 
 # カレントディレクトリをInputPipePluginのzipファイルを展開したディレクトリに変更
 Set-Location "InputPipePlugin_*\InputPipePlugin"
@@ -263,11 +282,11 @@ Set-Location "InputPipePlugin_*\InputPipePlugin"
 # AviUtl\readme, AviUtl\license 内に inputPipePlugin ディレクトリを作成 (待機)
 $inputPipePluginReadmeDirectory = Join-Path -Path $ReadmeDirectoryRoot -ChildPath inputPipePlugin
 $inputPipePluginLicenseDirectory = Join-Path -Path $LicenseDirectoryRoot -ChildPath inputPipePlugin
-Start-Process powershell -ArgumentList "-command New-Item $inputPipePluginReadmeDirectory, $inputPipePluginLicenseDirectory -ItemType Directory -Force" -WindowStyle Minimized -Wait
+Start-Process powershell -ArgumentList "-command New-Item $inputPipePluginReadmeDirectory, $inputPipePluginLicenseDirectory -ItemType Directory -Force" -WindowStyle Hidden -Wait
 
 # AviUtl\license\inputPipePlugin 内に LICENSE を、AviUtl\readme\inputPipePlugin 内に Readme.md を (待機) 、
 # AviUtl\plugins ディレクトリ内にその他のファイルをそれぞれ移動
-Start-Process powershell -ArgumentList "-command Move-Item LICENSE $inputPipePluginLicenseDirectory -Force; Move-Item Readme.md $inputPipePluginReadmeDirectory -Force" -WindowStyle Minimized -Wait
+Start-Process powershell -ArgumentList "-command Move-Item LICENSE $inputPipePluginLicenseDirectory -Force; Move-Item Readme.md $inputPipePluginReadmeDirectory -Force" -WindowStyle Hidden -Wait
 Move-Item * $lwinputAuiDirectory -Force
 
 # トラブルの原因になるファイルの除去
@@ -290,13 +309,13 @@ Write-Host "完了"
 Write-Host -NoNewline "x264guiExをダウンロードしています..."
 
 # x264guiExのzipファイルをダウンロード (待機)
-Start-Process -FilePath curl.exe -ArgumentList "-OL $x264guiExUrl" -WindowStyle Minimized -Wait
+Start-Process -FilePath curl.exe -ArgumentList "-OL $x264guiExUrl" -WindowStyle Hidden -Wait
 
 Write-Host "完了"
 Write-Host -NoNewline "x264guiExをインストールしています。`r`n"
 
 # x264guiExのzipファイルを展開 (待機)
-Start-Process powershell -ArgumentList "-command Expand-Archive -Path x264guiEx_*.zip -Force" -WindowStyle Minimized -Wait
+Start-Process powershell -ArgumentList "-command Expand-Archive -Path x264guiEx_*.zip -Force" -WindowStyle Hidden -Wait
 
 # カレントディレクトリをx264guiExのzipファイルを展開したディレクトリに変更
 Set-Location "x264guiEx_*\x264guiEx_*"
@@ -350,11 +369,11 @@ Set-Location ..\exe_files
 
 # AviUtl ディレクトリ内に exe_files ディレクトリを作成 (待機)
 $exeFilesDirectory = Join-Path -Path $aviutlExeDirectory -ChildPath exe_files
-Start-Process powershell -ArgumentList "-command New-Item $exeFilesDirectory -ItemType Directory -Force" -WindowStyle Minimized -Wait
+Start-Process powershell -ArgumentList "-command New-Item $exeFilesDirectory -ItemType Directory -Force" -WindowStyle Hidden -Wait
 
 # AviUtl\exe_files 内に x264_*.exe があれば削除 (待機)
 Set-Location $exeFilesDirectory
-Start-Process powershell -ArgumentList "-command if (Test-Path x264_*.exe) { Remove-Item x264_*.exe }" -WindowStyle Minimized -Wait
+Start-Process powershell -ArgumentList "-command if (Test-Path x264_*.exe) { Remove-Item x264_*.exe }" -WindowStyle Hidden -Wait
 Set-Location $scriptFileRoot
 Set-Location "tmp\x264guiEx_*\x264guiEx_*\exe_files"
 
@@ -366,7 +385,7 @@ Set-Location ..
 
 # AviUtl\readme 内に x264guiEx ディレクトリを作成 (待機)
 $x264guiExReadmeDirectory = Join-Path -Path $ReadmeDirectoryRoot -ChildPath x264guiEx
-Start-Process powershell -ArgumentList "-command New-Item $x264guiExReadmeDirectory -ItemType Directory -Force" -WindowStyle Minimized -Wait
+Start-Process powershell -ArgumentList "-command New-Item $x264guiExReadmeDirectory -ItemType Directory -Force" -WindowStyle Hidden -Wait
 
 # AviUtl\readme\x264guiEx 内に x264guiEx_readme.txt を移動
 Move-Item x264guiEx_readme.txt $x264guiExReadmeDirectory -Force
@@ -379,6 +398,12 @@ Write-Host "`r`nx264guiExのインストールが完了しました。"
 
 # LuaJITの更新 by Yu-yu0202 (20250109)
 	# 不具合が直らなかったため再実装 by menndouyukkuri (20250110)
+
+# AviUtl ディレクトリ内に old_lua51.dll があれば削除する
+if (Test-Path "${aviutlExeDirectory}\old_lua51.dll") {
+	Remove-Item "${aviutlExeDirectory}\old_lua51.dll"
+}
+
 Write-Host -NoNewline "`r`nLuaJITの最新版情報を取得しています..."
 
 # LuaJITの最新版のダウンロードURLを取得
@@ -391,14 +416,14 @@ Write-Host "完了"
 Write-Host -NoNewline "LuaJITをダウンロードしています..."
 
 # LuaJITのzipファイルをダウンロード (待機)
-Start-Process -FilePath curl.exe -ArgumentList "-OL $luaJitUrl" -WindowStyle Minimized -Wait
+Start-Process -FilePath curl.exe -ArgumentList "-OL $luaJitUrl" -WindowStyle Hidden -Wait
 
 Write-Host "完了"
 Write-Host -NoNewline "LuaJITをインストールしています..."
 
 # AviUtl ディレクトリ内に exedit_lua51.dll がない場合、既にある lua51.dll をリネームしてバックアップする
 if (!(Test-Path "${aviutlExeDirectory}\exedit_lua51.dll")) {
-	Move-Item "${aviutlExeDirectory}\lua51.dll" "${aviutlExeDirectory}\old_lua51.dll" -Force
+	Rename-Item "${aviutlExeDirectory}\lua51.dll" "old_lua51.dll" -Force
 }
 
 # AviUtl\readme\LuaJIT 内に doc ディレクトリがあれば削除する (エラーの防止)
@@ -407,13 +432,13 @@ if (Test-Path "${ReadmeDirectoryRoot}\LuaJIT\doc") {
 }
 
 # LuaJITのzipファイルを展開 (待機)
-Start-Process powershell -ArgumentList "-command Expand-Archive -Path 'LuaJIT_2.1_Win_x86.zip' -Force" -WindowStyle Minimized -Wait
+Start-Process powershell -ArgumentList "-command Expand-Archive -Path 'LuaJIT_2.1_Win_x86.zip' -Force" -WindowStyle Hidden -Wait
 
 # カレントディレクトリをLuaJITのzipファイルを展開したディレクトリに変更
 Set-Location "LuaJIT_2.1_Win_x86"
 
 # AviUtl\readme, AviUtl\license 内に LuaJIT ディレクトリを作成 (待機)
-Start-Process powershell -ArgumentList "-command New-Item `"${ReadmeDirectoryRoot}\LuaJIT`", `"${LicenseDirectoryRoot}\LuaJIT`" -ItemType Directory -Force" -WindowStyle Minimized -Wait
+Start-Process powershell -ArgumentList "-command New-Item `"${ReadmeDirectoryRoot}\LuaJIT`", `"${LicenseDirectoryRoot}\LuaJIT`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
 
 # AviUtl ディレクトリ内に lua51.dll を、AviUtl\readme\LuaJIT 内に README と doc を、AviUtl\license\LuaJIT 内に
 # COPYRIGHT と About-This-Build.txt をそれぞれ移動
@@ -429,6 +454,44 @@ Set-Location ..
 Write-Host "完了"
 
 
+Write-Host -NoNewline "`r`nifheifの最新版情報を取得しています..."
+
+# ifheifの最新版のダウンロードURLを取得
+$ifheifUrl = GithubLatestReleaseUrl "Mr-Ojii/ifheif"
+
+Write-Host "完了"
+Write-Host -NoNewline "ifheifをダウンロードしています..."
+
+# ifheifのzipファイルをダウンロード (待機)
+Start-Process -FilePath curl.exe -ArgumentList "-OL $ifheifUrl" -WindowStyle Hidden -Wait
+
+Write-Host "完了"
+Write-Host -NoNewline "ifheifをインストールしています..."
+
+# AviUtl\license\ifheif 内に Licenses ディレクトリがあれば削除する (エラーの防止)
+if (Test-Path "C:\Applications\AviUtl\license\ifheif\Licenses") {
+	Remove-Item C:\Applications\AviUtl\license\ifheif\Licenses -Recurse
+}
+
+# ifheifのzipファイルを展開 (待機)
+Start-Process powershell -ArgumentList "-command Expand-Archive -Path ifheif.zip -Force" -WindowStyle Hidden -Wait
+
+# カレントディレクトリをifheifのzipファイルを展開したディレクトリに変更
+Set-Location "ifheif"
+
+# AviUtl\readme, AviUtl\license 内に ifheif ディレクトリを作成 (待機)
+Start-Process powershell -ArgumentList "-command New-Item `"${ReadmeDirectoryRoot}\ifheif`", `"${LicenseDirectoryRoot}\ifheif`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
+
+# AviUtl ディレクトリ内に ifheif.spi を、AviUtl\license\ifheif 内に LICENSE と Licenses ディレクトリを、
+# AviUtl\readme\ifheif 内に Readme.md をそれぞれ移動
+Move-Item ifheif.spi $aviutlExeDirectory -Force
+Move-Item "LICENS*" "${LicenseDirectoryRoot}\ifheif" -Force
+Move-Item Readme.md "${ReadmeDirectoryRoot}\ifheif" -Force
+
+# カレントディレクトリを tmp ディレクトリに変更
+Set-Location ..
+
+Write-Host "完了"
 Write-Host -NoNewline "`r`nVisual C++ 再頒布可能パッケージを確認しています..."
 
 # レジストリからデスクトップアプリの一覧を取得する
@@ -461,7 +524,7 @@ if ($Vc2015App -and $Vc2008App) {
 	Write-Host -NoNewline "Microsoft Visual C++ 2015-20xx Redistributable (x86) のインストーラーをダウンロードしています..."
 
 	# Visual C++ 2015-20xx Redistributable (x86) のインストーラーをダウンロード (待機)
-	Start-Process curl.exe -ArgumentList "-OL https://aka.ms/vs/17/release/vc_redist.x86.exe" -WindowStyle Minimized -Wait
+	Start-Process curl.exe -ArgumentList "-OL https://aka.ms/vs/17/release/vc_redist.x86.exe" -WindowStyle Hidden -Wait
 
 	Write-Host "完了"
 	Write-Host "Microsoft Visual C++ 2015-20xx Redistributable (x86) のインストールを行います。"
@@ -469,7 +532,7 @@ if ($Vc2015App -and $Vc2008App) {
 
 	# Visual C++ 2015-20xx Redistributable (x86) のインストーラーを実行 (待機)
 		# 自動インストールオプションを追加 by Atolycs (20250106)
-	Start-Process -FilePath vc_redist.x86.exe -ArgumentList "/install /passive" -WindowStyle Minimized -Wait
+	Start-Process -FilePath vc_redist.x86.exe -ArgumentList "/install /passive" -WindowStyle Hidden -Wait
 
 	Write-Host "インストーラーが終了しました。"
 	Write-Host "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 はインストール済みです。"
@@ -495,7 +558,7 @@ if ($Vc2015App -and $Vc2008App) {
 			Write-Host -NoNewline "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 のインストーラーをダウンロードしています..."
 
 			# Visual C++ 2008 Redistributable - x86 のインストーラーをダウンロード (待機)
-			Start-Process curl.exe -ArgumentList "-OL https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe" -WindowStyle Minimized -Wait
+			Start-Process curl.exe -ArgumentList "-OL https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe" -WindowStyle Hidden -Wait
 
 			Write-Host "完了"
 			Write-Host "Microsoft Visual C++ 2008 Redistributable - x86 のインストールを行います。"
@@ -503,7 +566,7 @@ if ($Vc2015App -and $Vc2008App) {
 
 			# Visual C++ 2008 Redistributable - x86 のインストーラーを実行 (待機)
 				# 自動インストールオプションを追加 by Atolycs (20250106)
-			Start-Process -FilePath vcredist_x86.exe -ArgumentList "/qb" -WindowStyle Minimized -Wait
+			Start-Process -FilePath vcredist_x86.exe -ArgumentList "/qb" -WindowStyle Hidden -Wait
 
 			Write-Host "インストーラーが終了しました。"
 			break
@@ -524,7 +587,7 @@ if ($Vc2015App -and $Vc2008App) {
 	Write-Host -NoNewline "Microsoft Visual C++ 2015-20xx Redistributable (x86) のインストーラーをダウンロードしています..."
 
 	# Visual C++ 2015-20xx Redistributable (x86) のインストーラーをダウンロード (待機)
-	Start-Process curl.exe -ArgumentList "-OL https://aka.ms/vs/17/release/vc_redist.x86.exe" -WindowStyle Minimized -Wait
+	Start-Process curl.exe -ArgumentList "-OL https://aka.ms/vs/17/release/vc_redist.x86.exe" -WindowStyle Hidden -Wait
 
 	Write-Host "完了"
 	Write-Host "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 はインストールされていません。"
@@ -546,7 +609,7 @@ if ($Vc2015App -and $Vc2008App) {
 			Write-Host -NoNewline "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 のインストーラーをダウンロードしています..."
 
 			# Visual C++ 2008 Redistributable - x86 のインストーラーをダウンロード (待機)
-			Start-Process curl.exe -ArgumentList "-OL https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe" -WindowStyle Minimized -Wait
+			Start-Process curl.exe -ArgumentList "-OL https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe" -WindowStyle Hidden -Wait
 
 			Write-Host "完了"
 			Write-Host "`r`nMicrosoft Visual C++ 2015-20xx Redistributable (x86) と`r`nMicrosoft Visual C++ 2008 Redistributable - x86 のインストールを行います。"
@@ -564,7 +627,7 @@ if ($Vc2015App -and $Vc2008App) {
 			Start-Sleep -Milliseconds 500
 
 			# VCruntimeInstall2015and2008.cmd を管理者権限で実行 (待機)
-			Start-Process -FilePath cmd.exe -ArgumentList "/C cd $VCruntimeInstallCmdDirectory & call VCruntimeInstall2015and2008.cmd & exit" -Verb RunAs -WindowStyle Minimized -Wait
+			Start-Process -FilePath cmd.exe -ArgumentList "/C cd $VCruntimeInstallCmdDirectory & call VCruntimeInstall2015and2008.cmd & exit" -Verb RunAs -WindowStyle Hidden -Wait
 
 			Write-Host "インストーラーが終了しました。"
 			break
@@ -575,7 +638,7 @@ if ($Vc2015App -and $Vc2008App) {
 
 			# Visual C++ 2015-20xx Redistributable (x86) のインストーラーを実行 (待機)
 				# 自動インストールオプションを追加 by Atolycs (20250106)
-			Start-Process -FilePath vc_redist.x86.exe -ArgumentList "/install /passive" -WindowStyle Minimized -Wait
+			Start-Process -FilePath vc_redist.x86.exe -ArgumentList "/install /passive" -WindowStyle Hidden -Wait
 
 			Write-Host "インストーラーが終了しました。"
 			Write-Host "`r`nMicrosoft Visual C++ 2008 Redistributable - x86 のインストールをスキップしました。"
