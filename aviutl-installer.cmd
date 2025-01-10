@@ -272,7 +272,7 @@ Set-Location ..\..
 Write-Host "`r`nx264guiExのインストールが完了しました。"
 
 
-#LuaJITのインストール by Yu-yu0202 (20250109)
+# LuaJITのインストール by Yu-yu0202 (20250109)
 	# 不具合が直らなかったため再実装 by menndouyukkuri (20250110)
 Write-Host -NoNewline "`r`nLuaJITの最新版情報を取得しています..."
 
@@ -406,7 +406,7 @@ Where-Object { $_.DisplayName -and $_.UninstallString -and -not $_.SystemCompone
 Select-Object DisplayName
 
 # Microsoft Visual C++ 2015-20xx Redistributable (x86) がインストールされているか確認する
-# ・Visual C++ 再頒布可能パッケージに2020や2021はないので、20[2-9][0-9] としておけば2022以降を指定できる
+	# Visual C++ 再頒布可能パッケージに2020や2021はないので、20[2-9][0-9] としておけば2022以降を指定できる
 $Vc2015App = $installedApps.DisplayName -match "Microsoft Visual C\+\+ 2015-20[2-9][0-9] Redistributable \(x86\)"
 
 # Microsoft Visual C++ 2008 Redistributable - x86 がインストールされているか確認する
