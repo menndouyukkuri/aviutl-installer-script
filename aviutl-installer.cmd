@@ -440,7 +440,7 @@ Write-Host "完了"
 # HWエンコーディングの使用可否をチェックし、可能であれば出力プラグインをインストール by Yu-yu0202 (20250107)
 
 Write-Host "`r`nハードウェアエンコード (NVEnc / QSVEnc / VCEEnc) が使用できるかチェックします。"
-Write-Host -NoNewline "必要なファイルをダウンロードしています (数分かかる場合があります)"
+Write-Host -NoNewline "必要なファイルをダウンロードしています (数分かかる場合があります) "
 
 $hwEncoderRepos = @("rigaya/NVEnc", "rigaya/QSVEnc", "rigaya/VCEEnc")
 foreach ($hwRepo in $hwEncoderRepos) {
@@ -464,7 +464,7 @@ foreach ($hwRepo in $hwEncoderRepos) {
 	Start-Process powershell -ArgumentList "-command Expand-Archive -Path Aviutl_${repoName}_*.zip -Force" -WindowStyle Hidden -Wait
 }
 
-Write-Host "完了"
+Write-Host " 完了"
 Write-Host "`r`nエンコーダーのチェック、および使用可能な出力プラグインのインストールを行います。"
 
 $hwEncoders = [ordered]@{
@@ -743,8 +743,8 @@ if (Test-Path "script_files\必須プラグインを更新する.cmd") {
 }
 
 # ユーザーの操作を待って終了
-Write-Host -NoNewline "`r`n`r`n`r`nインストールが完了しました！`r`n`r`n`r`nreadmeフォルダを開いて"
+Write-Host -NoNewline "`r`n`r`n`r`nインストールが完了しました！`r`n`r`n`r`nreadme フォルダを開いて"
 Pause
 
-# 終了時にreadmeフォルダを表示
+# 終了時に readme ディレクトリを表示
 Invoke-Item "C:\Applications\AviUtl\readme"

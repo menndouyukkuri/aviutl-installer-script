@@ -73,6 +73,7 @@ if (Test-Path "C:\AviUtl\aviutl.exe") {
 	# $checkInputAviutlExePath の親ディレクトリを $aviutlExeDirectory に保存
 	$aviutlExeDirectory = Split-Path $checkInputAviutlExePath -Parent
 }
+Write-Host "${aviutlExeDirectory} に aviutl.exe を確認しました。"
 
 Start-Sleep -Milliseconds 500
 
@@ -89,7 +90,7 @@ Start-Process powershell -ArgumentList "-command New-Item $aviutlPluginsDirector
 Start-Process powershell -ArgumentList "-command New-Item tmp -ItemType Directory -Force" -WindowStyle Hidden -Wait
 
 Write-Host "完了"
-Write-Host -NoNewline "`r`n拡張編集Pluginのインストールされているディレクトリを確認しています..."
+Write-Host -NoNewline "`r`n拡張編集Pluginのインストールされているフォルダを確認しています..."
 
 # 拡張編集Pluginが plugins ディレクトリ内にある場合、AviUtl ディレクトリ内に移動させる (エラーの防止)
 $exeditAufPluginsPath = Join-Path -Path $aviutlPluginsDirectory -ChildPath exedit.auf
@@ -695,8 +696,8 @@ Remove-Item tmp -Recurse
 Write-Host "完了"
 
 # ユーザーの操作を待って終了
-Write-Host -NoNewline "`r`n`r`n`r`n更新が完了しました！`r`n`r`n`r`nreadmeフォルダを開いて"
+Write-Host -NoNewline "`r`n`r`n`r`n更新が完了しました！`r`n`r`n`r`nreadme フォルダを開いて"
 Pause
 
-# 終了時にreadmeフォルダを表示
+# 終了時に readme ディレクトリを表示
 Invoke-Item $ReadmeDirectoryRoot
