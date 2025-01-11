@@ -98,11 +98,15 @@ if (Test-Path $exeditAufPluginsPath) {
 	Set-Location $aviutlPluginsDirectory
 
 	# 拡張編集Pluginのファイルを全て AviUtl ディレクトリ内に移動
-	Move-Item "exedit.*" $aviutlExeDirectory -Force
+	Move-Item "exedit*" $aviutlExeDirectory -Force
 	Move-Item lua51.dll $aviutlExeDirectory -Force
-	$luaTxtPluginsPath = Join-Path -Path $aviutlPluginsDirectory -ChildPath lua.txt
-	if (Test-Path $luaTxtPluginsPath) {
+	if (Test-Path "${aviutlPluginsDirectory}\lua.txt") {
 		Move-Item lua.txt $aviutlExeDirectory -Force
+	}
+
+	# Susieプラグインの場所も併せて変更
+	if (Test-Path "${aviutlPluginsDirectory}\*.spi") {
+		Move-Item "*.spi" $aviutlExeDirectory -Force
 	}
 
 	# カレントディレクトリをスクリプトファイルのあるディレクトリに変更
@@ -454,6 +458,37 @@ Set-Location ..
 Write-Host "完了"
 
 
+Write-Host -NoNewline "`r`nWebP Susie Plug-inを確認しています..."
+
+# WebP Susie Plug-inが導入されていない場合のみ以下の処理を実行
+if (!(Test-Path "${aviutlExeDirectory}\iftwebp.spi")) {
+	Write-Host "完了"
+	Write-Host -NoNewline "`r`nWebP Susie Plug-inをダウンロードしています..."
+
+	# WebP Susie Plug-inのzipファイルをダウンロード (待機)
+	Start-Process -FilePath curl.exe -ArgumentList "-OL https://toroidj.github.io/plugin/iftwebp11.zip" -WindowStyle Hidden -Wait
+
+	Write-Host "完了"
+	Write-Host -NoNewline "WebP Susie Plug-inをインストールしています..."
+
+	# WebP Susie Plug-inのzipファイルを展開 (待機)
+	Start-Process powershell -ArgumentList "-command Expand-Archive -Path iftwebp11.zip -Force" -WindowStyle Hidden -Wait
+
+	# カレントディレクトリを iftwebp11 ディレクトリに変更
+	Set-Location iftwebp11
+
+	# AviUtl\readme 内に iftwebp ディレクトリを作成 (待機)
+	Start-Process powershell -ArgumentList "-command New-Item `"${ReadmeDirectoryRoot}\iftwebp`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
+
+	# AviUtl ディレクトリ内に iftwebp.spi を、AviUtl\readme\iftwebp 内に iftwebp.txt をそれぞれ移動
+	Move-Item iftwebp.spi $aviutlExeDirectory -Force
+	Move-Item iftwebp.txt "${ReadmeDirectoryRoot}\iftwebp" -Force
+
+	# カレントディレクトリを tmp ディレクトリに変更
+	Set-Location ..
+}
+
+Write-Host "完了"
 Write-Host -NoNewline "`r`nifheifの最新版情報を取得しています..."
 
 # ifheifの最新版のダウンロードURLを取得
@@ -469,8 +504,8 @@ Write-Host "完了"
 Write-Host -NoNewline "ifheifをインストールしています..."
 
 # AviUtl\license\ifheif 内に Licenses ディレクトリがあれば削除する (エラーの防止)
-if (Test-Path "C:\Applications\AviUtl\license\ifheif\Licenses") {
-	Remove-Item C:\Applications\AviUtl\license\ifheif\Licenses -Recurse
+if (Test-Path "${LicenseDirectoryRoot}\ifheif\Licenses") {
+	Remove-Item "${LicenseDirectoryRoot}\ifheif\Licenses" -Recurse
 }
 
 # ifheifのzipファイルを展開 (待機)
