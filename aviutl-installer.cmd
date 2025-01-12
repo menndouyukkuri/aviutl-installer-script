@@ -33,7 +33,7 @@ function GithubLatestReleaseUrl ($repo) {
 	return($api.assets.browser_download_url)
 }
 
-$DisplayNameOfThisScript = "AviUtl Installer Script (Version 1.0.10_2025-01-10)"
+$DisplayNameOfThisScript = "AviUtl Installer Script (Version 1.0.11_2025-01-12)"
 $Host.UI.RawUI.WindowTitle = $DisplayNameOfThisScript
 Write-Host "$($DisplayNameOfThisScript)`r`n`r`n"
 
@@ -305,13 +305,51 @@ Start-Process powershell -ArgumentList "-command Rename-Item `"ANM_ssd`" `"‚³‚Â‚
 # AviUtl\script “à‚É ‚³‚Â‚«_AviUtlƒXƒNƒŠƒvƒgˆê® ƒfƒBƒŒƒNƒgƒŠ‚ğAAviUtl\readme “à‚É AviUtlƒXƒNƒŠƒvƒgˆê® ƒfƒBƒŒƒNƒgƒŠ‚ğì¬ (‘Ò‹@)
 Start-Process powershell -ArgumentList "-command New-Item `"C:\Applications\AviUtl\script\‚³‚Â‚«_AviUtlƒXƒNƒŠƒvƒgˆê®`", `"C:\Applications\AviUtl\readme\AviUtlƒXƒNƒŠƒvƒgˆê®`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
 
-# AviUtl\readme\AviUtlƒXƒNƒŠƒvƒgˆê® “à‚É readme.txt ‚Æ g‚¢•û.txt ‚ğAAviUtl\script “à‚É ‚³‚Â‚«_ANM_ssd ‚Æ ‚³‚Â‚«_TA_ssd ‚ğ (‘Ò‹@) A
+# AviUtl\script “à‚É ‚³‚Â‚«_ANM_ssd ‚Æ ‚³‚Â‚«_TA_ssd ‚ğAAviUtl\readme\AviUtlƒXƒNƒŠƒvƒgˆê® “à‚É readme.txt ‚Æ g‚¢•û.txt ‚ğ (‘Ò‹@) A
 # AviUtl\script\‚³‚Â‚«_AviUtlƒXƒNƒŠƒvƒgˆê® “à‚É‚»‚Ì‘¼‚Ìƒtƒ@ƒCƒ‹‚ğ‚»‚ê‚¼‚êˆÚ“®
-Start-Process powershell -ArgumentList "-command Move-Item *.txt `"C:\Applications\AviUtl\readme\AviUtlƒXƒNƒŠƒvƒgˆê®`" -Force; Move-Item `"‚³‚Â‚«_ANM_ssd`" C:\Applications\AviUtl\script -Force; Move-Item `"‚³‚Â‚«_TA_ssd`" C:\Applications\AviUtl\script -Force" -WindowStyle Hidden -Wait
+Start-Process powershell -ArgumentList "-command Move-Item `"‚³‚Â‚«_ANM_ssd`" C:\Applications\AviUtl\script -Force; Move-Item `"‚³‚Â‚«_TA_ssd`" C:\Applications\AviUtl\script -Force ;Move-Item *.txt `"C:\Applications\AviUtl\readme\AviUtlƒXƒNƒŠƒvƒgˆê®`" -Force" -WindowStyle Hidden -Wait
 Move-Item * "C:\Applications\AviUtl\script\‚³‚Â‚«_AviUtlƒXƒNƒŠƒvƒgˆê®" -Force
 
 # ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ‚ğ tmp ƒfƒBƒŒƒNƒgƒŠ‚É•ÏX
 Set-Location ..\..
+
+Write-Host "Š®—¹"
+Write-Host -NoNewline "`r`nu’l‚Å}Œ`v‚ğƒ_ƒEƒ“ƒ[ƒh‚µ‚Ä‚¢‚Ü‚·..."
+
+# ’l‚Å}Œ`.obj ‚ğƒ_ƒEƒ“ƒ[ƒh (‘Ò‹@)
+Start-Process -FilePath curl.exe -ArgumentList "-OL `"https://ss1.xrea.com/menkuri.s270.xrea.com/aviutl-installer-script/scripts/’l‚Å}Œ`.obj`"" -WindowStyle Hidden -Wait
+
+Write-Host "Š®—¹"
+Write-Host -NoNewline "u’l‚Å}Œ`v‚ğƒCƒ“ƒXƒg[ƒ‹‚µ‚Ä‚¢‚Ü‚·..."
+
+# AviUtl\script “à‚É ’l‚Å}Œ`.obj ‚ğˆÚ“®
+Move-Item "’l‚Å}Œ`.obj" "C:\Applications\AviUtl\script" -Force
+
+Write-Host "Š®—¹"
+Write-Host -NoNewline "`r`n’¼üƒXƒNƒŠƒvƒg‚ğƒ_ƒEƒ“ƒ[ƒh‚µ‚Ä‚¢‚Ü‚·..."
+
+# ’¼üƒXƒNƒŠƒvƒg‚Ìzipƒtƒ@ƒCƒ‹‚ğƒ_ƒEƒ“ƒ[ƒh (‘Ò‹@)
+Start-Process -FilePath curl.exe -ArgumentList "-OL `"https://ss1.xrea.com/menkuri.s270.xrea.com/aviutl-installer-script/scripts/’¼üƒXƒNƒŠƒvƒg.zip`"" -WindowStyle Hidden -Wait
+
+Write-Host "Š®—¹"
+Write-Host -NoNewline "’¼üƒXƒNƒŠƒvƒg‚ğƒCƒ“ƒXƒg[ƒ‹‚µ‚Ä‚¢‚Ü‚·..."
+
+# ’¼üƒXƒNƒŠƒvƒg‚Ìzipƒtƒ@ƒCƒ‹‚ğ“WŠJ (‘Ò‹@)
+Start-Process powershell -ArgumentList "-command Expand-Archive -Path `"’¼üƒXƒNƒŠƒvƒg.zip`" -Force" -WindowStyle Hidden -Wait
+
+# ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ‚ğ ’¼üƒXƒNƒŠƒvƒg ƒfƒBƒŒƒNƒgƒŠ‚É•ÏX
+Set-Location "’¼üƒXƒNƒŠƒvƒg"
+
+# AviUtl\readme, AviUtl\license “à‚É ’¼üƒXƒNƒŠƒvƒg ƒfƒBƒŒƒNƒgƒŠ‚ğì¬ (‘Ò‹@)
+Start-Process powershell -ArgumentList "-command New-Item `"C:\Applications\AviUtl\readme\’¼üƒXƒNƒŠƒvƒg`", `"C:\Applications\AviUtl\license\’¼üƒXƒNƒŠƒvƒg`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
+
+# AviUtl\script “à‚É ’¼ü.obj ‚ğAAviUtl\license\’¼üƒXƒNƒŠƒvƒg “à‚É LICENSE.txt ‚ğ (‘Ò‹@) A
+# AviUtl\readme\’¼üƒXƒNƒŠƒvƒg “à‚É‚»‚Ì‘¼‚Ìƒtƒ@ƒCƒ‹‚ğ‚»‚ê‚¼‚êˆÚ“®
+Start-Process powershell -ArgumentList "-command Move-Item `"’¼ü.obj`" C:\Applications\AviUtl\script -Force; Move-Item LICENSE.txt `"C:\Applications\AviUtl\license\’¼üƒXƒNƒŠƒvƒg`" -Force" -WindowStyle Hidden -Wait
+Move-Item * "C:\Applications\AviUtl\readme\’¼üƒXƒNƒŠƒvƒg" -Force
+
+# ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ‚ğ tmp ƒfƒBƒŒƒNƒgƒŠ‚É•ÏX
+Set-Location ..
 
 Write-Host "Š®—¹"
 
