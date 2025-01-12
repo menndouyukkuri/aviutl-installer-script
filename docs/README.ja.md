@@ -13,7 +13,7 @@ Windows 10 April 2018 Update (バージョン 1803) 以降\
 [releases/latest](https://github.com/menndouyukkuri/aviutl-installer-script/releases/latest) の  Assets から 
 aviutl-installer_X.X.X.zip をダウンロードし、展開してください。
 
-あとは aviutl-installer.cmd をダブルクリックするだけで、AviUtlと必須プラグイン (具体的に何が導入されるかは [releases/latest](https://github.com/menndouyukkuri/aviutl-installer-script/releases/latest) に記載があります) のインストールが始まります。
+あとは aviutl-installer.cmd をダブルクリックするだけで、AviUtlと必須プラグイン (具体的に何が導入されるかは [インストールされるもの](https://github.com/menndouyukkuri/aviutl-installer-script/wiki/AviUtl-Installer-Script%E3%81%AB%E3%82%88%E3%81%A3%E3%81%A6%E3%82%A4%E3%83%B3%E3%82%B9%E3%83%88%E3%83%BC%E3%83%AB%E3%81%95%E3%82%8C%E3%82%8B%E3%82%82%E3%81%AE) に記載があります) のインストールが始まります。
 
 もし以下のような画面が出てきた場合は、詳細情報 をクリックして
 
@@ -24,7 +24,7 @@ aviutl-installer_X.X.X.zip をダウンロードし、展開してください�
 ![ss002 - NoTitle](https://github.com/user-attachments/assets/129cd65b-8c40-4b34-bfd3-4e96ca36e39a)
 
 動作中の様子:
-![ss001 - C：￥WINDOWS￥system32￥cmd exe](https://github.com/user-attachments/assets/0028f0cf-a45a-4ee3-864c-697360e5145c)
+![ss001 - AviUtl Installer Script (Version 1 0 11_2025-01-12)](https://github.com/user-attachments/assets/a92f4681-1a93-4ed0-850b-8faba6b4bfbb)
 
 YouTubeの紹介動画:
 [![紹介動画](https://github.com/user-attachments/assets/c0dbb594-0c99-4ac0-96e1-fc51f924ba78)](https://youtu.be/fJYp_nV-yrg)
