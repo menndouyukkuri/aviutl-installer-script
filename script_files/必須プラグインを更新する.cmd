@@ -363,7 +363,7 @@ Set-Location "x264guiEx_*\x264guiEx_*"
 # カレントディレクトリをx264guiExのzipファイルを展開したディレクトリ内の plugins ディレクトリに変更
 Set-Location plugins
 
-# AviUtl\plugins 内に現在のディレクトリのファイルをプロファイル以外全て移動
+# AviUtl\plugins 内に現在のディレクトリのファイルを x264guiEx_stg ディレクトリ以外全て移動
 Move-Item "x264guiEx.*" $aviutlPluginsDirectory -Force
 Move-Item auo_setup.auf -Force
 
@@ -371,7 +371,7 @@ Move-Item auo_setup.auf -Force
 # 選択ここから
 
 $x264guiExChoiceTitle = "x264guiExのプロファイルを上書きしますか？"
-$x264guiExChoiceMessage = "プロファイルは更新で新しくなっている可能性がありますが、上書きを実行すると追加したプロファイルやプロファイルへの変更が削除されます。"
+$x264guiExChoiceMessage = "プロファイルは更新で新しくなっている可能性がありますが、上書きを実行すると変更を加えたプロファイルはリセットされます。"
 
 $x264guiExTChoiceDescription = "System.Management.Automation.Host.ChoiceDescription"
 $x264guiExChoiceOptions = @(
@@ -384,13 +384,11 @@ switch ($x264guiExChoiceResult) {
 	0 {
 		Write-Host -NoNewline "`r`nx264guiExのプロファイルを上書きします..."
 
-		# AviUtl\plugins 内に x264guiEx_stg ディレクトリがあれば削除する
-		if (Test-Path "${aviutlPluginsDirectory}\x264guiEx_stg") {
-			Remove-Item "${aviutlPluginsDirectory}\x264guiEx_stg" -Recurse
-		}
+		# AviUtl\plugins 内に x264guiEx_stg ディレクトリを作成 (待機)
+		Start-Process powershell -ArgumentList "-command New-Item `"${aviutlPluginsDirectory}\x264guiEx_stg`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
 
-		# AviUtl\plugins 内に現在のディレクトリのファイルを全て移動
-		Move-Item * $aviutlPluginsDirectory -Force
+		# AviUtl\plugins\x264guiEx_stg 内に x264guiEx_stg ディレクトリ内のファイルを全て移動
+		Move-Item "x264guiEx_stg\*" "${aviutlPluginsDirectory}\x264guiEx_stg" -Force
 
 		Write-Host "完了"
 		break
@@ -602,7 +600,7 @@ foreach ($hwEncoder in $hwEncoders.GetEnumerator()) {
 			# 選択ここから
 
 			$hwEncoderChoiceTitle = "$($hwEncoder.Key)のプロファイルを上書きしますか？"
-			$hwEncoderChoiceMessage = "プロファイルは更新で新しくなっている可能性がありますが、上書きを実行すると追加したプロファイルやプロファイルへの変更が削除されます。"
+			$hwEncoderChoiceMessage = "プロファイルは更新で新しくなっている可能性がありますが、上書きを実行すると変更を加えたプロファイルがリセットされます。"
 
 			$hwEncoderTChoiceDescription = "System.Management.Automation.Host.ChoiceDescription"
 			$hwEncoderChoiceOptions = @(
@@ -615,27 +613,26 @@ foreach ($hwEncoder in $hwEncoders.GetEnumerator()) {
 				0 {
 					Write-Host -NoNewline "`r`n$($hwEncoder.Key)のプロファイルを上書きします..."
 
-					# AviUtl\plugins 内に (NVEnc/QSVEnc/VCEEnc)_stg ディレクトリがあれば削除する
-					if (Test-Path "${aviutlPluginsDirectory}\$($hwEncoder.Key)_stg") {
-						Remove-Item "${aviutlPluginsDirectory}\$($hwEncoder.Key)_stg" -Recurse
-					}
+					# AviUtl\plugins 内に (NVEnc/QSVEnc/VCEEnc)_stg ディレクトリを作成 (待機)
+					Start-Process powershell -ArgumentList "-command New-Item `"${aviutlPluginsDirectory}\$($hwEncoder.Key)_stg`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
 
-					# ダウンロードして展開した (NVEnc/QSVEnc/VCEEnc)_stg を AviUtl\plugins 内に移動
-					Move-Item "$extdir\plugins\$($hwEncoder.Key)_stg" $aviutlPluginsDirectory -Force
+					# ダウンロードして展開した (NVEnc/QSVEnc/VCEEnc)_stg の中のファイルを
+					# AviUtl\plugins\(NVEnc/QSVEnc/VCEEnc)_stg 内に移動 (待機)
+					Start-Process powershell -ArgumentList "-command Move-Item `"$extdir\plugins\$($hwEncoder.Key)_stg\*`" `"${aviutlPluginsDirectory}\$($hwEncoder.Key)_stg`" -Force" -WindowStyle Hidden -Wait
 
 					Write-Host "完了"
 					break
 				}
 				1 {
-					# 後で邪魔になるので削除
-					Remove-Item "$extdir\plugins\$($hwEncoder.Key)_stg" -Recurse
-
 					Write-Host "`r`n$($hwEncoder.Key)のプロファイルの上書きをスキップしました。"
 					break
 				}
 			}
 
 			# 選択ここまで
+
+			# 後で邪魔になるので削除
+			Remove-Item "$extdir\plugins\$($hwEncoder.Key)_stg" -Recurse
 
 			Write-Host -NoNewline "`r`n$($hwEncoder.Key)をインストールしています..."
 
