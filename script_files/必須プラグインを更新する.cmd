@@ -93,8 +93,7 @@ Write-Host "完了"
 Write-Host -NoNewline "`r`n拡張編集Pluginのインストールされているフォルダを確認しています..."
 
 # 拡張編集Pluginが plugins ディレクトリ内にある場合、AviUtl ディレクトリ内に移動させる (エラーの防止)
-$exeditAufPluginsPath = Join-Path -Path $aviutlPluginsDirectory -ChildPath exedit.auf
-if (Test-Path $exeditAufPluginsPath) {
+if (Test-Path "${aviutlPluginsDirectory}\exedit.auf") {
 	# カレントディレクトリを plugins ディレクトリに変更
 	Set-Location $aviutlPluginsDirectory
 
@@ -165,12 +164,20 @@ Set-Location ..
 Write-Host "完了"
 Write-Host -NoNewline "`r`npatch.aul (謎さうなフォーク版) と競合するプラグインの有無を確認しています..."
 
+# カレントディレクトリを plugins ディレクトリに変更
+Set-Location $aviutlPluginsDirectory
+
 # bakusoku.auf を確認し、あったら削除
 if (Test-Path "${aviutlExeDirectory}\bakusoku.auf") {
 	Remove-Item "${aviutlExeDirectory}\bakusoku.auf"
 }
 if (Test-Path "${aviutlPluginsDirectory}\bakusoku.auf") {
 	Remove-Item "${aviutlPluginsDirectory}\bakusoku.auf"
+}
+Get-ChildItem -Attributes Directory | ForEach-Object {
+	if (Test-Path -Path "${_}\bakusoku.auf") {
+		Remove-Item "${_}\bakusoku.auf"
+	}
 }
 
 # Boost.auf を確認し、あったら削除
@@ -180,6 +187,14 @@ if (Test-Path "${aviutlExeDirectory}\Boost.auf") {
 if (Test-Path "${aviutlPluginsDirectory}\Boost.auf") {
 	Remove-Item "${aviutlPluginsDirectory}\Boost.auf"
 }
+Get-ChildItem -Attributes Directory | ForEach-Object {
+	if (Test-Path -Path "${_}\Boost.auf") {
+		Remove-Item "${_}\Boost.auf"
+	}
+}
+
+# カレントディレクトリを tmp ディレクトリに変更
+Set-Location "${scriptFileRoot}\tmp"
 
 Write-Host "完了"
 Write-Host -NoNewline "`r`nL-SMASH Works (Mr-Ojii版) の最新版情報を取得しています..."
@@ -200,34 +215,25 @@ Write-Host "完了"
 Write-Host -NoNewline "L-SMASH Works (Mr-Ojii版) をインストールしています..."
 
 # AviUtl\license\l-smash_works 内に Licenses ディレクトリがあれば削除する (エラーの防止)
-$lSmashWorksLicenseDirectoryLicenses = Join-Path -Path $LicenseDirectoryRoot -ChildPath l-smash_works\Licenses
-if (Test-Path $lSmashWorksLicenseDirectoryLicenses) {
-	Remove-Item $lSmashWorksLicenseDirectoryLicenses -Recurse
+if (Test-Path "${LicenseDirectoryRoot}\l-smash_works\Licenses") {
+	Remove-Item "${LicenseDirectoryRoot}\l-smash_works\Licenses" -Recurse
 }
 
-# AviUtl ディレクトリや plugins ディレクトリ内に lwi ディレクトリがあれば中の .lwi ファイルを削除する (エラーの防止)
-$aviutlExelwiDirectory = Join-Path -Path $aviutlExeDirectory -ChildPath lwi
-if (Test-Path $aviutlExelwiDirectory) {
-	Set-Location $aviutlExelwiDirectory
-	if (Test-Path "*.lwi") {
-		Remove-Item "*.lwi"
+# カレントディレクトリを AviUtl ディレクトリに変更
+Set-Location $aviutlExeDirectory
+
+# AviUtl ディレクトリやそのサブディレクトリ内の .lwi ファイルを削除する (エラーの防止)
+if (Test-Path "*.lwi") {
+	Remove-Item "*.lwi"
+}
+Get-ChildItem -Attributes Directory | ForEach-Object {
+	if (Test-Path -Path "${_}\*.lwi") {
+		Remove-Item "${_}\*.lwi"
 	}
-
-	# カレントディレクトリを tmp ディレクトリに変更
-	Set-Location $scriptFileRoot
-	Set-Location tmp
 }
-$aviutlPluginslwiDirectory = Join-Path -Path $aviutlPluginsDirectory -ChildPath lwi
-if (Test-Path $aviutlPluginslwiDirectory) {
-	Set-Location $aviutlPluginslwiDirectory
-	if (Test-Path "*.lwi") {
-		Remove-Item "*.lwi"
-	}
 
-	# カレントディレクトリを tmp ディレクトリに変更
-	Set-Location $scriptFileRoot
-	Set-Location tmp
-}
+# カレントディレクトリを tmp ディレクトリに変更
+Set-Location "${scriptFileRoot}\tmp"
 
 # L-SMASH Worksのzipファイルを展開 (待機)
 Start-Process powershell -ArgumentList "-command Expand-Archive -Path L-SMASH-Works_*.zip -Force" -WindowStyle Hidden -Wait
@@ -236,16 +242,13 @@ Start-Process powershell -ArgumentList "-command Expand-Archive -Path L-SMASH-Wo
 Set-Location "L-SMASH-Works_*"
 
 # AviUtl\readme, AviUtl\license 内に l-smash_works ディレクトリを作成 (待機)
-$lSmashWorksReadmeDirectory = Join-Path -Path $ReadmeDirectoryRoot -ChildPath l-smash_works
-$lSmashWorksLicenseDirectory = Join-Path -Path $LicenseDirectoryRoot -ChildPath l-smash_works
-Start-Process powershell -ArgumentList "-command New-Item $lSmashWorksReadmeDirectory, $lSmashWorksLicenseDirectory -ItemType Directory -Force" -WindowStyle Hidden -Wait
+Start-Process powershell -ArgumentList "-command New-Item `"${ReadmeDirectoryRoot}\l-smash_works`", `"${LicenseDirectoryRoot}\l-smash_works`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
 
 # L-SMASH Worksの入っているディレクトリを探し、$lwinputAuiDirectory にパスを保存
 # $inputPipePluginDeleteCheckDirectory は $lwinputAuiDirectory の逆、後に使用
-$lwinputAuiTestPath = Join-Path -Path $aviutlExeDirectory -ChildPath lwinput.aui
 New-Variable lwinputAuiDirectory
 New-Variable inputPipePluginDeleteCheckDirectory
-if (Test-Path $lwinputAuiTestPath) {
+if (Test-Path "${aviutlExeDirectory}\lwinput.aui") {
 	$lwinputAuiDirectory = $aviutlExeDirectory
 	$inputPipePluginDeleteCheckDirectory = $aviutlPluginsDirectory
 } else {
@@ -257,8 +260,8 @@ Start-Sleep -Milliseconds 500
 
 # AviUtl\plugins ディレクトリ内に lw*.au* を、AviUtl\readme\l-smash_works 内に READM* を (待機) 、
 # AviUtl\license\l-smash_works 内にその他のファイルをそれぞれ移動
-Start-Process powershell -ArgumentList "-command Move-Item lw*.au* $lwinputAuiDirectory -Force; Move-Item READM* $lSmashWorksReadmeDirectory -Force" -WindowStyle Hidden -Wait
-Move-Item * $lSmashWorksLicenseDirectory -Force
+Start-Process powershell -ArgumentList "-command Move-Item lw*.au* $lwinputAuiDirectory -Force; Move-Item READM* `"${ReadmeDirectoryRoot}\l-smash_works`" -Force" -WindowStyle Hidden -Wait
+Move-Item * "${LicenseDirectoryRoot}\l-smash_works" -Force
 
 # カレントディレクトリを tmp ディレクトリに変更
 Set-Location ..
@@ -285,13 +288,11 @@ Start-Process powershell -ArgumentList "-command Expand-Archive -Path InputPipeP
 Set-Location "InputPipePlugin_*\InputPipePlugin"
 
 # AviUtl\readme, AviUtl\license 内に inputPipePlugin ディレクトリを作成 (待機)
-$inputPipePluginReadmeDirectory = Join-Path -Path $ReadmeDirectoryRoot -ChildPath inputPipePlugin
-$inputPipePluginLicenseDirectory = Join-Path -Path $LicenseDirectoryRoot -ChildPath inputPipePlugin
-Start-Process powershell -ArgumentList "-command New-Item $inputPipePluginReadmeDirectory, $inputPipePluginLicenseDirectory -ItemType Directory -Force" -WindowStyle Hidden -Wait
+Start-Process powershell -ArgumentList "-command New-Item `"${ReadmeDirectoryRoot}\inputPipePlugin`", `"${LicenseDirectoryRoot}\inputPipePlugin`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
 
 # AviUtl\license\inputPipePlugin 内に LICENSE を、AviUtl\readme\inputPipePlugin 内に Readme.md を (待機) 、
 # AviUtl\plugins ディレクトリ内にその他のファイルをそれぞれ移動
-Start-Process powershell -ArgumentList "-command Move-Item LICENSE $inputPipePluginLicenseDirectory -Force; Move-Item Readme.md $inputPipePluginReadmeDirectory -Force" -WindowStyle Hidden -Wait
+Start-Process powershell -ArgumentList "-command Move-Item LICENSE `"${LicenseDirectoryRoot}\inputPipePlugin`" -Force; Move-Item Readme.md `"${ReadmeDirectoryRoot}\inputPipePlugin`" -Force" -WindowStyle Hidden -Wait
 Move-Item * $lwinputAuiDirectory -Force
 
 # トラブルの原因になるファイルの除去
@@ -350,9 +351,8 @@ switch ($x264guiExChoiceResult) {
 		Write-Host -NoNewline "`r`nx264guiExのプロファイルを上書きします..."
 
 		# AviUtl\plugins 内に x264guiEx_stg ディレクトリがあれば削除する
-		$x264guiExStgDirectory = Join-Path -Path $aviutlPluginsDirectory -ChildPath x264guiEx_stg
-		if (Test-Path $x264guiExStgDirectory) {
-			Remove-Item $x264guiExStgDirectory -Recurse
+		if (Test-Path "${aviutlPluginsDirectory}\x264guiEx_stg") {
+			Remove-Item "${aviutlPluginsDirectory}\x264guiEx_stg" -Recurse
 		}
 
 		# AviUtl\plugins 内に現在のディレクトリのファイルを全て移動
@@ -373,27 +373,22 @@ switch ($x264guiExChoiceResult) {
 Set-Location ..\exe_files
 
 # AviUtl ディレクトリ内に exe_files ディレクトリを作成 (待機)
-$exeFilesDirectory = Join-Path -Path $aviutlExeDirectory -ChildPath exe_files
-Start-Process powershell -ArgumentList "-command New-Item $exeFilesDirectory -ItemType Directory -Force" -WindowStyle Hidden -Wait
+Start-Process powershell -ArgumentList "-command New-Item `"${aviutlExeDirectory}\exe_files`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
 
 # AviUtl\exe_files 内に x264_*.exe があれば削除 (待機)
-Set-Location $exeFilesDirectory
-Start-Process powershell -ArgumentList "-command if (Test-Path x264_*.exe) { Remove-Item x264_*.exe }" -WindowStyle Hidden -Wait
-Set-Location $scriptFileRoot
-Set-Location "tmp\x264guiEx_*\x264guiEx_*\exe_files"
+Start-Process powershell -ArgumentList "-command if (Test-Path `"${aviutlExeDirectory}\exe_files\x264_*.exe`") { Remove-Item `"${aviutlExeDirectory}\exe_files\x264_*.exe`" }" -WindowStyle Hidden -Wait
 
 # AviUtl\exe_files 内に現在のディレクトリのファイルを全て移動
-Move-Item * $exeFilesDirectory -Force
+Move-Item * "${aviutlExeDirectory}\exe_files" -Force
 
 # カレントディレクトリをx264guiExのzipファイルを展開したディレクトリに変更
 Set-Location ..
 
 # AviUtl\readme 内に x264guiEx ディレクトリを作成 (待機)
-$x264guiExReadmeDirectory = Join-Path -Path $ReadmeDirectoryRoot -ChildPath x264guiEx
-Start-Process powershell -ArgumentList "-command New-Item $x264guiExReadmeDirectory -ItemType Directory -Force" -WindowStyle Hidden -Wait
+Start-Process powershell -ArgumentList "-command New-Item `"${ReadmeDirectoryRoot}\x264guiEx`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
 
 # AviUtl\readme\x264guiEx 内に x264guiEx_readme.txt を移動
-Move-Item x264guiEx_readme.txt $x264guiExReadmeDirectory -Force
+Move-Item x264guiEx_readme.txt "${ReadmeDirectoryRoot}\x264guiEx" -Force
 
 # カレントディレクトリを tmp ディレクトリに変更
 Set-Location ..\..
