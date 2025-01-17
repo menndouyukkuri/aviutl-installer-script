@@ -176,25 +176,21 @@ Start-Process powershell -ArgumentList "-command Expand-Archive -Path patch.aul_
 Set-Location "patch.aul_*"
 
 # AviUtl\license 内に patch-aul ディレクトリを作成 (待機)
-$patchAulLicenseDirectory = Join-Path -Path $LicenseDirectoryRoot -ChildPath patch-aul
-Start-Process powershell -ArgumentList "-command New-Item $patchAulLicenseDirectory -ItemType Directory -Force" -WindowStyle Hidden -Wait
+Start-Process powershell -ArgumentList "-command New-Item `"${LicenseDirectoryRoot}\patch-aul`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
 
 # patch.aul が plugins ディレクトリ内にある場合、削除して patch.aul.json を移動させる (エラーの防止)
-$patchAulPluginsPath = Join-Path -Path $aviutlPluginsDirectory -ChildPath patch.aul
-if (Test-Path $patchAulPluginsPath) {
-	Remove-Item $patchAulPluginsPath
-	$patchAulJsonPath = Join-Path -Path $aviutlExeDirectory -ChildPath patch.aul.json
-	$patchAulJsonPluginsPath = Join-Path -Path $aviutlPluginsDirectory -ChildPath patch.aul.json
-	if ((Test-Path $patchAulJsonPluginsPath) -and (!(Test-Path $patchAulJsonPath))) {
-		Move-Item $patchAulJsonPluginsPath $aviutlExeDirectory -Force
-	} elseif (Test-Path $patchAulJsonPluginsPath) {
-		Remove-Item $patchAulJsonPluginsPath
+if (Test-Path "${aviutlPluginsDirectory}\patch.aul") {
+	Remove-Item "${aviutlPluginsDirectory}\patch.aul"
+	if ((Test-Path "${aviutlPluginsDirectory}\patch.aul.json") -and (!(Test-Path "${aviutlExeDirectory}\patch.aul.json"))) {
+		Move-Item "${aviutlPluginsDirectory}\patch.aul.json" $aviutlExeDirectory -Force
+	} elseif (Test-Path "${aviutlPluginsDirectory}\patch.aul.json") {
+		Remove-Item "${aviutlPluginsDirectory}\patch.aul.json"
 	}
 }
 
 # AviUtl ディレクトリ内に patch.aul を (待機) 、AviUtl\license\patch-aul 内にその他のファイルをそれぞれ移動
 Start-Process powershell -ArgumentList "-command Move-Item patch.aul $aviutlExeDirectory -Force" -WindowStyle Hidden -Wait
-Move-Item * $patchAulLicenseDirectory -Force
+Move-Item * "${LicenseDirectoryRoot}\patch-aul" -Force
 
 # カレントディレクトリを tmp ディレクトリに変更
 Set-Location ..
@@ -264,7 +260,7 @@ Set-Location $aviutlExeDirectory
 if (Test-Path "*.lwi") {
 	Remove-Item "*.lwi"
 }
-Get-ChildItem -Attributes Directory | ForEach-Object {
+Get-ChildItem -Attributes Directory -Recurse | ForEach-Object {
 	if (Test-Path -Path "${_}\*.lwi") {
 		Remove-Item "${_}\*.lwi"
 	}
