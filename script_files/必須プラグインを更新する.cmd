@@ -43,6 +43,7 @@ $scriptFileRoot = (Get-Location).Path
 Write-Host -NoNewline "AviUtlがインストールされているフォルダを確認しています..."
 
 # aviutl.exe が入っているディレクトリを探し、$aviutlExeDirectory にパスを保存
+New-Variable aviutlExeDirectory
 if (Test-Path "C:\AviUtl\aviutl.exe") {
 	Write-Host "完了"
 	$aviutlExeDirectory = "C:\AviUtl"
@@ -51,7 +52,6 @@ if (Test-Path "C:\AviUtl\aviutl.exe") {
 	$aviutlExeDirectory = "C:\Applications\AviUtl"
 } else { # 確認できなかった場合、ユーザーにパスを入力させる
 	# ユーザーにパスを入力させ、aviutl.exe が入っていることを確認したらループを抜ける
-	New-Variable checkInputAviutlExePath # ループを抜けても使用するため先に宣言
 	do {
 		Write-Host "完了"
 		Write-Host "AviUtlがインストールされているフォルダが確認できませんでした。`r`n"
@@ -59,20 +59,18 @@ if (Test-Path "C:\AviUtl\aviutl.exe") {
 		Write-Host "aviutl.exe のパス、または aviutl.exe が入っているフォルダのパスを入力し、Enter を押してください。"
 		$userInputAviutlExePath = Read-Host
 
-		# ユーザーの入力をもとに aviutl.exe のパスを $checkInputAviutlExePath に代入
+		# ユーザーの入力をもとに aviutl.exe の入っているディレクトリのパスを $aviutlExeDirectory に代入
 		if ($userInputAviutlExePath -match "\\aviutl\.exe") {
-			$checkInputAviutlExePath = $userInputAviutlExePath
+			$aviutlExeDirectory = Split-Path $userInputAviutlExePath -Parent
 		} else {
-			$checkInputAviutlExePath = Join-Path -Path $userInputAviutlExePath -ChildPath aviutl.exe
+			$aviutlExeDirectory = $userInputAviutlExePath
 		}
 
 		Write-Host -NoNewline "`r`nAviUtlがインストールされているフォルダを確認しています..."
-	} while (!(Test-Path $checkInputAviutlExePath))
+	} while (!(Test-Path "${aviutlExeDirectory}\aviutl.exe"))
 	Write-Host "完了"
-
-	# $checkInputAviutlExePath の親ディレクトリを $aviutlExeDirectory に保存
-	$aviutlExeDirectory = Split-Path $checkInputAviutlExePath -Parent
 }
+
 Write-Host "${aviutlExeDirectory} に aviutl.exe を確認しました。"
 
 Start-Sleep -Milliseconds 500
@@ -117,6 +115,46 @@ if (Test-Path "${aviutlPluginsDirectory}\exedit.auf") {
 Set-Location tmp
 
 Write-Host "完了"
+
+# 拡張編集Plugin 0.93テスト版に付属する lua51jit.dll を発見した場合、0.92で置き換える
+if ((Test-Path "${aviutlExeDirectory}\lua51jit.dll") -or (Test-Path "${aviutlPluginsDirectory}\lua51jit.dll")) {
+	Write-Host -NoNewline "`r`n拡張編集Plugin version 0.92をダウンロードしています..."
+
+	# 拡張編集Plugin version 0.92のzipファイルをダウンロード (待機)
+	Start-Process -FilePath curl.exe -ArgumentList "-OL http://spring-fragrance.mints.ne.jp/aviutl/exedit92.zip" -WindowStyle Hidden -Wait
+
+	Write-Host "完了"
+	Write-Host -NoNewline "拡張編集Pluginをインストールしています..."
+
+	# 拡張編集Pluginのzipファイルを展開 (待機)
+	Start-Process powershell -ArgumentList "-command Expand-Archive -Path exedit92.zip -Force" -WindowStyle Hidden -Wait
+
+	# カレントディレクトリを exedit92 ディレクトリに変更
+	Set-Location exedit92
+
+	# AviUtl\readme 内に exedit ディレクトリを作成 (待機)
+	Start-Process powershell -ArgumentList "-command New-Item `"${ReadmeDirectoryRoot}\exedit`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
+
+	# exedit.ini は使用せず、かつこの後の処理で邪魔になるので削除する (待機)
+	Start-Process powershell -ArgumentList "-command Remove-Item exedit.ini" -WindowStyle Hidden -Wait
+
+	# AviUtl\readme\exedit 内に exedit.txt, lua.txt を (待機) 、AviUtl ディレクトリ内にその他のファイルをそれぞれ移動
+	Start-Process powershell -ArgumentList "-command Move-Item *.txt `"${ReadmeDirectoryRoot}\exedit`" -Force" -WindowStyle Hidden -Wait
+	Move-Item * $aviutlExeDirectory -Force
+
+	# 不要な lua51jit.dll を削除
+	if (Test-Path "${aviutlExeDirectory}\lua51jit.dll") {
+		Remove-Item "${aviutlExeDirectory}\lua51jit.dll"
+	} else {
+		Remove-Item "${aviutlPluginsDirectory}\lua51jit.dll"
+	}
+
+	# カレントディレクトリを tmp ディレクトリに変更
+	Set-Location ..
+
+	Write-Host "完了"
+}
+
 Write-Host -NoNewline "`r`npatch.aul (謎さうなフォーク版) の最新版情報を取得しています..."
 
 # patch.aul (謎さうなフォーク版) の最新版のダウンロードURLを取得
