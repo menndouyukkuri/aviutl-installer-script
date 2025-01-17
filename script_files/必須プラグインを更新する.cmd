@@ -375,8 +375,8 @@ $x264guiExChoiceMessage = "ƒvƒƒtƒ@ƒCƒ‹‚ÍXV‚ÅV‚µ‚­‚È‚Á‚Ä‚¢‚é‰Â”\«‚ª‚ ‚è‚Ü‚·‚
 
 $x264guiExTChoiceDescription = "System.Management.Automation.Host.ChoiceDescription"
 $x264guiExChoiceOptions = @(
-	New-Object $x264guiExTChoiceDescription ("‚Í‚¢(&Y)",	   "ã‘‚«‚ğÀs‚µ‚Ü‚·B")
-	New-Object $x264guiExTChoiceDescription ("‚¢‚¢‚¦(&N)",	 "ã‘‚«‚ğ‚¹‚¸AƒXƒLƒbƒv‚µ‚ÄŸ‚Ìˆ—‚Éi‚İ‚Ü‚·B")
+	New-Object $x264guiExTChoiceDescription ("‚Í‚¢(&Y)",  "ã‘‚«‚ğÀs‚µ‚Ü‚·B")
+	New-Object $x264guiExTChoiceDescription ("‚¢‚¢‚¦(&N)", "ã‘‚«‚ğ‚¹‚¸AƒXƒLƒbƒv‚µ‚ÄŸ‚Ìˆ—‚Éi‚İ‚Ü‚·B")
 )
 
 $x264guiExChoiceResult = $host.ui.PromptForChoice($x264guiExChoiceTitle, $x264guiExChoiceMessage, $x264guiExChoiceOptions, 1)
@@ -557,6 +557,114 @@ Move-Item Readme.md "${ReadmeDirectoryRoot}\ifheif" -Force
 Set-Location ..
 
 Write-Host "Š®—¹"
+Write-Host "`r`nƒn[ƒhƒEƒFƒAƒGƒ“ƒR[ƒh‚Ìo—Íƒvƒ‰ƒOƒCƒ“ (NVEnc / QSVEnc / VCEEnc) ‚ğŠm”F‚µ‚Ä‚¢‚Ü‚·B"
+
+$hwEncoders = [ordered]@{
+	"NVEnc"  = "NVEncC.exe"
+	"QSVEnc" = "QSVEncC.exe"
+	"VCEEnc" = "VCEEncC.exe"
+}
+
+foreach ($hwEncoder in $hwEncoders.GetEnumerator()) {
+	# “±“ü‚Ì—L–³‚ğƒ`ƒFƒbƒN
+	if (Test-Path "${aviutlPluginsDirectory}\$($hwEncoder.Key).auo") {
+		Write-Host -NoNewline "`r`n$($hwEncoder.Key)‚ªg—p‚Å‚«‚é‚©ƒ`ƒFƒbƒN‚µ‚Ü‚·..."
+
+		# ƒn[ƒhƒEƒFƒAƒGƒ“ƒR[ƒh‚Å‚«‚é‚©ƒ`ƒFƒbƒN
+		$process = Start-Process -FilePath "${aviutlExeDirectory}\exe_files\$($hwEncoder.Key)C\x86\$($hwEncoder.Value)" -ArgumentList "--check-hw" -Wait -WindowStyle Hidden -PassThru
+
+		Write-Host "Š®—¹"
+
+		# ExitCode‚ª0 (g—p‰Â”\) ‚Ìê‡‚ÍXVA‚»‚êˆÈŠO‚È‚çíœ (ƒGƒ‰[‚Ì–h~)
+		if ($process.ExitCode -eq 0) {
+			Write-Host -NoNewline "$($hwEncoder.Key)‚ğXV‚µ‚Ü‚·Bƒ_ƒEƒ“ƒ[ƒh‚µ‚Ä‚¢‚Ü‚·..."
+
+			# ÅV”Å‚Ìƒ_ƒEƒ“ƒ[ƒhURL‚ğæ“¾
+			$downloadAllUrl = GithubLatestReleaseUrl "rigaya/$($hwEncoder.Key)"
+
+			# •¡”‚ ‚é’†‚©‚çAviUtl—p‚Ì‚à‚Ì‚Ì‚İc‚·
+			$downloadUrl = $downloadAllUrl | Where-Object {$_ -like "*Aviutl*"}
+
+			# zipƒtƒ@ƒCƒ‹‚ğƒ_ƒEƒ“ƒ[ƒh (‘Ò‹@)
+			Start-Process -FilePath curl.exe -ArgumentList "-OL $downloadUrl" -WindowStyle Hidden -Wait
+
+			# zipƒtƒ@ƒCƒ‹‚ğ“WŠJ (‘Ò‹@)
+			Start-Process powershell -ArgumentList "-command Expand-Archive -Path Aviutl_$($hwEncoder.Key)_*.zip -Force" -WindowStyle Hidden -Wait
+
+			# “WŠJ‚³‚ê‚½ƒfƒBƒŒƒNƒgƒŠ‚ÌƒpƒX‚ğŠi”[
+			Set-Location "Aviutl_$($hwEncoder.Key)_*"
+			$extdir = (Get-Location).Path
+			Set-Location ..
+
+			Write-Host "Š®—¹`r`n"
+
+			# ƒvƒƒtƒ@ƒCƒ‹‚ğã‘‚«‚·‚é‚©‚Ç‚¤‚©ƒ†[ƒU[‚ÉŠm”F‚·‚é (Šù’è‚Í ã‘‚«‚µ‚È‚¢)
+			# ‘I‘ğ‚±‚±‚©‚ç
+
+			$hwEncoderChoiceTitle = "$($hwEncoder.Key)‚Ìƒvƒƒtƒ@ƒCƒ‹‚ğã‘‚«‚µ‚Ü‚·‚©H"
+			$hwEncoderChoiceMessage = "ƒvƒƒtƒ@ƒCƒ‹‚ÍXV‚ÅV‚µ‚­‚È‚Á‚Ä‚¢‚é‰Â”\«‚ª‚ ‚è‚Ü‚·‚ªAã‘‚«‚ğÀs‚·‚é‚Æ’Ç‰Á‚µ‚½ƒvƒƒtƒ@ƒCƒ‹‚âƒvƒƒtƒ@ƒCƒ‹‚Ö‚Ì•ÏX‚ªíœ‚³‚ê‚Ü‚·B"
+
+			$hwEncoderTChoiceDescription = "System.Management.Automation.Host.ChoiceDescription"
+			$hwEncoderChoiceOptions = @(
+				New-Object $hwEncoderTChoiceDescription ("‚Í‚¢(&Y)",  "ã‘‚«‚ğÀs‚µ‚Ü‚·B")
+				New-Object $hwEncoderTChoiceDescription ("‚¢‚¢‚¦(&N)", "ã‘‚«‚ğ‚¹‚¸AƒXƒLƒbƒv‚µ‚ÄŸ‚Ìˆ—‚Éi‚İ‚Ü‚·B")
+			)
+
+			$hwEncoderChoiceResult = $host.ui.PromptForChoice($hwEncoderChoiceTitle, $hwEncoderChoiceMessage, $hwEncoderChoiceOptions, 1)
+			switch ($hwEncoderChoiceResult) {
+				0 {
+					Write-Host -NoNewline "`r`n$($hwEncoder.Key)‚Ìƒvƒƒtƒ@ƒCƒ‹‚ğã‘‚«‚µ‚Ü‚·..."
+
+					# AviUtl\plugins “à‚É (NVEnc/QSVEnc/VCEEnc)_stg ƒfƒBƒŒƒNƒgƒŠ‚ª‚ ‚ê‚Îíœ‚·‚é
+					if (Test-Path "${aviutlPluginsDirectory}\$($hwEncoder.Key)_stg") {
+						Remove-Item "${aviutlPluginsDirectory}\$($hwEncoder.Key)_stg" -Recurse
+					}
+
+					# ƒ_ƒEƒ“ƒ[ƒh‚µ‚Ä“WŠJ‚µ‚½ (NVEnc/QSVEnc/VCEEnc)_stg ‚ğ AviUtl\plugins “à‚ÉˆÚ“®
+					Move-Item "$extdir\plugins\$($hwEncoder.Key)_stg" $aviutlPluginsDirectory -Force
+
+					Write-Host "Š®—¹"
+					break
+				}
+				1 {
+					# Œã‚Å×–‚‚É‚È‚é‚Ì‚Åíœ
+					Remove-Item "$extdir\plugins\$($hwEncoder.Key)_stg" -Recurse
+
+					Write-Host "`r`n$($hwEncoder.Key)‚Ìƒvƒƒtƒ@ƒCƒ‹‚Ìã‘‚«‚ğƒXƒLƒbƒv‚µ‚Ü‚µ‚½B"
+					break
+				}
+			}
+
+			# ‘I‘ğ‚±‚±‚Ü‚Å
+
+			Write-Host -NoNewline "`r`n$($hwEncoder.Key)‚ğƒCƒ“ƒXƒg[ƒ‹‚µ‚Ä‚¢‚Ü‚·..."
+
+			# readme ƒfƒBƒŒƒNƒgƒŠ‚ğì¬
+			New-Item -ItemType Directory -Path "${ReadmeDirectoryRoot}\$($hwEncoder.Key)" -Force | Out-Null
+
+			# “WŠJŒã‚Ì‚»‚ê‚¼‚ê‚Ìƒtƒ@ƒCƒ‹‚ğˆÚ“®
+			Move-Item -Path "$extdir\exe_files\*" -Destination "${aviutlExeDirectory}\exe_files" -Force
+			Move-Item -Path "$extdir\plugins\*" -Destination $aviutlPluginsDirectory -Force
+			Move-Item -Path "$extdir\*.bat" -Destination $aviutlExeDirectory -Force
+			Move-Item -Path "$extdir\*_readme.txt" -Destination "${ReadmeDirectoryRoot}\$($hwEncoder.Key)" -Force
+
+			Write-Host "Š®—¹"
+		} else {
+			Write-Host -NoNewline "$($hwEncoder.Key)‚Íg—p‚Å‚«‚Ü‚¹‚ñBíœ‚µ‚Ä‚¢‚Ü‚·..."
+
+			# ƒtƒ@ƒCƒ‹‚ğíœ
+			Remove-Item "${aviutlExeDirectory}\exe_files\$($hwEncoder.Key)C" -Recurse
+			Remove-Item "${aviutlPluginsDirectory}\$($hwEncoder.Key)*" -Recurse
+			if (Test-Path "${ReadmeDirectoryRoot}\$($hwEncoder.Key)") {
+				Remove-Item "${ReadmeDirectoryRoot}\$($hwEncoder.Key)" -Recurse
+			}
+
+			Write-Host "Š®—¹"
+		}
+	}
+}
+
+Wrire-Host "ƒn[ƒhƒEƒFƒAƒGƒ“ƒR[ƒh‚Ìo—Íƒvƒ‰ƒOƒCƒ“‚ÌXV‚ªŠ®—¹‚µ‚Ü‚µ‚½B"
 Write-Host -NoNewline "`r`nVisual C++ Ä”Ğ•z‰Â”\ƒpƒbƒP[ƒW‚ğŠm”F‚µ‚Ä‚¢‚Ü‚·..."
 
 # ƒŒƒWƒXƒgƒŠ‚©‚çƒfƒXƒNƒgƒbƒvƒAƒvƒŠ‚Ìˆê——‚ğæ“¾‚·‚é

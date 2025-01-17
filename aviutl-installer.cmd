@@ -546,6 +546,7 @@ foreach ($hwEncoder in $hwEncoders.GetEnumerator()) {
 			Move-Item -Path "$extdir\plugins\*" -Destination C:\Applications\AviUtl\plugins -Force
 			Move-Item -Path "$extdir\*.bat" -Destination C:\Applications\AviUtl -Force
 			Move-Item -Path "$extdir\*_readme.txt" -Destination C:\Applications\AviUtl\readme\$($hwEncoder.Key) -Force
+
 			Write-Host "完了"
 
 			# 一応、出力プラグインが共存しないようbreakでforeachを抜ける
