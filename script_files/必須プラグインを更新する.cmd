@@ -635,13 +635,16 @@ foreach ($hwEncoder in $hwEncoders.GetEnumerator()) {
 
 			Write-Host -NoNewline "`r`n$($hwEncoder.Key)をインストールしています..."
 
+			# AviUtl\exe_files\(NVEnc/QSVEnc/VCEEnc)C が後で邪魔になるので削除
+			Remove-Item "${aviutlExeDirectory}\exe_files\$($hwEncoder.Key)C" -Recurse
+
 			# readme ディレクトリを作成
 			New-Item -ItemType Directory -Path "${ReadmeDirectoryRoot}\$($hwEncoder.Key)" -Force | Out-Null
 
 			# 展開後のそれぞれのファイルを移動
-			Move-Item -Path "$extdir\exe_files\*" -Destination "${aviutlExeDirectory}\exe_files" -Force
-			Move-Item -Path "$extdir\plugins\*" -Destination $aviutlPluginsDirectory -Force
 			Move-Item -Path "$extdir\*.bat" -Destination $aviutlExeDirectory -Force
+			Move-Item -Path "$extdir\plugins\*" -Destination $aviutlPluginsDirectory -Force
+			Move-Item -Path "$extdir\exe_files\*" -Destination "${aviutlExeDirectory}\exe_files" -Force
 			Move-Item -Path "$extdir\*_readme.txt" -Destination "${ReadmeDirectoryRoot}\$($hwEncoder.Key)" -Force
 
 			Write-Host "完了"
@@ -660,7 +663,7 @@ foreach ($hwEncoder in $hwEncoders.GetEnumerator()) {
 	}
 }
 
-Wrire-Host "ハードウェアエンコードの出力プラグインの更新が完了しました。"
+Write-Host "ハードウェアエンコードの出力プラグインの更新が完了しました。"
 Write-Host -NoNewline "`r`nVisual C++ 再頒布可能パッケージを確認しています..."
 
 # レジストリからデスクトップアプリの一覧を取得する
