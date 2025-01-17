@@ -384,10 +384,8 @@ switch ($x264guiExChoiceResult) {
 	0 {
 		Write-Host -NoNewline "`r`nx264guiExのプロファイルを上書きします..."
 
-		# AviUtl\plugins 内に x264guiEx_stg ディレクトリがあれば削除する
-		if (Test-Path "${aviutlPluginsDirectory}\x264guiEx_stg") {
-			Remove-Item "${aviutlPluginsDirectory}\x264guiEx_stg" -Recurse
-		}
+		# AviUtl\plugins 内に x264guiEx_stg ディレクトリがあれば削除する (待機)
+		Start-Process powershell -ArgumentList "-command if (Test-Path `"${aviutlPluginsDirectory}\x264guiEx_stg`") { Remove-Item `"${aviutlPluginsDirectory}\x264guiEx_stg`" -Recurse }" -WindowStyle Hidden -Wait
 
 		# AviUtl\plugins 内に現在のディレクトリのファイルを全て移動
 		Move-Item * $aviutlPluginsDirectory -Force
@@ -615,10 +613,8 @@ foreach ($hwEncoder in $hwEncoders.GetEnumerator()) {
 				0 {
 					Write-Host -NoNewline "`r`n$($hwEncoder.Key)のプロファイルを上書きします..."
 
-					# AviUtl\plugins 内に (NVEnc/QSVEnc/VCEEnc)_stg ディレクトリがあれば削除する
-					if (Test-Path "${aviutlPluginsDirectory}\$($hwEncoder.Key)_stg") {
-						Remove-Item "${aviutlPluginsDirectory}\$($hwEncoder.Key)_stg" -Recurse
-					}
+					# AviUtl\plugins 内に (NVEnc/QSVEnc/VCEEnc)_stg ディレクトリがあれば削除する (待機)
+					Start-Process powershell -ArgumentList "-command if (Test-Path `"${aviutlPluginsDirectory}\$($hwEncoder.Key)_stg`") { Remove-Item `"${aviutlPluginsDirectory}\$($hwEncoder.Key)_stg`" -Recurse }" -WindowStyle Hidden -Wait
 
 					# ダウンロードして展開した (NVEnc/QSVEnc/VCEEnc)_stg を AviUtl\plugins 内に移動
 					Move-Item "$extdir\plugins\$($hwEncoder.Key)_stg" $aviutlPluginsDirectory -Force
