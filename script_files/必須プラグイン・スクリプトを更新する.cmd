@@ -350,9 +350,6 @@ Write-Host -NoNewline "x264guiExをダウンロードしています..."
 # x264guiExのzipファイルをダウンロード (待機)
 Start-Process -FilePath curl.exe -ArgumentList "-OL $x264guiExUrl" -WindowStyle Hidden -Wait
 
-Write-Host "完了"
-Write-Host "x264guiExをインストールしています。"
-
 # x264guiExのzipファイルを展開 (待機)
 Start-Process powershell -ArgumentList "-command Expand-Archive -Path x264guiEx_*.zip -Force" -WindowStyle Hidden -Wait
 
@@ -361,6 +358,8 @@ Set-Location "x264guiEx_*\x264guiEx_*"
 
 # カレントディレクトリをx264guiExのzipファイルを展開したディレクトリ内の plugins ディレクトリに変更
 Set-Location plugins
+
+Write-Host "完了"
 
 # AviUtl\plugins 内に x264guiEx_stg ディレクトリがあれば以下の処理を実行
 if (Test-Path "${aviutlPluginsDirectory}\x264guiEx_stg") {
@@ -402,6 +401,10 @@ if (Test-Path "${aviutlPluginsDirectory}\x264guiEx_stg") {
 	# 選択ここまで
 }
 
+Write-Host -NoNewline "`r`nx264guiExをインストールしています..."
+
+Start-Sleep -Milliseconds 500
+
 # AviUtl\plugins 内に現在のディレクトリのファイルを全て移動
 Move-Item * $aviutlPluginsDirectory -Force
 
@@ -429,7 +432,7 @@ Move-Item x264guiEx_readme.txt "${ReadmeDirectoryRoot}\x264guiEx" -Force
 # カレントディレクトリを tmp ディレクトリに変更
 Set-Location ..\..
 
-Write-Host "`r`nx264guiExのインストールが完了しました。"
+Write-Host "完了"
 Write-Host -NoNewline "`r`nWebP Susie Plug-inを確認しています..."
 
 # WebP Susie Plug-inが導入されていない場合のみ以下の処理を実行
