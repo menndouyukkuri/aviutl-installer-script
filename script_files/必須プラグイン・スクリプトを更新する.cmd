@@ -501,13 +501,13 @@ Set-Location $aviutlScriptDirectory
 
 # script ディレクトリ、またはそのサブディレクトリに @ANM1.anm があるか確認し、ある場合は
 # $CheckAviUtlScriptSet (初期値: false) を true とする
-$CheckAviUtlScriptSet = false
+$CheckAviUtlScriptSet = $false
 if (Test-Path "${aviutlScriptDirectory}\@ANM1.anm") {
-	$CheckAviUtlScriptSet = true
+	$CheckAviUtlScriptSet = $true
 } else {
 	Get-ChildItem -Attributes Directory | ForEach-Object {
 		if (Test-Path -Path "${_}\@ANM1.anm") {
-			$CheckAviUtlScriptSet = true
+			$CheckAviUtlScriptSet = $true
 		}
 	}
 }
@@ -573,13 +573,13 @@ Set-Location $aviutlScriptDirectory
 
 # script ディレクトリ、またはそのサブディレクトリに 値で図形.obj があるか確認し、ある場合は
 # $CheckShapeWithValuesObj (初期値: false) を true とする
-$CheckShapeWithValuesObj = false
+$CheckShapeWithValuesObj = $false
 if (Test-Path "${aviutlScriptDirectory}\値で図形.obj") {
-	$CheckShapeWithValuesObj = true
+	$CheckShapeWithValuesObj = $true
 } else {
 	Get-ChildItem -Attributes Directory | ForEach-Object {
 		if (Test-Path -Path "${_}\値で図形.obj") {
-			$CheckShapeWithValuesObj = true
+			$CheckShapeWithValuesObj = $true
 		}
 	}
 }
@@ -613,13 +613,13 @@ Set-Location $aviutlScriptDirectory
 
 # script ディレクトリ、またはそのサブディレクトリに 直線.obj があるか確認し、ある場合は
 # $CheckStraightLineObj (初期値: false) を true とする
-$CheckStraightLineObj = false
+$CheckStraightLineObj = $false
 if (Test-Path "${aviutlScriptDirectory}\直線.obj") {
-	$CheckStraightLineObj = true
+	$CheckStraightLineObj = $true
 } else {
 	Get-ChildItem -Attributes Directory | ForEach-Object {
 		if (Test-Path -Path "${_}\直線.obj") {
-			$CheckStraightLineObj = true
+			$CheckStraightLineObj = $true
 		}
 	}
 }
@@ -728,7 +728,7 @@ $hwEncoders = [ordered]@{
 }
 
 # ハードウェアエンコードの出力プラグインのインストールチェック用の変数を用意
-$CheckHwEncoder = false
+$CheckHwEncoder = $false
 
 foreach ($hwEncoder in $hwEncoders.GetEnumerator()) {
 	# 導入の有無をチェック
@@ -743,7 +743,7 @@ foreach ($hwEncoder in $hwEncoders.GetEnumerator()) {
 		# ExitCodeが0 (使用可能) の場合は更新、それ以外なら削除 (エラーの防止)
 		if ($process.ExitCode -eq 0) {
 			# ハードウェアエンコードの出力プラグインのインストールチェック用の変数を true に
-			$CheckHwEncoder = true
+			$CheckHwEncoder = $true
 
 			Write-Host -NoNewline "$($hwEncoder.Key)を更新します。ダウンロードしています..."
 
