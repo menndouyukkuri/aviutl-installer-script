@@ -101,6 +101,11 @@ if (Test-Path "${aviutlPluginsDirectory}\exedit.auf") {
 		Move-Item lua.txt $aviutlExeDirectory -Force
 	}
 
+	# script ディレクトリの場所も併せて変更
+	if (Test-Path "${aviutlPluginsDirectory}\script") {
+		Move-Item "${aviutlPluginsDirectory}\script" $aviutlExeDirectory -Force
+	}
+
 	# Susieプラグインの場所も併せて変更
 	if (Test-Path "${aviutlPluginsDirectory}\*.spi") {
 		Move-Item "*.spi" $aviutlExeDirectory -Force
