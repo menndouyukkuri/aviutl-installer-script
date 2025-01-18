@@ -269,7 +269,70 @@ Move-Item x264guiEx_readme.txt C:\Applications\AviUtl\readme\x264guiEx -Force
 # カレントディレクトリを tmp ディレクトリに変更
 Set-Location ..\..
 
-Write-Host "`r`nx264guiExのインストールが完了しました。"
+Write-Host "完了"
+Write-Host -NoNewline "`r`nWebP Susie Plug-inをダウンロードしています..."
+
+# WebP Susie Plug-inのzipファイルをダウンロード (待機)
+Start-Process -FilePath curl.exe -ArgumentList "-OL https://toroidj.github.io/plugin/iftwebp11.zip" -WindowStyle Hidden -Wait
+
+Write-Host "完了"
+Write-Host -NoNewline "WebP Susie Plug-inをインストールしています..."
+
+# WebP Susie Plug-inのzipファイルを展開 (待機)
+Start-Process powershell -ArgumentList "-command Expand-Archive -Path iftwebp11.zip -Force" -WindowStyle Hidden -Wait
+
+# カレントディレクトリを iftwebp11 ディレクトリに変更
+Set-Location iftwebp11
+
+# AviUtl\readme 内に iftwebp ディレクトリを作成 (待機)
+Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\readme\iftwebp -ItemType Directory -Force" -WindowStyle Hidden -Wait
+
+# AviUtl ディレクトリ内に iftwebp.spi を、AviUtl\readme\iftwebp 内に iftwebp.txt をそれぞれ移動
+Move-Item iftwebp.spi C:\Applications\AviUtl -Force
+Move-Item iftwebp.txt C:\Applications\AviUtl\readme\iftwebp -Force
+
+# カレントディレクトリを tmp ディレクトリに変更
+Set-Location ..
+
+Write-Host "完了"
+Write-Host -NoNewline "`r`nifheifの最新版情報を取得しています..."
+
+# ifheifの最新版のダウンロードURLを取得
+$ifheifUrl = GithubLatestReleaseUrl "Mr-Ojii/ifheif"
+
+Write-Host "完了"
+Write-Host -NoNewline "ifheifをダウンロードしています..."
+
+# ifheifのzipファイルをダウンロード (待機)
+Start-Process -FilePath curl.exe -ArgumentList "-OL $ifheifUrl" -WindowStyle Hidden -Wait
+
+Write-Host "完了"
+Write-Host -NoNewline "ifheifをインストールしています..."
+
+# AviUtl\license\ifheif 内に Licenses ディレクトリがあれば削除する (エラーの防止)
+if (Test-Path "C:\Applications\AviUtl\license\ifheif\Licenses") {
+	Remove-Item C:\Applications\AviUtl\license\ifheif\Licenses -Recurse
+}
+
+# ifheifのzipファイルを展開 (待機)
+Start-Process powershell -ArgumentList "-command Expand-Archive -Path ifheif.zip -Force" -WindowStyle Hidden -Wait
+
+# カレントディレクトリをifheifのzipファイルを展開したディレクトリに変更
+Set-Location "ifheif"
+
+# AviUtl\readme, AviUtl\license 内に ifheif ディレクトリを作成 (待機)
+Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\readme\ifheif, C:\Applications\AviUtl\license\ifheif -ItemType Directory -Force" -WindowStyle Hidden -Wait
+
+# AviUtl ディレクトリ内に ifheif.spi を、AviUtl\license\ifheif 内に LICENSE と Licenses ディレクトリを、
+# AviUtl\readme\ifheif 内に Readme.md をそれぞれ移動
+Move-Item ifheif.spi C:\Applications\AviUtl -Force
+Move-Item "LICENS*" C:\Applications\AviUtl\license\ifheif -Force
+Move-Item Readme.md C:\Applications\AviUtl\readme\ifheif -Force
+
+# カレントディレクトリを tmp ディレクトリに変更
+Set-Location ..
+
+Write-Host "完了"
 Write-Host -NoNewline "`r`n「AviUtlスクリプト一式」をダウンロードしています..."
 
 # 「AviUtlスクリプト一式」のzipファイルをダウンロード (待機)
@@ -307,7 +370,7 @@ Start-Process powershell -ArgumentList "-command New-Item `"C:\Applications\AviU
 
 # AviUtl\script 内に さつき_ANM_ssd と さつき_TA_ssd を、AviUtl\readme\AviUtlスクリプト一式 内に readme.txt と 使い方.txt を (待機) 、
 # AviUtl\script\さつき_AviUtlスクリプト一式 内にその他のファイルをそれぞれ移動
-Start-Process powershell -ArgumentList "-command Move-Item `"さつき_ANM_ssd`" C:\Applications\AviUtl\script -Force; Move-Item `"さつき_TA_ssd`" C:\Applications\AviUtl\script -Force ;Move-Item *.txt `"C:\Applications\AviUtl\readme\AviUtlスクリプト一式`" -Force" -WindowStyle Hidden -Wait
+Start-Process powershell -ArgumentList "-command Move-Item `"さつき_ANM_ssd`" C:\Applications\AviUtl\script -Force; Move-Item `"さつき_TA_ssd`" C:\Applications\AviUtl\script -Force; Move-Item *.txt `"C:\Applications\AviUtl\readme\AviUtlスクリプト一式`" -Force" -WindowStyle Hidden -Wait
 Move-Item * "C:\Applications\AviUtl\script\さつき_AviUtlスクリプト一式" -Force
 
 # カレントディレクトリを tmp ディレクトリに変更
@@ -403,71 +466,6 @@ Move-Item README C:\Applications\AviUtl\readme\LuaJIT -Force
 Move-Item doc C:\Applications\AviUtl\readme\LuaJIT -Force
 Move-Item COPYRIGHT C:\Applications\AviUtl\license\LuaJIT -Force
 Move-Item "About-This-Build.txt" C:\Applications\AviUtl\license\LuaJIT -Force
-
-# カレントディレクトリを tmp ディレクトリに変更
-Set-Location ..
-
-Write-Host "完了"
-
-
-Write-Host -NoNewline "`r`nWebP Susie Plug-inをダウンロードしています..."
-
-# WebP Susie Plug-inのzipファイルをダウンロード (待機)
-Start-Process -FilePath curl.exe -ArgumentList "-OL https://toroidj.github.io/plugin/iftwebp11.zip" -WindowStyle Hidden -Wait
-
-Write-Host "完了"
-Write-Host -NoNewline "WebP Susie Plug-inをインストールしています..."
-
-# WebP Susie Plug-inのzipファイルを展開 (待機)
-Start-Process powershell -ArgumentList "-command Expand-Archive -Path iftwebp11.zip -Force" -WindowStyle Hidden -Wait
-
-# カレントディレクトリを iftwebp11 ディレクトリに変更
-Set-Location iftwebp11
-
-# AviUtl\readme 内に iftwebp ディレクトリを作成 (待機)
-Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\readme\iftwebp -ItemType Directory -Force" -WindowStyle Hidden -Wait
-
-# AviUtl ディレクトリ内に iftwebp.spi を、AviUtl\readme\iftwebp 内に iftwebp.txt をそれぞれ移動
-Move-Item iftwebp.spi C:\Applications\AviUtl -Force
-Move-Item iftwebp.txt C:\Applications\AviUtl\readme\iftwebp -Force
-
-# カレントディレクトリを tmp ディレクトリに変更
-Set-Location ..
-
-Write-Host "完了"
-Write-Host -NoNewline "`r`nifheifの最新版情報を取得しています..."
-
-# ifheifの最新版のダウンロードURLを取得
-$ifheifUrl = GithubLatestReleaseUrl "Mr-Ojii/ifheif"
-
-Write-Host "完了"
-Write-Host -NoNewline "ifheifをダウンロードしています..."
-
-# ifheifのzipファイルをダウンロード (待機)
-Start-Process -FilePath curl.exe -ArgumentList "-OL $ifheifUrl" -WindowStyle Hidden -Wait
-
-Write-Host "完了"
-Write-Host -NoNewline "ifheifをインストールしています..."
-
-# AviUtl\license\ifheif 内に Licenses ディレクトリがあれば削除する (エラーの防止)
-if (Test-Path "C:\Applications\AviUtl\license\ifheif\Licenses") {
-	Remove-Item C:\Applications\AviUtl\license\ifheif\Licenses -Recurse
-}
-
-# ifheifのzipファイルを展開 (待機)
-Start-Process powershell -ArgumentList "-command Expand-Archive -Path ifheif.zip -Force" -WindowStyle Hidden -Wait
-
-# カレントディレクトリをifheifのzipファイルを展開したディレクトリに変更
-Set-Location "ifheif"
-
-# AviUtl\readme, AviUtl\license 内に ifheif ディレクトリを作成 (待機)
-Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\readme\ifheif, C:\Applications\AviUtl\license\ifheif -ItemType Directory -Force" -WindowStyle Hidden -Wait
-
-# AviUtl ディレクトリ内に ifheif.spi を、AviUtl\license\ifheif 内に LICENSE と Licenses ディレクトリを、
-# AviUtl\readme\ifheif 内に Readme.md をそれぞれ移動
-Move-Item ifheif.spi C:\Applications\AviUtl -Force
-Move-Item "LICENS*" C:\Applications\AviUtl\license\ifheif -Force
-Move-Item Readme.md C:\Applications\AviUtl\readme\ifheif -Force
 
 # カレントディレクトリを tmp ディレクトリに変更
 Set-Location ..
