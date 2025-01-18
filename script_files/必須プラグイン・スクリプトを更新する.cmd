@@ -362,43 +362,48 @@ Set-Location "x264guiEx_*\x264guiEx_*"
 # カレントディレクトリをx264guiExのzipファイルを展開したディレクトリ内の plugins ディレクトリに変更
 Set-Location plugins
 
-# AviUtl\plugins 内に現在のディレクトリのファイルを x264guiEx_stg ディレクトリ以外全て移動
-Move-Item "x264guiEx.*" $aviutlPluginsDirectory -Force
-Move-Item auo_setup.auf -Force
+# AviUtl\plugins 内に x264guiEx_stg ディレクトリがあれば以下の処理を実行
+if (Test-Path "${aviutlPluginsDirectory}\x264guiEx_stg") {
+	# プロファイルを上書きするかどうかユーザーに確認する (既定は 上書きしない)
+	# 選択ここから
 
-# プロファイルを上書きするかどうかユーザーに確認する (既定は 上書きしない)
-# 選択ここから
+	$x264guiExChoiceTitle = "x264guiExのプロファイルを上書きしますか？"
+	$x264guiExChoiceMessage = "プロファイルは更新で新しくなっている可能性がありますが、上書きを実行すると追加したプロファイルやプロファイルへの変更が削除されます。"
 
-$x264guiExChoiceTitle = "x264guiExのプロファイルを上書きしますか？"
-$x264guiExChoiceMessage = "プロファイルは更新で新しくなっている可能性がありますが、上書きを実行すると追加したプロファイルやプロファイルへの変更が削除されます。"
+	$x264guiExTChoiceDescription = "System.Management.Automation.Host.ChoiceDescription"
+	$x264guiExChoiceOptions = @(
+		New-Object $x264guiExTChoiceDescription ("はい(&Y)",  "上書きを実行します。")
+		New-Object $x264guiExTChoiceDescription ("いいえ(&N)", "上書きをせず、スキップして次の処理に進みます。")
+	)
 
-$x264guiExTChoiceDescription = "System.Management.Automation.Host.ChoiceDescription"
-$x264guiExChoiceOptions = @(
-	New-Object $x264guiExTChoiceDescription ("はい(&Y)",  "上書きを実行します。")
-	New-Object $x264guiExTChoiceDescription ("いいえ(&N)", "上書きをせず、スキップして次の処理に進みます。")
-)
+	$x264guiExChoiceResult = $host.ui.PromptForChoice($x264guiExChoiceTitle, $x264guiExChoiceMessage, $x264guiExChoiceOptions, 1)
+	switch ($x264guiExChoiceResult) {
+		0 {
+			Write-Host -NoNewline "`r`nx264guiExのプロファイルを上書きします..."
 
-$x264guiExChoiceResult = $host.ui.PromptForChoice($x264guiExChoiceTitle, $x264guiExChoiceMessage, $x264guiExChoiceOptions, 1)
-switch ($x264guiExChoiceResult) {
-	0 {
-		Write-Host -NoNewline "`r`nx264guiExのプロファイルを上書きします..."
+			# AviUtl\plugins 内の x264guiEx_stg ディレクトリを削除する (待機)
+			Start-Process powershell -ArgumentList "-command Remove-Item `"${aviutlPluginsDirectory}\x264guiEx_stg`" -Recurse" -WindowStyle Hidden -Wait
 
-		# AviUtl\plugins 内に x264guiEx_stg ディレクトリがあれば削除する (待機)
-		Start-Process powershell -ArgumentList "-command if (Test-Path `"${aviutlPluginsDirectory}\x264guiEx_stg`") { Remove-Item `"${aviutlPluginsDirectory}\x264guiEx_stg`" -Recurse }" -WindowStyle Hidden -Wait
+			# AviUtl\plugins 内に x264guiEx_stg ディレクトリを移動
+			Move-Item x264guiEx_stg $aviutlPluginsDirectory -Force
 
-		# AviUtl\plugins 内に現在のディレクトリのファイルを全て移動
-		Move-Item * $aviutlPluginsDirectory -Force
+			Write-Host "完了"
+			break
+		}
+		1 {
+			# 後で邪魔になるので削除
+			Remove-Item x264guiEx_stg -Recurse
 
-		Write-Host "完了"
-		break
+			Write-Host "`r`nx264guiExのプロファイルの上書きをスキップしました。"
+			break
+		}
 	}
-	1 {
-		Write-Host "`r`nx264guiExのプロファイルの上書きをスキップしました。"
-		break
-	}
+
+	# 選択ここまで
 }
 
-# 選択ここまで
+# AviUtl\plugins 内に現在のディレクトリのファイルを全て移動
+Move-Item * $aviutlPluginsDirectory -Force
 
 # カレントディレクトリをx264guiExのzipファイルを展開したディレクトリ内の exe_files ディレクトリに変更
 Set-Location ..\exe_files
@@ -719,7 +724,7 @@ Set-Location ..
 Write-Host "完了"
 
 
-Write-Host "`r`nハードウェアエンコードの出力プラグイン (NVEnc / QSVEnc / VCEEnc) を確認しています。"
+Write-Host "`r`nハードウェアエンコードの出力プラグイン (NVEnc / QSVEnc / VCEEnc) の状況を確認しています。"
 
 $hwEncoders = [ordered]@{
 	"NVEnc"  = "NVEncC.exe"
@@ -766,42 +771,45 @@ foreach ($hwEncoder in $hwEncoders.GetEnumerator()) {
 
 			Write-Host "完了"
 
-			# プロファイルを上書きするかどうかユーザーに確認する (既定は 上書きしない)
-			# 選択ここから
+			# AviUtl\plugins 内に (NVEnc/QSVEnc/VCEEnc)_stg ディレクトリがあれば以下の処理を実行
+			if (Test-Path "${aviutlPluginsDirectory}\$($hwEncoder.Key)_stg") {
+				# プロファイルを上書きするかどうかユーザーに確認する (既定は 上書きしない)
+				# 選択ここから
 
-			$hwEncoderChoiceTitle = "$($hwEncoder.Key)のプロファイルを上書きしますか？"
-			$hwEncoderChoiceMessage = "プロファイルは更新で新しくなっている可能性がありますが、上書きを実行すると追加したプロファイルやプロファイルへの変更が削除されます。"
+				$hwEncoderChoiceTitle = "$($hwEncoder.Key)のプロファイルを上書きしますか？"
+				$hwEncoderChoiceMessage = "プロファイルは更新で新しくなっている可能性がありますが、上書きを実行すると追加したプロファイルやプロファイルへの変更が削除されます。"
 
-			$hwEncoderTChoiceDescription = "System.Management.Automation.Host.ChoiceDescription"
-			$hwEncoderChoiceOptions = @(
-				New-Object $hwEncoderTChoiceDescription ("はい(&Y)",  "上書きを実行します。")
-				New-Object $hwEncoderTChoiceDescription ("いいえ(&N)", "上書きをせず、スキップして次の処理に進みます。")
-			)
+				$hwEncoderTChoiceDescription = "System.Management.Automation.Host.ChoiceDescription"
+				$hwEncoderChoiceOptions = @(
+					New-Object $hwEncoderTChoiceDescription ("はい(&Y)",  "上書きを実行します。")
+					New-Object $hwEncoderTChoiceDescription ("いいえ(&N)", "上書きをせず、スキップして次の処理に進みます。")
+				)
 
-			$hwEncoderChoiceResult = $host.ui.PromptForChoice($hwEncoderChoiceTitle, $hwEncoderChoiceMessage, $hwEncoderChoiceOptions, 1)
-			switch ($hwEncoderChoiceResult) {
-				0 {
-					Write-Host -NoNewline "`r`n$($hwEncoder.Key)のプロファイルを上書きします..."
+				$hwEncoderChoiceResult = $host.ui.PromptForChoice($hwEncoderChoiceTitle, $hwEncoderChoiceMessage, $hwEncoderChoiceOptions, 1)
+				switch ($hwEncoderChoiceResult) {
+					0 {
+						Write-Host -NoNewline "`r`n$($hwEncoder.Key)のプロファイルを上書きします..."
 
-					# AviUtl\plugins 内に (NVEnc/QSVEnc/VCEEnc)_stg ディレクトリがあれば削除する (待機)
-					Start-Process powershell -ArgumentList "-command if (Test-Path `"${aviutlPluginsDirectory}\$($hwEncoder.Key)_stg`") { Remove-Item `"${aviutlPluginsDirectory}\$($hwEncoder.Key)_stg`" -Recurse }" -WindowStyle Hidden -Wait
+						# AviUtl\plugins 内の (NVEnc/QSVEnc/VCEEnc)_stg ディレクトリを削除する (待機)
+						Start-Process powershell -ArgumentList "-command Remove-Item `"${aviutlPluginsDirectory}\$($hwEncoder.Key)_stg`" -Recurse" -WindowStyle Hidden -Wait
 
-					# ダウンロードして展開した (NVEnc/QSVEnc/VCEEnc)_stg を AviUtl\plugins 内に移動
-					Move-Item "$extdir\plugins\$($hwEncoder.Key)_stg" $aviutlPluginsDirectory -Force
+						# ダウンロードして展開した (NVEnc/QSVEnc/VCEEnc)_stg を AviUtl\plugins 内に移動
+						Move-Item "$extdir\plugins\$($hwEncoder.Key)_stg" $aviutlPluginsDirectory -Force
 
-					Write-Host "完了"
-					break
+						Write-Host "完了"
+						break
+					}
+					1 {
+						# 後で邪魔になるので削除
+						Remove-Item "$extdir\plugins\$($hwEncoder.Key)_stg" -Recurse
+
+						Write-Host "`r`n$($hwEncoder.Key)のプロファイルの上書きをスキップしました。"
+						break
+					}
 				}
-				1 {
-					# 後で邪魔になるので削除
-					Remove-Item "$extdir\plugins\$($hwEncoder.Key)_stg" -Recurse
 
-					Write-Host "`r`n$($hwEncoder.Key)のプロファイルの上書きをスキップしました。"
-					break
-				}
+				# 選択ここまで
 			}
-
-			# 選択ここまで
 
 			Write-Host -NoNewline "`r`n$($hwEncoder.Key)をインストールしています..."
 
@@ -833,7 +841,7 @@ foreach ($hwEncoder in $hwEncoders.GetEnumerator()) {
 	}
 }
 
-Write-Host "ハードウェアエンコードの出力プラグインの更新が完了しました。"
+Write-Host "ハードウェアエンコードの出力プラグインの確認が完了しました。"
 
 
 # ハードウェアエンコードの出力プラグインが1つも入っていない場合にインストールチェックする
