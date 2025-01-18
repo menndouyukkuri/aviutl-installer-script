@@ -378,7 +378,7 @@ if (Test-Path "${aviutlPluginsDirectory}\x264guiEx_stg") {
 	$x264guiExChoiceResult = $host.ui.PromptForChoice($x264guiExChoiceTitle, $x264guiExChoiceMessage, $x264guiExChoiceOptions, 1)
 	switch ($x264guiExChoiceResult) {
 		0 {
-			Write-Host -NoNewline "x264guiExのプロファイルを上書きします..."
+			Write-Host -NoNewline "プロファイルを上書きします..."
 
 			# AviUtl\plugins 内の x264guiEx_stg ディレクトリを削除する (待機)
 			Start-Process powershell -ArgumentList "-command Remove-Item `"${aviutlPluginsDirectory}\x264guiEx_stg`" -Recurse" -WindowStyle Hidden -Wait
@@ -393,7 +393,7 @@ if (Test-Path "${aviutlPluginsDirectory}\x264guiEx_stg") {
 			# 後で邪魔になるので削除
 			Remove-Item x264guiEx_stg -Recurse
 
-			Write-Host "x264guiExのプロファイルの上書きをスキップしました。`r`n"
+			Write-Host "プロファイルの上書きをスキップしました。`r`n"
 			break
 		}
 	}
@@ -791,7 +791,7 @@ foreach ($hwEncoder in $hwEncoders.GetEnumerator()) {
 				$hwEncoderChoiceResult = $host.ui.PromptForChoice($hwEncoderChoiceTitle, $hwEncoderChoiceMessage, $hwEncoderChoiceOptions, 1)
 				switch ($hwEncoderChoiceResult) {
 					0 {
-						Write-Host -NoNewline "$($hwEncoder.Key)のプロファイルを上書きします..."
+						Write-Host -NoNewline "プロファイルを上書きします..."
 
 						# AviUtl\plugins 内の (NVEnc/QSVEnc/VCEEnc)_stg ディレクトリを削除する (待機)
 						Start-Process powershell -ArgumentList "-command Remove-Item `"${aviutlPluginsDirectory}\$($hwEncoder.Key)_stg`" -Recurse" -WindowStyle Hidden -Wait
@@ -806,7 +806,7 @@ foreach ($hwEncoder in $hwEncoders.GetEnumerator()) {
 						# 後で邪魔になるので削除
 						Remove-Item "$extdir\plugins\$($hwEncoder.Key)_stg" -Recurse
 
-						Write-Host "$($hwEncoder.Key)のプロファイルの上書きをスキップしました。`r`n"
+						Write-Host "プロファイルの上書きをスキップしました。`r`n"
 						break
 					}
 				}
