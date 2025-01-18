@@ -100,6 +100,9 @@ if (Test-Path "${aviutlPluginsDirectory}\exedit.auf") {
 	if (Test-Path "${aviutlPluginsDirectory}\lua.txt") {
 		Move-Item lua.txt $aviutlExeDirectory -Force
 	}
+	if (Test-Path "${aviutlPluginsDirectory}\lua51jit.dll") {
+		Move-Item lua51jit.dll $aviutlExeDirectory -Force
+	}
 
 	# script ディレクトリの場所も併せて変更
 	if (Test-Path "${aviutlPluginsDirectory}\script") {
@@ -120,8 +123,9 @@ Set-Location tmp
 
 Write-Host "完了"
 
-# 拡張編集Plugin 0.93テスト版に付属する lua51jit.dll を発見した場合、0.92で置き換える
-if ((Test-Path "${aviutlExeDirectory}\lua51jit.dll") -or (Test-Path "${aviutlPluginsDirectory}\lua51jit.dll")) {
+# 拡張編集Pluginが見つからない場合、拡張編集Pluginをダウンロードして導入する
+# また、拡張編集Plugin 0.93テスト版に付属する lua51jit.dll を発見した場合、0.92で置き換える
+if ((!(Test-Path "${aviutlExeDirectory}\exedit.auf")) -or (Test-Path "${aviutlExeDirectory}\lua51jit.dll")) {
 	Write-Host -NoNewline "`r`n拡張編集Plugin version 0.92をダウンロードしています..."
 
 	# 拡張編集Plugin version 0.92のzipファイルをダウンロード (待機)
@@ -149,8 +153,6 @@ if ((Test-Path "${aviutlExeDirectory}\lua51jit.dll") -or (Test-Path "${aviutlPlu
 	# 不要な lua51jit.dll を削除
 	if (Test-Path "${aviutlExeDirectory}\lua51jit.dll") {
 		Remove-Item "${aviutlExeDirectory}\lua51jit.dll"
-	} else {
-		Remove-Item "${aviutlPluginsDirectory}\lua51jit.dll"
 	}
 
 	# カレントディレクトリを tmp ディレクトリに変更
