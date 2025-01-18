@@ -724,7 +724,7 @@ Set-Location ..
 Write-Host "完了"
 
 
-Write-Host "`r`nハードウェアエンコードの出力プラグイン (NVEnc / QSVEnc / VCEEnc) の状況を確認しています。"
+Write-Host "`r`nハードウェアエンコードの出力プラグイン (NVEnc / QSVEnc / VCEEnc) を確認しています。"
 
 $hwEncoders = [ordered]@{
 	"NVEnc"  = "NVEncC.exe"
