@@ -501,7 +501,7 @@ foreach ($hwRepo in $hwEncoderRepos) {
 }
 
 Write-Host " 完了"
-Write-Host "`r`nエンコーダーのチェック、および使用可能な出力プラグインのインストールを行います。"
+Write-Host "エンコーダーのチェック、および使用可能な出力プラグインのインストールを行います。"
 
 $hwEncoders = [ordered]@{
 	"NVEnc"  = "NVEncC.exe"

@@ -378,7 +378,7 @@ if (Test-Path "${aviutlPluginsDirectory}\x264guiEx_stg") {
 	$x264guiExChoiceResult = $host.ui.PromptForChoice($x264guiExChoiceTitle, $x264guiExChoiceMessage, $x264guiExChoiceOptions, 1)
 	switch ($x264guiExChoiceResult) {
 		0 {
-			Write-Host -NoNewline "`r`nx264guiExのプロファイルを上書きします..."
+			Write-Host -NoNewline "x264guiExのプロファイルを上書きします..."
 
 			# AviUtl\plugins 内の x264guiEx_stg ディレクトリを削除する (待機)
 			Start-Process powershell -ArgumentList "-command Remove-Item `"${aviutlPluginsDirectory}\x264guiEx_stg`" -Recurse" -WindowStyle Hidden -Wait
@@ -386,14 +386,14 @@ if (Test-Path "${aviutlPluginsDirectory}\x264guiEx_stg") {
 			# AviUtl\plugins 内に x264guiEx_stg ディレクトリを移動
 			Move-Item x264guiEx_stg $aviutlPluginsDirectory -Force
 
-			Write-Host "完了"
+			Write-Host "完了`r`n"
 			break
 		}
 		1 {
 			# 後で邪魔になるので削除
 			Remove-Item x264guiEx_stg -Recurse
 
-			Write-Host "`r`nx264guiExのプロファイルの上書きをスキップしました。"
+			Write-Host "x264guiExのプロファイルの上書きをスキップしました。`r`n"
 			break
 		}
 	}
@@ -401,7 +401,7 @@ if (Test-Path "${aviutlPluginsDirectory}\x264guiEx_stg") {
 	# 選択ここまで
 }
 
-Write-Host -NoNewline "`r`nx264guiExをインストールしています..."
+Write-Host -NoNewline "x264guiExをインストールしています..."
 
 Start-Sleep -Milliseconds 500
 
@@ -438,7 +438,7 @@ Write-Host -NoNewline "`r`nWebP Susie Plug-inを確認しています..."
 # WebP Susie Plug-inが導入されていない場合のみ以下の処理を実行
 if (!(Test-Path "${aviutlExeDirectory}\iftwebp.spi")) {
 	Write-Host "完了"
-	Write-Host -NoNewline "`r`nWebP Susie Plug-inをダウンロードしています..."
+	Write-Host -NoNewline "WebP Susie Plug-inをダウンロードしています..."
 
 	# WebP Susie Plug-inのzipファイルをダウンロード (待機)
 	Start-Process -FilePath curl.exe -ArgumentList "-OL https://toroidj.github.io/plugin/iftwebp11.zip" -WindowStyle Hidden -Wait
@@ -600,7 +600,7 @@ Start-Sleep -Milliseconds 500
 Write-Host "完了"
 
 if (!($CheckShapeWithValuesObj)) {
-	Write-Host -NoNewline "`r`n「値で図形」をダウンロードしています..."
+	Write-Host -NoNewline "「値で図形」をダウンロードしています..."
 
 	# 値で図形.obj をダウンロード (待機)
 	Start-Process -FilePath curl.exe -ArgumentList "-OL `"https://ss1.xrea.com/menkuri.s270.xrea.com/aviutl-installer-script/scripts/値で図形.obj`"" -WindowStyle Hidden -Wait
@@ -640,7 +640,7 @@ Start-Sleep -Milliseconds 500
 Write-Host "完了"
 
 if (!($CheckStraightLineObj)) {
-	Write-Host -NoNewline "`r`n直線スクリプトをダウンロードしています..."
+	Write-Host -NoNewline "直線スクリプトをダウンロードしています..."
 
 	# 直線スクリプトのzipファイルをダウンロード (待機)
 	Start-Process -FilePath curl.exe -ArgumentList "-OL `"https://ss1.xrea.com/menkuri.s270.xrea.com/aviutl-installer-script/scripts/直線スクリプト.zip`"" -WindowStyle Hidden -Wait
@@ -791,7 +791,7 @@ foreach ($hwEncoder in $hwEncoders.GetEnumerator()) {
 				$hwEncoderChoiceResult = $host.ui.PromptForChoice($hwEncoderChoiceTitle, $hwEncoderChoiceMessage, $hwEncoderChoiceOptions, 1)
 				switch ($hwEncoderChoiceResult) {
 					0 {
-						Write-Host -NoNewline "`r`n$($hwEncoder.Key)のプロファイルを上書きします..."
+						Write-Host -NoNewline "$($hwEncoder.Key)のプロファイルを上書きします..."
 
 						# AviUtl\plugins 内の (NVEnc/QSVEnc/VCEEnc)_stg ディレクトリを削除する (待機)
 						Start-Process powershell -ArgumentList "-command Remove-Item `"${aviutlPluginsDirectory}\$($hwEncoder.Key)_stg`" -Recurse" -WindowStyle Hidden -Wait
@@ -799,14 +799,14 @@ foreach ($hwEncoder in $hwEncoders.GetEnumerator()) {
 						# ダウンロードして展開した (NVEnc/QSVEnc/VCEEnc)_stg を AviUtl\plugins 内に移動
 						Move-Item "$extdir\plugins\$($hwEncoder.Key)_stg" $aviutlPluginsDirectory -Force
 
-						Write-Host "完了"
+						Write-Host "完了`r`n"
 						break
 					}
 					1 {
 						# 後で邪魔になるので削除
 						Remove-Item "$extdir\plugins\$($hwEncoder.Key)_stg" -Recurse
 
-						Write-Host "`r`n$($hwEncoder.Key)のプロファイルの上書きをスキップしました。"
+						Write-Host "$($hwEncoder.Key)のプロファイルの上書きをスキップしました。`r`n"
 						break
 					}
 				}
@@ -814,7 +814,7 @@ foreach ($hwEncoder in $hwEncoders.GetEnumerator()) {
 				# 選択ここまで
 			}
 
-			Write-Host -NoNewline "`r`n$($hwEncoder.Key)をインストールしています..."
+			Write-Host -NoNewline "$($hwEncoder.Key)をインストールしています..."
 
 			# AviUtl\exe_files\(NVEnc/QSVEnc/VCEEnc)C が後で邪魔になるので削除
 			Remove-Item "${aviutlExeDirectory}\exe_files\$($hwEncoder.Key)C" -Recurse
@@ -877,7 +877,7 @@ if (!($CheckHwEncoder)) {
 	}
 
 	Write-Host " 完了"
-	Write-Host "`r`nエンコーダーのチェック、および使用可能な出力プラグインのインストールを行います。"
+	Write-Host "エンコーダーのチェック、および使用可能な出力プラグインのインストールを行います。"
 
 	# 画質のよいNVEncから順にQSVEnc、VCEEncとチェックしていき、最初に使用可能なものを確認した時点でそれを導入してforeachを離脱
 	foreach ($hwEncoder in $hwEncoders.GetEnumerator()) {
