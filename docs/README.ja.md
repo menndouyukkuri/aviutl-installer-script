@@ -13,7 +13,7 @@ Windows 10 April 2018 Update (バージョン 1803) 以降\
 [releases/latest](https://github.com/menndouyukkuri/aviutl-installer-script/releases/latest) の  Assets から 
 aviutl-installer_X.X.X.zip をダウンロードし、展開してください。
 
-あとは aviutl-installer.cmd をダブルクリックするだけで、AviUtlと必須プラグイン (具体的に何が導入されるかは [インストールされるもの](https://github.com/menndouyukkuri/aviutl-installer-script/wiki/AviUtl-Installer-Script%E3%81%AB%E3%82%88%E3%81%A3%E3%81%A6%E3%82%A4%E3%83%B3%E3%82%B9%E3%83%88%E3%83%BC%E3%83%AB%E3%81%95%E3%82%8C%E3%82%8B%E3%82%82%E3%81%AE) に記載があります) のインストールが始まります。
+あとは aviutl-installer.cmd をダブルクリックするだけで、AviUtlと必須プラグイン (具体的に何が導入されるかは [インストールされるもの](https://aviutl-installer.github.io/AviUtl-Installer-Script%E3%81%AB%E3%82%88%E3%81%A3%E3%81%A6%E3%82%A4%E3%83%B3%E3%82%B9%E3%83%88%E3%83%BC%E3%83%AB%E3%81%95%E3%82%8C%E3%82%8B%E3%82%82%E3%81%AE/) に記載があります) のインストールが始まります。
 
 もし以下のような画面が出てきた場合は、詳細情報 をクリックして
 
