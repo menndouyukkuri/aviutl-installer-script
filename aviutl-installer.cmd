@@ -451,7 +451,7 @@ if (Test-Path "C:\Applications\AviUtl\readme\LuaJIT\doc") {
 }
 
 # LuaJITのzipファイルを展開 (待機)
-Start-Process powershell -ArgumentList "-command Expand-Archive -Path 'LuaJIT_2.1_Win_x86.zip' -Force" -WindowStyle Hidden -Wait
+Start-Process powershell -ArgumentList "-command Expand-Archive -Path `"LuaJIT_2.1_Win_x86.zip`" -Force" -WindowStyle Hidden -Wait
 
 # カレントディレクトリをLuaJITのzipファイルを展開したディレクトリに変更
 Set-Location "LuaJIT_2.1_Win_x86"
@@ -565,10 +565,10 @@ foreach ($hwEncoder in $hwEncoders.GetEnumerator()) {
 Write-Host -NoNewline "`r`nVisual C++ 再頒布可能パッケージを確認しています..."
 
 # レジストリからデスクトップアプリの一覧を取得する
-$installedApps = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*',
-								  'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*',
-								  'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*' -ErrorAction SilentlyContinue |
-Where-Object { $_.DisplayName -and $_.UninstallString -and -not $_.SystemComponent -and ($_.ReleaseType -notin 'Update','Hotfix') -and -not $_.ParentKeyName } |
+$installedApps = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*",
+								  "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*",
+								  "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*" -ErrorAction SilentlyContinue |
+Where-Object { $_.DisplayName -and $_.UninstallString -and -not $_.SystemComponent -and ($_.ReleaseType -notin "Update","Hotfix") -and -not $_.ParentKeyName } |
 Select-Object DisplayName
 
 # Microsoft Visual C++ 2015-20xx Redistributable (x86) がインストールされているか確認する
@@ -689,7 +689,7 @@ if ($Vc2015App -and $Vc2008App) {
 				# VCruntimeInstall2015and2008.cmd は Visual C++ 2015-20xx Redistributable (x86) と
 				# Visual C++ 2008 Redistributable - x86 のインストーラーを順番に実行していくだけのスクリプト
 			$VCruntimeInstallCmdDirectory = Join-Path -Path $scriptFileRoot -ChildPath script_files
-			$VCruntimeInstallCmdPath = Join-Path -Path $VCruntimeInstallCmdDirectory -ChildPath 'VCruntimeInstall2015and2008.cmd'
+			$VCruntimeInstallCmdPath = Join-Path -Path $VCruntimeInstallCmdDirectory -ChildPath "VCruntimeInstall2015and2008.cmd"
 			if (!(Test-Path $VCruntimeInstallCmdPath)) {
 				$VCruntimeInstallCmdDirectory = $scriptFileRoot
 			}

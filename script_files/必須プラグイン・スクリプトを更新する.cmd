@@ -87,6 +87,55 @@ Start-Process powershell -ArgumentList "-command New-Item $aviutlPluginsDirector
 Start-Process powershell -ArgumentList "-command New-Item tmp -ItemType Directory -Force" -WindowStyle Hidden -Wait
 
 Write-Host "完了"
+
+# カレントディレクトリを tmp ディレクトリに変更
+Set-Location tmp
+
+Write-Host -NoNewline "`r`nAviUtl本体のバージョンを確認しています..."
+
+# aviutl.vfp を発見した場合、1.00以前の可能性があるため更新する (1.10には aviutl.vfp は付属しないため)
+# VFPlugin
+if (Test-Path "${aviutlExeDirectory}\aviutl.vfp") {
+	Write-Host "完了"
+	Write-Host -NoNewline "AviUtl本体 (version 1.10) をダウンロードしています..."
+
+	# AviUtl version 1.10のzipファイルをダウンロード (待機)
+	Start-Process -FilePath curl.exe -ArgumentList "-OL http://spring-fragrance.mints.ne.jp/aviutl/aviutl110.zip" -WindowStyle Hidden -Wait
+
+	Write-Host "完了"
+	Write-Host -NoNewline "AviUtl本体をインストールしています..."
+
+	# AviUtlのzipファイルを展開 (待機)
+	Start-Process powershell -ArgumentList "-command Expand-Archive -Path aviutl110.zip -Force" -WindowStyle Hidden -Wait
+
+	# カレントディレクトリを aviutl110 ディレクトリに変更
+	Set-Location aviutl110
+
+	# AviUtl\readme 内に aviutl ディレクトリを作成 (待機)
+	Start-Process powershell -ArgumentList "-command New-Item `"${ReadmeDirectoryRoot}\aviutl`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
+
+	# AviUtl ディレクトリ内に aviutl.exe を、AviUtl\readme\aviutl 内に aviutl.txt をそれぞれ移動
+	Move-Item aviutl.exe $aviutlExeDirectory -Force
+	Move-Item aviutl.txt "${ReadmeDirectoryRoot}\aviutl" -Force
+
+	# 不要な aviutl.vfp を削除
+	Remove-Item "${aviutlExeDirectory}\aviutl.vfp"
+
+	# VFPluginがレジストリに登録されているか確認
+	if (Test-Path "HKCU:\Software\VFPlugin") {
+		# aviutl.vfp のレジストリへのVFPlugin登録を確認
+		$vfpluginRegKey = Get-ItemProperty "HKCU:\Software\VFPlugin"
+		if ($vfpluginRegKey.AviUtl -ne $null) {
+			# aviutl.vfp のレジストリへのVFPlugin登録を削除
+			Remove-ItemProperty -Path "HKCU:\Software\VFPlugin" -Name AviUtl
+		}
+	}
+
+	# カレントディレクトリを tmp ディレクトリに変更
+	Set-Location ..
+}
+
+Write-Host "完了"
 Write-Host -NoNewline "`r`n拡張編集Pluginのインストールされているフォルダを確認しています..."
 
 # 拡張編集Pluginが plugins ディレクトリ内にある場合、AviUtl ディレクトリ内に移動させる (エラーの防止)
@@ -114,17 +163,14 @@ if (Test-Path "${aviutlPluginsDirectory}\exedit.auf") {
 		Move-Item "*.spi" $aviutlExeDirectory -Force
 	}
 
-	# カレントディレクトリをスクリプトファイルのあるディレクトリに変更
-	Set-Location $scriptFileRoot
+	# カレントディレクトリを tmp ディレクトリに変更
+	Set-Location "${scriptFileRoot}\tmp"
 }
-
-# カレントディレクトリを tmp ディレクトリに変更
-Set-Location tmp
 
 Write-Host "完了"
 
 # 拡張編集Pluginが見つからない場合、拡張編集Pluginをダウンロードして導入する
-# また、拡張編集Plugin 0.93テスト版に付属する lua51jit.dll を発見した場合、0.92で置き換える
+# また、拡張編集Plugin 0.93テスト版にのみ付属する lua51jit.dll を発見した場合、0.92で置き換える
 if ((!(Test-Path "${aviutlExeDirectory}\exedit.auf")) -or (Test-Path "${aviutlExeDirectory}\lua51jit.dll")) {
 	Write-Host -NoNewline "`r`n拡張編集Plugin version 0.92をダウンロードしています..."
 
@@ -712,7 +758,7 @@ if (Test-Path "${ReadmeDirectoryRoot}\LuaJIT\doc") {
 }
 
 # LuaJITのzipファイルを展開 (待機)
-Start-Process powershell -ArgumentList "-command Expand-Archive -Path 'LuaJIT_2.1_Win_x86.zip' -Force" -WindowStyle Hidden -Wait
+Start-Process powershell -ArgumentList "-command Expand-Archive -Path `"LuaJIT_2.1_Win_x86.zip`" -Force" -WindowStyle Hidden -Wait
 
 # カレントディレクトリをLuaJITのzipファイルを展開したディレクトリに変更
 Set-Location "LuaJIT_2.1_Win_x86"
@@ -943,10 +989,10 @@ if (!($CheckHwEncoder)) {
 Write-Host -NoNewline "`r`nVisual C++ 再頒布可能パッケージを確認しています..."
 
 # レジストリからデスクトップアプリの一覧を取得する
-$installedApps = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*',
-								  'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*',
-								  'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*' -ErrorAction SilentlyContinue |
-Where-Object { $_.DisplayName -and $_.UninstallString -and -not $_.SystemComponent -and ($_.ReleaseType -notin 'Update','Hotfix') -and -not $_.ParentKeyName } |
+$installedApps = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*",
+								  "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*",
+								  "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*" -ErrorAction SilentlyContinue |
+Where-Object { $_.DisplayName -and $_.UninstallString -and -not $_.SystemComponent -and ($_.ReleaseType -notin "Update","Hotfix") -and -not $_.ParentKeyName } |
 Select-Object DisplayName
 
 # Microsoft Visual C++ 2015-20xx Redistributable (x86) がインストールされているか確認する
@@ -1067,7 +1113,7 @@ if ($Vc2015App -and $Vc2008App) {
 				# VCruntimeInstall2015and2008.cmd は Visual C++ 2015-20xx Redistributable (x86) と
 				# Visual C++ 2008 Redistributable - x86 のインストーラーを順番に実行していくだけのスクリプト
 			$VCruntimeInstallCmdDirectory = Join-Path -Path $scriptFileRoot -ChildPath script_files
-			$VCruntimeInstallCmdPath = Join-Path -Path $VCruntimeInstallCmdDirectory -ChildPath 'VCruntimeInstall2015and2008.cmd'
+			$VCruntimeInstallCmdPath = Join-Path -Path $VCruntimeInstallCmdDirectory -ChildPath "VCruntimeInstall2015and2008.cmd"
 			if (!(Test-Path $VCruntimeInstallCmdPath)) {
 				$VCruntimeInstallCmdDirectory = $scriptFileRoot
 			}
