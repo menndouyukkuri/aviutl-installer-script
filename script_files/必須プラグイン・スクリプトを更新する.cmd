@@ -39,7 +39,19 @@ Write-Host "必須プラグイン (patch.aul・L-SMASH Works・InputPipePlugin・x264guiEx
 # カレントディレクトリのパスを $scriptFileRoot に保存 (起動方法のせいで $PSScriptRoot が使用できないため)
 $scriptFileRoot = (Get-Location).Path
 
+# settings ディレクトリの場所を確認
+New-Variable settingsDirectoryPath
+if (Test-Path ".\settings") {
+	$settingsDirectoryPath = Convert-Path ".\settings"
+} elseif (Test-Path "..\settings") {
+	$settingsDirectoryPath = Convert-Path "..\settings"
+} else {
+	Write-Host "発生したエラー: settings フォルダが見つかりません。"
+}
+
 Write-Host -NoNewline "AviUtlがインストールされているフォルダを確認しています..."
+
+Start-Sleep -Milliseconds 500
 
 # aviutl.exe が入っているディレクトリを探し、$aviutlExeDirectory にパスを保存
 New-Variable aviutlExeDirectory
@@ -345,44 +357,7 @@ Start-Sleep -Milliseconds 500
 
 # L-SMASH Worksの設定ファイルが見つからない場合のみ、以下の処理を実行
 if (!(Test-Path "${lwinputAuiDirectory}\lsmash.ini")) {
-	# lsmash.ini の内容を $lSmashWorksIni 変数に保存
-	$lSmashWorksIni = @"
-threads=0 (auto)
-av_sync=1
-no_create_index=0
-force_video_index=0:-1
-force_audio_index=0:-1
-seek_mode=0
-forward_threshold=10
-scaler=0
-apply_repeat_flag=1
-field_dominance=0
-vfr2cfr=0:60000:1001
-colorspace=0
-avs_bit_depth=8
-audio_delay=0
-channel_layout=0x0
-sample_rate=0
-mix_level=71:71:0
-libavsmash_disabled=1
-avs_disabled=0
-vpy_disabled=0
-libav_disabled=0
-dummy_resolution=720x480
-dummy_framerate=24/1
-dummy_colorspace=0
-preferred_decoders=libvpx,libvpx-vp9
-handle_cache=0
-use_cache_dir=1
-cache_dir_path=
-delete_old_cache=1
-delete_old_cache_days=30
-cache_last_check_date=154864
-
-"@
-
-	# AviUtl\plugins ディレクトリ内に lsmash.ini を生成
-	Start-Process powershell -ArgumentList "-command New-Item `"${lwinputAuiDirectory}\lsmash.ini`" -ItemType File -Value $lSmashWorksIni" -WindowStyle Hidden
+	Copy-Item "${settingsDirectoryPath}\lsmash.ini" $lwinputAuiDirectory
 }
 
 # AviUtl\plugins ディレクトリ内に lw*.au* を、AviUtl\readme\l-smash_works 内に READM* を (待機) 、
@@ -575,18 +550,7 @@ if (Test-Path "${aviutlExeDirectory}\MFVideoReaderPlugin.aui") {
 
 # MFVideoReaderの設定ファイルが見つからない場合のみ、以下の処理を実行
 if (!(Test-Path "${MFVideoReaderAuiDirectory}\MFVideoReaderConfig.ini")) {
-	# MFVideoReaderConfig.ini の内容を $MFVideoReaderConfigIni 変数に保存
-	$MFVideoReaderConfigIni = @"
-[Config]
-bUseDXVA2=true
-bEnableHandleCache=true
-bEnableIPC=true
-logLevel=3
-
-"@
-
-	# AviUtl\plugins ディレクトリ内に MFVideoReaderConfig.ini を生成
-	Start-Process powershell -ArgumentList "-command New-Item `"${MFVideoReaderAuiDirectory}\MFVideoReaderConfig.ini`" -ItemType File -Value $MFVideoReaderConfigIni" -WindowStyle Hidden
+	Copy-Item "${settingsDirectoryPath}\MFVideoReaderConfig.ini" $MFVideoReaderAuiDirectory
 }
 
 Write-Host "完了"

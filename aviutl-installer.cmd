@@ -33,7 +33,6 @@ function GithubLatestReleaseUrl ($repo) {
 	return($api.assets.browser_download_url)
 }
 
-# ディスプレイネームの表示
 $DisplayNameOfThisScript = "AviUtl Installer Script (Version 1.1.2_2025-01-21)"
 $Host.UI.RawUI.WindowTitle = $DisplayNameOfThisScript
 Write-Host "$($DisplayNameOfThisScript)`r`n`r`n"
@@ -754,20 +753,32 @@ if ($Vc2015App -and $Vc2008App) {
 
 Write-Host -NoNewline "`r`n設定ファイルをコピーしています..."
 
-# カレントディレクトリを settings ディレクトリに変更
-Set-Location ..\settings
+# カレントディレクトリをスクリプトファイルのあるディレクトリに変更
+Set-Location ..
 
-# AviUtl\plugins 内に lsmash.ini と MFVideoReaderConfig.ini をコピー
-Copy-Item lsmash.ini C:\Applications\AviUtl\plugins
-Copy-Item MFVideoReaderConfig.ini C:\Applications\AviUtl\plugins
+# settings ディレクトリの場所を確認
+New-Variable settingsDirectoryPath
+if (Test-Path ".\settings") {
+	$settingsDirectoryPath = Convert-Path ".\settings"
+} elseif (Test-Path "..\settings") {
+	$settingsDirectoryPath = Convert-Path "..\settings"
+} else {
+	Write-Host "発生したエラー: settings フォルダが見つかりません。"
+}
 
-# AviUtl ディレクトリ内に aviutl.ini, exedit.ini と デフォルト.cfg をコピー
-Copy-Item aviutl.ini C:\Applications\AviUtl
-Copy-Item exedit.ini C:\Applications\AviUtl
-Copy-Item デフォルト.cfg C:\Applications\AviUtl
+Start-Sleep -Milliseconds 500
 
 # カレントディレクトリを tmp ディレクトリに変更
-Set-Location ..\tmp
+Set-Location tmp
+
+# AviUtl\plugins 内に lsmash.ini と MFVideoReaderConfig.ini をコピー
+Copy-Item "${settingsDirectoryPath}\lsmash.ini" C:\Applications\AviUtl\plugins
+Copy-Item "${settingsDirectoryPath}\MFVideoReaderConfig.ini" C:\Applications\AviUtl\plugins
+
+# AviUtl ディレクトリ内に aviutl.ini, exedit.ini と デフォルト.cfg をコピー
+Copy-Item "${settingsDirectoryPath}\aviutl.ini" C:\Applications\AviUtl
+Copy-Item "${settingsDirectoryPath}\exedit.ini" C:\Applications\AviUtl
+Copy-Item "${settingsDirectoryPath}\デフォルト.cfg" C:\Applications\AviUtl
 
 Write-Host "完了"
 Write-Host -NoNewline "`r`nデスクトップにショートカットファイルを作成しています..."
@@ -810,8 +821,7 @@ if (Test-Path "script_files\必須プラグインを更新する.cmd") {
 	# 必須プラグインを更新する.cmd をカレントディレクトリに移動
 	Move-Item "script_files\必須プラグインを更新する.cmd" . -Force
 
-	# aviutl-installer.cmd (このファイル) と settings ディレクトリを script_files ディレクトリに移動
-	Move-Item settings script_files -Force
+	# aviutl-installer.cmd (このファイル) を script_files ディレクトリに移動
 	Move-Item aviutl-installer.cmd script_files -Force
 }
 
