@@ -86,11 +86,10 @@ Start-Process powershell -ArgumentList "-command New-Item $aviutlPluginsDirector
 # tmp ディレクトリを作成する (待機)
 Start-Process powershell -ArgumentList "-command New-Item tmp -ItemType Directory -Force" -WindowStyle Hidden -Wait
 
-Write-Host "完了"
-
 # カレントディレクトリを tmp ディレクトリに変更
 Set-Location tmp
 
+Write-Host "完了"
 Write-Host -NoNewline "`r`nAviUtl本体のバージョンを確認しています..."
 
 # aviutl.vfp を発見した場合、1.00以前の可能性があるため更新する (1.10には aviutl.vfp は付属しないため)
@@ -344,6 +343,48 @@ if (Test-Path "${aviutlExeDirectory}\lwinput.aui") {
 
 Start-Sleep -Milliseconds 500
 
+# L-SMASH Worksの設定ファイルが見つからない場合のみ、以下の処理を実行
+if (!(Test-Path "${lwinputAuiDirectory}\lsmash.ini")) {
+	# lsmash.ini の内容を $lSmashWorksIni 変数に保存
+	$lSmashWorksIni = @"
+threads=0 (auto)
+av_sync=1
+no_create_index=0
+force_video_index=0:-1
+force_audio_index=0:-1
+seek_mode=0
+forward_threshold=10
+scaler=0
+apply_repeat_flag=1
+field_dominance=0
+vfr2cfr=0:60000:1001
+colorspace=0
+avs_bit_depth=8
+audio_delay=0
+channel_layout=0x0
+sample_rate=0
+mix_level=71:71:0
+libavsmash_disabled=1
+avs_disabled=0
+vpy_disabled=0
+libav_disabled=0
+dummy_resolution=720x480
+dummy_framerate=24/1
+dummy_colorspace=0
+preferred_decoders=libvpx,libvpx-vp9
+handle_cache=0
+use_cache_dir=1
+cache_dir_path=
+delete_old_cache=1
+delete_old_cache_days=30
+cache_last_check_date=154864
+
+"@
+
+	# AviUtl\plugins ディレクトリ内に lsmash.ini を生成
+	New-Item "${lwinputAuiDirectory}\lsmash.ini" -ItemType File -Value $lSmashWorksIni
+}
+
 # AviUtl\plugins ディレクトリ内に lw*.au* を、AviUtl\readme\l-smash_works 内に READM* を (待機) 、
 # AviUtl\license\l-smash_works 内にその他のファイルをそれぞれ移動
 Start-Process powershell -ArgumentList "-command Move-Item lw*.au* $lwinputAuiDirectory -Force; Move-Item READM* `"${ReadmeDirectoryRoot}\l-smash_works`" -Force" -WindowStyle Hidden -Wait
@@ -484,6 +525,69 @@ Move-Item x264guiEx_readme.txt "${ReadmeDirectoryRoot}\x264guiEx" -Force
 
 # カレントディレクトリを tmp ディレクトリに変更
 Set-Location ..\..
+
+Write-Host "完了"
+Write-Host -NoNewline "`r`nMFVideoReaderを確認しています..."
+
+# MFVideoReaderの入っているディレクトリを探し、$MFVideoReaderAuiDirectory にパスを保存
+New-Variable MFVideoReaderAuiDirectory
+if (Test-Path "${aviutlExeDirectory}\MFVideoReaderPlugin.aui") {
+	$MFVideoReaderAuiDirectory = $aviutlExeDirectory
+} elseif (Test-Path "${aviutlPluginsDirectory}\MFVideoReaderPlugin.aui") {
+	$MFVideoReaderAuiDirectory = $aviutlPluginsDirectory
+
+# MFVideoReaderが導入されていない場合のみ、以下の処理を実行
+} else {
+	$MFVideoReaderAuiDirectory = $aviutlPluginsDirectory
+
+	Write-Host "完了"
+	Write-Host -NoNewline "`r`nMFVideoReaderの最新版情報を取得しています..."
+
+	# MFVideoReaderの最新版のダウンロードURLを取得
+	$MFVideoReaderUrl = GithubLatestReleaseUrl "amate/MFVideoReader"
+
+	Write-Host "完了"
+	Write-Host -NoNewline "MFVideoReaderをダウンロードしています..."
+
+	# MFVideoReaderのzipファイルをダウンロード (待機)
+	Start-Process -FilePath curl.exe -ArgumentList "-OL $MFVideoReaderUrl" -WindowStyle Hidden -Wait
+
+	Write-Host "完了"
+	Write-Host -NoNewline "MFVideoReaderをインストールしています..."
+
+	# MFVideoReaderのzipファイルを展開 (待機)
+	Start-Process powershell -ArgumentList "-command Expand-Archive -Path MFVideoReader_*.zip -Force" -WindowStyle Hidden -Wait
+
+	# カレントディレクトリをMFVideoReaderのzipファイルを展開したディレクトリに変更
+	Set-Location "MFVideoReader_*\MFVideoReader"
+
+	# AviUtl\readme, AviUtl\license 内に MFVideoReader ディレクトリを作成 (待機)
+	Start-Process powershell -ArgumentList "-command New-Item `"${ReadmeDirectoryRoot}\MFVideoReader`", `"${LicenseDirectoryRoot}\MFVideoReader`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
+
+	# AviUtl\license\MFVideoReader 内に LICENSE を、AviUtl\readme\MFVideoReader 内に Readme.md を (待機) 、
+	# AviUtl\plugins ディレクトリ内にその他のファイルをそれぞれ移動
+	Start-Process powershell -ArgumentList "-command Move-Item LICENSE `"${LicenseDirectoryRoot}\MFVideoReader`" -Force; Move-Item Readme.md `"${ReadmeDirectoryRoot}\MFVideoReader`" -Force" -WindowStyle Hidden -Wait
+	Move-Item * $aviutlPluginsDirectory -Force
+
+	# カレントディレクトリを tmp ディレクトリに変更
+	Set-Location ..\..
+}
+
+# MFVideoReaderの設定ファイルが見つからない場合のみ、以下の処理を実行
+if (!(Test-Path "${MFVideoReaderAuiDirectory}\MFVideoReaderConfig.ini")) {
+	# MFVideoReaderConfig.ini の内容を $MFVideoReaderConfigIni 変数に保存
+	$MFVideoReaderConfigIni = @"
+[Config]
+bUseDXVA2=true
+bEnableHandleCache=true
+bEnableIPC=true
+logLevel=3
+
+"@
+
+	# AviUtl\plugins ディレクトリ内に MFVideoReaderConfig.ini を生成
+	New-Item "${MFVideoReaderAuiDirectory}\MFVideoReaderConfig.ini" -ItemType File -Value $MFVideoReaderConfigIni
+}
 
 Write-Host "完了"
 Write-Host -NoNewline "`r`nWebP Susie Plug-inを確認しています..."

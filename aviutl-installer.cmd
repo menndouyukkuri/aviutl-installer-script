@@ -33,7 +33,8 @@ function GithubLatestReleaseUrl ($repo) {
 	return($api.assets.browser_download_url)
 }
 
-$DisplayNameOfThisScript = "AviUtl Installer Script (Version 1.1.1_2025-01-18)"
+# ディスプレイネームの表示
+$DisplayNameOfThisScript = "AviUtl Installer Script (Version 1.1.2_2025-01-21)"
 $Host.UI.RawUI.WindowTitle = $DisplayNameOfThisScript
 Write-Host "$($DisplayNameOfThisScript)`r`n`r`n"
 
@@ -265,6 +266,38 @@ Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl
 
 # AviUtl\readme\x264guiEx 内に x264guiEx_readme.txt を移動
 Move-Item x264guiEx_readme.txt C:\Applications\AviUtl\readme\x264guiEx -Force
+
+# カレントディレクトリを tmp ディレクトリに変更
+Set-Location ..\..
+
+Write-Host "完了"
+Write-Host -NoNewline "`r`nMFVideoReaderの最新版情報を取得しています..."
+
+# MFVideoReaderの最新版のダウンロードURLを取得
+$MFVideoReaderUrl = GithubLatestReleaseUrl "amate/MFVideoReader"
+
+Write-Host "完了"
+Write-Host -NoNewline "MFVideoReaderをダウンロードしています..."
+
+# MFVideoReaderのzipファイルをダウンロード (待機)
+Start-Process -FilePath curl.exe -ArgumentList "-OL $MFVideoReaderUrl" -WindowStyle Hidden -Wait
+
+Write-Host "完了"
+Write-Host -NoNewline "MFVideoReaderをインストールしています..."
+
+# MFVideoReaderのzipファイルを展開 (待機)
+Start-Process powershell -ArgumentList "-command Expand-Archive -Path MFVideoReader_*.zip -Force" -WindowStyle Hidden -Wait
+
+# カレントディレクトリをMFVideoReaderのzipファイルを展開したディレクトリに変更
+Set-Location "MFVideoReader_*\MFVideoReader"
+
+# AviUtl\readme, AviUtl\license 内に MFVideoReader ディレクトリを作成 (待機)
+Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\readme\MFVideoReader, C:\Applications\AviUtl\license\MFVideoReader -ItemType Directory -Force" -WindowStyle Hidden -Wait
+
+# AviUtl\license\MFVideoReader 内に LICENSE を、AviUtl\readme\MFVideoReader 内に Readme.md を (待機) 、
+# AviUtl\plugins ディレクトリ内にその他のファイルをそれぞれ移動
+Start-Process powershell -ArgumentList "-command Move-Item LICENSE C:\Applications\AviUtl\license\MFVideoReader -Force; Move-Item Readme.md C:\Applications\AviUtl\readme\MFVideoReader -Force" -WindowStyle Hidden -Wait
+Move-Item * C:\Applications\AviUtl\plugins -Force
 
 # カレントディレクトリを tmp ディレクトリに変更
 Set-Location ..\..
@@ -724,8 +757,11 @@ Write-Host -NoNewline "`r`n設定ファイルをコピーしています..."
 # カレントディレクトリを settings ディレクトリに変更
 Set-Location ..\settings
 
-# AviUtl\plugins 内に lsmash.ini を、AviUtl 内にその他のファイルをコピー
+# AviUtl\plugins 内に lsmash.ini と MFVideoReaderConfig.ini をコピー
 Copy-Item lsmash.ini C:\Applications\AviUtl\plugins
+Copy-Item MFVideoReaderConfig.ini C:\Applications\AviUtl\plugins
+
+# AviUtl ディレクトリ内に aviutl.ini, exedit.ini と デフォルト.cfg をコピー
 Copy-Item aviutl.ini C:\Applications\AviUtl
 Copy-Item exedit.ini C:\Applications\AviUtl
 Copy-Item デフォルト.cfg C:\Applications\AviUtl
@@ -737,27 +773,27 @@ Write-Host "完了"
 Write-Host -NoNewline "`r`nデスクトップにショートカットファイルを作成しています..."
 
 # WSHを用いてデスクトップにAviUtlのショートカットを作成する
-$ShortcutFolder = [Environment]::GetFolderPath("Desktop")
-$ShortcutFile = Join-Path -Path $ShortcutFolder -ChildPath "AviUtl.lnk"
-$WshShell = New-Object -comObject WScript.Shell
-$Shortcut = $WshShell.CreateShortcut($ShortcutFile)
-$Shortcut.TargetPath = "C:\Applications\AviUtl\aviutl.exe"
-$Shortcut.IconLocation = "C:\Applications\AviUtl\aviutl.exe,0"
-$Shortcut.WorkingDirectory = "."
-$Shortcut.Save()
+$DesktopShortcutFolder = [Environment]::GetFolderPath("Desktop")
+$DesktopShortcutFile = Join-Path -Path $DesktopShortcutFolder -ChildPath "AviUtl.lnk"
+$DesktopWshShell = New-Object -comObject WScript.Shell
+$DesktopShortcut = $DesktopWshShell.CreateShortcut($DesktopShortcutFile)
+$DesktopShortcut.TargetPath = "C:\Applications\AviUtl\aviutl.exe"
+$DesktopShortcut.IconLocation = "C:\Applications\AviUtl\aviutl.exe,0"
+$DesktopShortcut.WorkingDirectory = "."
+$DesktopShortcut.Save()
 
 Write-Host "完了"
 Write-Host -NoNewline "スタートメニューにショートカットファイルを作成しています..."
 
 # WSHを用いてスタートメニューにAviUtlのショートカットを作成する
-$ShortcutFolder = [Environment]::GetFolderPath("Programs")
-$ShortcutFile = Join-Path -Path $ShortcutFolder -ChildPath "AviUtl.lnk"
-$WshShell = New-Object -comObject WScript.Shell
-$Shortcut = $WshShell.CreateShortcut($ShortcutFile)
-$Shortcut.TargetPath = "C:\Applications\AviUtl\aviutl.exe"
-$Shortcut.IconLocation = "C:\Applications\AviUtl\aviutl.exe,0"
-$Shortcut.WorkingDirectory = "."
-$Shortcut.Save()
+$ProgramsShortcutFolder = [Environment]::GetFolderPath("Programs")
+$ProgramsShortcutFile = Join-Path -Path $ProgramsShortcutFolder -ChildPath "AviUtl.lnk"
+$ProgramsWshShell = New-Object -comObject WScript.Shell
+$ProgramsShortcut = $ProgramsWshShell.CreateShortcut($ProgramsShortcutFile)
+$ProgramsShortcut.TargetPath = "C:\Applications\AviUtl\aviutl.exe"
+$ProgramsShortcut.IconLocation = "C:\Applications\AviUtl\aviutl.exe,0"
+$ProgramsShortcut.WorkingDirectory = "."
+$ProgramsShortcut.Save()
 
 Write-Host "完了"
 Write-Host -NoNewline "`r`nインストールに使用した不要なファイルを削除しています..."
