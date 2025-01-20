@@ -790,7 +790,7 @@ $DesktopWshShell = New-Object -comObject WScript.Shell
 $DesktopShortcut = $DesktopWshShell.CreateShortcut($DesktopShortcutFile)
 $DesktopShortcut.TargetPath = "C:\Applications\AviUtl\aviutl.exe"
 $DesktopShortcut.IconLocation = "C:\Applications\AviUtl\aviutl.exe,0"
-$DesktopShortcut.WorkingDirectory = "."
+$DesktopShortcut.WorkingDirectory = "C:\Applications\AviUtl"
 $DesktopShortcut.Save()
 
 Write-Host "Š®—¹"
@@ -803,7 +803,7 @@ $ProgramsWshShell = New-Object -comObject WScript.Shell
 $ProgramsShortcut = $ProgramsWshShell.CreateShortcut($ProgramsShortcutFile)
 $ProgramsShortcut.TargetPath = "C:\Applications\AviUtl\aviutl.exe"
 $ProgramsShortcut.IconLocation = "C:\Applications\AviUtl\aviutl.exe,0"
-$ProgramsShortcut.WorkingDirectory = "."
+$ProgramsShortcut.WorkingDirectory = "C:\Applications\AviUtl"
 $ProgramsShortcut.Save()
 
 Write-Host "Š®—¹"
