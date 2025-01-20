@@ -382,7 +382,7 @@ cache_last_check_date=154864
 "@
 
 	# AviUtl\plugins ディレクトリ内に lsmash.ini を生成
-	New-Item "${lwinputAuiDirectory}\lsmash.ini" -ItemType File -Value $lSmashWorksIni
+	Start-Process powershell -ArgumentList "-command New-Item `"${lwinputAuiDirectory}\lsmash.ini`" -ItemType File -Value $lSmashWorksIni" -WindowStyle Hidden
 }
 
 # AviUtl\plugins ディレクトリ内に lw*.au* を、AviUtl\readme\l-smash_works 内に READM* を (待機) 、
@@ -586,7 +586,7 @@ logLevel=3
 "@
 
 	# AviUtl\plugins ディレクトリ内に MFVideoReaderConfig.ini を生成
-	New-Item "${MFVideoReaderAuiDirectory}\MFVideoReaderConfig.ini" -ItemType File -Value $MFVideoReaderConfigIni
+	Start-Process powershell -ArgumentList "-command New-Item `"${MFVideoReaderAuiDirectory}\MFVideoReaderConfig.ini`" -ItemType File -Value $MFVideoReaderConfigIni" -WindowStyle Hidden
 }
 
 Write-Host "完了"
