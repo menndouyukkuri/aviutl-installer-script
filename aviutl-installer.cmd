@@ -33,7 +33,7 @@ function GithubLatestReleaseUrl ($repo) {
 	return($api.assets.browser_download_url)
 }
 
-$DisplayNameOfThisScript = "AviUtl Installer Script (Version 1.1.2_2025-01-21)"
+$DisplayNameOfThisScript = "AviUtl Installer Script (Version 1.1.2v2_2025-01-22)"
 $Host.UI.RawUI.WindowTitle = $DisplayNameOfThisScript
 Write-Host "$($DisplayNameOfThisScript)`r`n`r`n"
 
@@ -806,6 +806,10 @@ Copy-Item "${settingsDirectoryPath}\MFVideoReaderConfig.ini" C:\Applications\Avi
 Copy-Item "${settingsDirectoryPath}\aviutl.ini" C:\Applications\AviUtl
 Copy-Item "${settingsDirectoryPath}\exedit.ini" C:\Applications\AviUtl
 Copy-Item "${settingsDirectoryPath}\デフォルト.cfg" C:\Applications\AviUtl
+
+# AviUtl ディレクトリ内に apm.json をコピー
+# 競合などの管理のためにAviUtl Package Managerに導入内容を教える目的で同梱しているのでバージョンや正確性は重要視していない
+Copy-Item "${settingsDirectoryPath}\apm.json" C:\Applications\AviUtl
 
 Write-Host "完了"
 Write-Host -NoNewline "`r`nデスクトップにショートカットファイルを作成しています..."
