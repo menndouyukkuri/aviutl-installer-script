@@ -40,6 +40,33 @@ Write-Host "$($DisplayNameOfThisScript)`r`n`r`n"
 # カレントディレクトリのパスを $scriptFileRoot に保存 (起動方法のせいで $PSScriptRoot が使用できないため)
 $scriptFileRoot = (Get-Location).Path
 
+# 本体の更新確認 by Yu-yu0202 (20250121)
+Write-Host "本体の更新を確認します..."
+$tagName = Invoke-RestMethod -Uri "https://api.github.com/repos/menndouyukkuri/aviutl-installer-script/releases/latest" | Select-Object -ExpandProperty tag_name
+if ($tagName -ne $Version) {
+	Write-Host "新しいバージョンがあります。更新を行います..."
+	#tmpフォルダを作成+移動
+	New-Item -ItemType Directory -Path tmp -Force | Out-Null
+	Set-Location tmp
+	# 本体の最新版のダウンロードURLを取得
+	$AISDownloadUrl = GithubLatestReleaseUrl "menndouyukkuri/aviutl-installer-script"
+	# 本体のzipファイルをダウンロード (待機)
+	Start-Process -FilePath curl.exe -ArgumentList "-OL $AISDownloadUrl" -WindowStyle Hidden -Wait
+	#tagNameから先頭の「v」を削除
+	$tagName = $tagName.Substring(1)
+	# 本体のzipファイルを展開 (待機)
+	Start-Process powershell -ArgumentList "-command Expand-Archive -Path aviutl-installer_$tagName.zip -Force" -WindowStyle Hidden -Wait
+	# 展開後のzipを削除
+	Remove-Item aviutl-installer_$($tagName).zip
+	# 新バージョンを起動
+	Write-Host "新しいバージョンを起動します..."
+	# 展開後のフォルダに移動
+	Set-Location "aviutl-installer_$tagName"
+	Start-Process -FilePath "aviutl-installer.cmd"
+	# 旧バージョンを終了
+	Exit
+}
+
 Write-Host -NoNewline "AviUtlをインストールするフォルダを作成しています..."
 
 # C:\Applications ディレクトリを作成する (待機)
