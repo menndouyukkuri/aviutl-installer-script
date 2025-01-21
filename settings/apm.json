@@ -1,0 +1,53 @@
+{
+  "dataVersion": "3",
+  "core": {
+    "aviutl": "1.10",
+    "exedit": "0.92"
+  },
+  "packages": {
+    "nazono/patch": {
+      "id": "nazono/patch",
+      "version": "r43_64"
+    },
+    "MrOjii/LSMASHWorks": {
+      "id": "MrOjii/LSMASHWorks",
+      "version": "2025/01/21"
+    },
+    "amate/InputPipePlugin": {
+      "id": "amate/InputPipePlugin",
+      "version": "v2.0"
+    },
+    "rigaya/x264guiEx": {
+      "id": "rigaya/x264guiEx",
+      "version": "3.31"
+    },
+    "rigaya/NVEnc": {
+      "id": "rigaya/NVEnc",
+      "version": "7.73"
+    },
+    "rigaya/QSVEnc": {
+      "id": "rigaya/QSVEnc",
+      "version": "7.72"
+    },
+    "rigaya/VCEEnc": {
+      "id": "rigaya/VCEEnc",
+      "version": "8.23"
+    },
+    "amate/MFVideoReader": {
+      "id": "amate/MFVideoReader",
+      "version": "v1.0"
+    },
+    "satsuki/satsuki": {
+      "id": "satsuki/satsuki",
+      "version": "20160828"
+    },
+    "nagomiku/paracustomobj": {
+      "id": "nagomiku/paracustomobj",
+      "version": "v2.10"
+    },
+    "ePi/LuaJIT": {
+      "id": "ePi/LuaJIT",
+      "version": "2.1.0-beta3"
+    }
+  }
+}
