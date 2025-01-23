@@ -102,6 +102,18 @@ Start-Process powershell -ArgumentList "-command New-Item tmp -ItemType Director
 Set-Location tmp
 
 Write-Host "完了"
+Write-Host -NoNewline "`r`nフォルダーオプションを確認しています..."
+
+# フォルダーオプションの「登録されている拡張子は表示しない」が有効の場合、無効にする
+$ExplorerAdvancedRegKey = Get-ItemProperty "HKCU:Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+if ($ExplorerAdvancedRegKey.HideFileExt -ne "0") {
+	Write-Host "完了"
+	Write-Host -NoNewline "「登録されている拡張子は表示しない」を無効にしています..."
+
+	Set-ItemProperty -LiteralPath "HKCU:Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name HideFileExt -Value "0" -Force
+}
+
+Write-Host "完了"
 Write-Host -NoNewline "`r`nAviUtl本体のバージョンを確認しています..."
 
 # aviutl.vfp を発見した場合、1.00以前の可能性があるため更新する (1.10には aviutl.vfp は付属しないため)

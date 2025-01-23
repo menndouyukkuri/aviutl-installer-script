@@ -33,7 +33,7 @@ function GithubLatestReleaseUrl ($repo) {
 	return($api.assets.browser_download_url)
 }
 
-$DisplayNameOfThisScript = "AviUtl Installer Script (Version 1.1.2v2_2025-01-22)"
+$DisplayNameOfThisScript = "AviUtl Installer Script (Version 1.1.2v3_2025-01-23)"
 $Host.UI.RawUI.WindowTitle = $DisplayNameOfThisScript
 Write-Host "$($DisplayNameOfThisScript)`r`n`r`n"
 
@@ -59,6 +59,18 @@ Start-Process powershell -ArgumentList "-command New-Item tmp -ItemType Director
 
 # カレントディレクトリを tmp ディレクトリに変更
 Set-Location tmp
+
+Write-Host "完了"
+Write-Host -NoNewline "`r`nフォルダーオプションを確認しています..."
+
+# フォルダーオプションの「登録されている拡張子は表示しない」が有効の場合、無効にする
+$ExplorerAdvancedRegKey = Get-ItemProperty "HKCU:Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+if ($ExplorerAdvancedRegKey.HideFileExt -ne "0") {
+	Write-Host "完了"
+	Write-Host -NoNewline "「登録されている拡張子は表示しない」を無効にしています..."
+
+	Set-ItemProperty -LiteralPath "HKCU:Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name HideFileExt -Value "0" -Force
+}
 
 Write-Host "完了"
 Write-Host -NoNewline "`r`nAviUtl本体 (version 1.10) をダウンロードしています..."
