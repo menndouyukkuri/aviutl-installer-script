@@ -62,7 +62,7 @@ if ($tagName -ne $Version) {
 	# 展開後のzipを削除
 	Remove-Item aviutl-installer_$($tagName).zip
     # 新バージョンのファイル(aviutl-installer.cmd 以外)をルードディレクトリに移動(Force)
-    Get-ChildItem -Path "aviutl-installer_$tagName" | Where-Object { $_.Name -ne "aviutl-installer.cmd" } | Move-Item -Destination $scriptFileRoot -Force | Out-Null
+    Get-ChildItem -Path "aviutl-installer_$tagName" -Recurse | Where-Object { $_.Name -ne "aviutl-installer.cmd" } | Move-Item -Destination $scriptFileRoot -Force | Out-Null
 	# 競合防止でtmpフォルダを削除
 	Remove-Item -Path tmp -Recurse -Force | Out-Null
 	# 一旦ウィンドウをクリア(Host.UI.RauUI.WindowTitleとコンソールをクリア)にする
