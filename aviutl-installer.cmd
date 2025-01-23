@@ -69,7 +69,7 @@ if ($ExplorerAdvancedRegKey.HideFileExt -ne "0") {
 	Write-Host "完了"
 	Write-Host -NoNewline "「登録されている拡張子は表示しない」を無効にしています..."
 
-	Set-ItemProperty -LiteralPath "HKCU:Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name HideFileExt -Value "0" -Force
+	Set-ItemProperty -Path "HKCU:Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name HideFileExt -Value "0" -Force
 }
 
 Write-Host "完了"
