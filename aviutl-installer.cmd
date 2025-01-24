@@ -892,9 +892,9 @@ if ($tagName -ne $Version) {
 
 	Write-Host "完了"
 
-	if (Test-Path "script_files\必須プラグインを更新する.cmd") {
-		# 必須プラグインを更新する.cmd をカレントディレクトリに移動
-		Move-Item "script_files\必須プラグインを更新する.cmd" . -Force
+	if (Test-Path "script_files\必須プラグイン・スクリプトを更新する.cmd") {
+		# 必須プラグイン・スクリプトを更新する.cmd をカレントディレクトリに移動
+		Move-Item "script_files\必須プラグイン・スクリプトを更新する.cmd" . -Force
 
 		# aviutl-installer.cmd の場所を確認
 		$aviutlInstallerCmdPath = "aviutl-installer.cmd"
