@@ -33,11 +33,27 @@ function GithubLatestReleaseUrl ($repo) {
 	return($api.assets.browser_download_url)
 }
 
+# カレントディレクトリのパスを $scriptFileRoot に保存 (起動方法のせいで $PSScriptRoot が使用できないため)
+$scriptFileRoot = (Get-Location).Path
+
 $Host.UI.RawUI.WindowTitle = "必須プラグイン・スクリプトを更新する.cmd"
 Write-Host "必須プラグイン (patch.aul・L-SMASH Works・InputPipePlugin・x264guiEx) および LuaJIT、ifheif の更新を開始します。`r`n`r`n"
 
-# カレントディレクトリのパスを $scriptFileRoot に保存 (起動方法のせいで $PSScriptRoot が使用できないため)
-$scriptFileRoot = (Get-Location).Path
+# PowerShellのバージョンを確認し、実行できない場合はそれを表示する
+if ((((Get-Host).Version) -split "\.")[0] -ne "5") {
+	Write-Host "For this script to work, PowerShell 5.x needs to launch when `"powershell`" command is executed in Command Prompt."
+	Write-Host "このスクリプトが動作するには コマンド プロンプト で `"powershell`" コマンドを実行した際に、PowerShell 5.x が起動する必要があります。"
+	Pause
+	exit
+}
+
+# Windowsのバージョンを確認し、実行できない場合はそれを表示する
+$WindowsNtCurrentVersion = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
+if ($WindowsNtCurrentVersion.CurrentBuild -lt 17134) {
+	Write-Host "このスクリプトは Windows 10 April 2018 Update (バージョン 1803) 以降でのみ動作します。"
+	Pause
+	exit
+}
 
 # settings ディレクトリの場所を確認
 New-Variable settingsDirectoryPath
@@ -105,12 +121,12 @@ Write-Host "完了"
 Write-Host -NoNewline "`r`nフォルダーオプションを確認しています..."
 
 # フォルダーオプションの「登録されている拡張子は表示しない」が有効の場合、無効にする
-$ExplorerAdvancedRegKey = Get-ItemProperty "HKCU:Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+$ExplorerAdvancedRegKey = Get-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
 if ($ExplorerAdvancedRegKey.HideFileExt -ne "0") {
 	Write-Host "完了"
 	Write-Host -NoNewline "「登録されている拡張子は表示しない」を無効にしています..."
 
-	Set-ItemProperty -Path "HKCU:Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name HideFileExt -Value "0" -Force
+	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name HideFileExt -Value "0" -Force
 }
 
 Write-Host "完了"
