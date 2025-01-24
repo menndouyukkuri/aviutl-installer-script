@@ -48,15 +48,32 @@ Write-Host "$($DisplayNameOfThisScript)`r`n`r`n"
 # カレントディレクトリのパスを $scriptFileRoot に保存 (起動方法のせいで $PSScriptRoot が使用できないため)
 $scriptFileRoot = (Get-Location).Path
 
+# settings ディレクトリの場所を確認
+New-Variable settingsDirectoryPath
+if (Test-Path ".\settings") {
+	$settingsDirectoryPath = Convert-Path ".\settings"
+} elseif (Test-Path "..\settings") {
+	$settingsDirectoryPath = Convert-Path "..\settings"
+} else {
+	Write-Host "発生したエラー: settings フォルダが見つかりません。"
+}
+
+Write-Host -NoNewline "AviUtl Installer Scriptの更新を確認します..."
+
+Start-Sleep -Milliseconds 500
+
+# AviUtl Installer Scriptのzipファイルが展開されたと思われるディレクトリのパスを保存
+$AisRootDir = Split-Path $settingsDirectoryPath -Parent
+
+
 # 本体の更新確認 by Yu-yu0202 (20250121)
-Write-Host -NoNewline "本体の更新を確認します..."
 $tagName = Invoke-RestMethod -Uri "https://api.github.com/repos/menndouyukkuri/aviutl-installer-script/releases/latest" | Select-Object -ExpandProperty tag_name
 if ($tagName -ne $Version) {
 	Write-Host "完了"
 	Write-Host -NoNewline "新しいバージョンがあります。更新を行います..."
 
-	# 古いバージョンのファイル (aviutl-installer.cmd 以外) を削除
-	Remove-Item * -Recurse | Out-Null
+	# 古いバージョンのファイルを削除
+	Remove-Item "${AisRootDir}\*" -Recurse | Out-Null
 
 	# newver ディレクトリを作成し、カレントディレクトリを移動
 	New-Item -ItemType Directory -Path newver -Force | Out-Null
@@ -77,8 +94,9 @@ if ($tagName -ne $Version) {
 	# 展開後のzipを削除
 	Remove-Item aviutl-installer_$($tagName).zip
 
-	# 新バージョンのファイル (aviutl-installer.cmd 以外) をスクリプトファイルのあるディレクトリに移動
-	Get-ChildItem -Path "aviutl-installer_$tagName" | Where-Object { $_.Name -ne "aviutl-installer.cmd" } | Move-Item -Destination $scriptFileRoot -Force | Out-Null
+	# 新バージョンのファイル (aviutl-installer.cmd 以外) をAviUtl Installer Scriptのzipファイルが展開されたと
+	# 思われるディレクトリに移動
+	Get-ChildItem -Path "aviutl-installer_$tagName" | Where-Object { $_.Name -ne "aviutl-installer.cmd" } | Move-Item -Destination $AisRootDir -Force | Out-Null
 
 	Write-Host "完了"
 
@@ -824,24 +842,6 @@ if ($tagName -ne $Version) {
 
 	Write-Host -NoNewline "`r`n設定ファイルをコピーしています..."
 
-	# カレントディレクトリをスクリプトファイルのあるディレクトリに変更
-	Set-Location ..
-
-	# settings ディレクトリの場所を確認
-	New-Variable settingsDirectoryPath
-	if (Test-Path ".\settings") {
-		$settingsDirectoryPath = Convert-Path ".\settings"
-	} elseif (Test-Path "..\settings") {
-		$settingsDirectoryPath = Convert-Path "..\settings"
-	} else {
-		Write-Host "発生したエラー: settings フォルダが見つかりません。"
-	}
-
-	Start-Sleep -Milliseconds 500
-
-	# カレントディレクトリを tmp ディレクトリに変更
-	Set-Location tmp
-
 	# AviUtl\plugins 内に lsmash.ini と MFVideoReaderConfig.ini をコピー
 	Copy-Item "${settingsDirectoryPath}\lsmash.ini" C:\Applications\AviUtl\plugins
 	Copy-Item "${settingsDirectoryPath}\MFVideoReaderConfig.ini" C:\Applications\AviUtl\plugins
@@ -907,6 +907,16 @@ if ($tagName -ne $Version) {
 		} else {
 			# aviutl-installer.cmd を script_files ディレクトリに移動
 			Move-Item aviutl-installer.cmd script_files -Force
+		}
+	} else {
+		# aviutl-installer.cmd の場所を確認
+		$aviutlInstallerCmdPath = "aviutl-installer.cmd"
+		if (Test-Path "newver\aviutl-installer_${VerNum}\aviutl-installer.cmd") {
+			# aviutl-installer.cmd をカレントディレクトリに移動
+			Move-Item "newver\aviutl-installer_${VerNum}\aviutl-installer.cmd" . -Force
+
+			# newver ディレクトリを削除
+			Remove-Item newver -Recurse
 		}
 	}
 
