@@ -897,7 +897,6 @@ if ($tagName -ne $Version) {
 		Move-Item "script_files\必須プラグイン・スクリプトを更新する.cmd" . -Force
 
 		# aviutl-installer.cmd の場所を確認
-		$aviutlInstallerCmdPath = "aviutl-installer.cmd"
 		if (Test-Path "newver\aviutl-installer_${VerNum}\aviutl-installer.cmd") {
 			# aviutl-installer.cmd を script_files ディレクトリに移動
 			Move-Item "newver\aviutl-installer_${VerNum}\aviutl-installer.cmd" script_files -Force
@@ -910,7 +909,6 @@ if ($tagName -ne $Version) {
 		}
 	} else {
 		# aviutl-installer.cmd の場所を確認
-		$aviutlInstallerCmdPath = "aviutl-installer.cmd"
 		if (Test-Path "newver\aviutl-installer_${VerNum}\aviutl-installer.cmd") {
 			# aviutl-installer.cmd をカレントディレクトリに移動
 			Move-Item "newver\aviutl-installer_${VerNum}\aviutl-installer.cmd" . -Force
