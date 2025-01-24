@@ -112,10 +112,18 @@ if (($tagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	$script = Out-String -InputObject $scriptObject
 	Invoke-Expression $script
 
-# 最新版の情報と一致する場合
 } else {
 	Write-Host "完了"
-	Write-Host "${Version} は最新版です。"
+
+	# 最新版の情報と一致しない場合
+	if ($tagName -ne $Version) {
+		# 最新版の情報を通知
+		Write-Host "${tagName} がリリースされていますが、自動更新が利用できません。最新版を利用するためには`r`nhttps://github.com/menndouyukkuri/aviutl-installer-script/releases/latest からダウンロードする必要があります。"
+
+	# 最新版の情報と一致する場合
+	} else {
+		Write-Host "${Version} は最新版です。"
+	}
 
 	Write-Host -NoNewline "`r`nAviUtlをインストールするフォルダを作成しています..."
 
