@@ -118,7 +118,7 @@ if (($tagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	# 最新版の情報と一致しない場合
 	if ($tagName -ne $Version) {
 		# 最新版の情報を通知
-		Write-Host "${tagName} がリリースされていますが、自動更新が利用できません。最新版を利用するためには`r`nhttps://github.com/menndouyukkuri/aviutl-installer-script/releases/latest からダウンロードする必要があります。"
+		Write-Host "${tagName} がリリースされていますが、自動更新が利用できません。最新版を利用するためには`r`n　　https://github.com/menndouyukkuri/aviutl-installer-script/releases/latest`r`nからダウンロードする必要があります。"
 
 	# 最新版の情報と一致する場合
 	} else {
