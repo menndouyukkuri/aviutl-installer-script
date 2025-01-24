@@ -33,10 +33,15 @@ function GithubLatestReleaseUrl ($repo) {
 	return($api.assets.browser_download_url)
 }
 
-# バージョン情報を格納
-$Version = "v1.1.2v3"
+# バージョン情報を記載
+$VerNum = "1.1.5"
+$ReleaseDate = "2025-01-24"
 
-$DisplayNameOfThisScript = "AviUtl Installer Script (Version 1.1.2v3_2025-01-23)"
+# 更新確認用にバージョン情報を格納
+$Version = "v" + $VerNum
+
+# バージョン表示
+$DisplayNameOfThisScript = "AviUtl Installer Script (Version ${VerNum}_${ReleaseDate})"
 $Host.UI.RawUI.WindowTitle = $DisplayNameOfThisScript
 Write-Host "$($DisplayNameOfThisScript)`r`n`r`n"
 
@@ -44,40 +49,62 @@ Write-Host "$($DisplayNameOfThisScript)`r`n`r`n"
 $scriptFileRoot = (Get-Location).Path
 
 # 本体の更新確認 by Yu-yu0202 (20250121)
-Write-Host "本体の更新を確認します..."
+Write-Host -NoNewline "本体の更新を確認します..."
 $tagName = Invoke-RestMethod -Uri "https://api.github.com/repos/menndouyukkuri/aviutl-installer-script/releases/latest" | Select-Object -ExpandProperty tag_name
 if ($tagName -ne $Version) {
-	Write-Host "新しいバージョンがあります。更新を行います..."
-	#tmpフォルダを作成+移動
-	New-Item -ItemType Directory -Path tmp -Force | Out-Null
-	Set-Location tmp
+	Write-Host "完了"
+	Write-Host -NoNewline "新しいバージョンがあります。更新を行います..."
+
+	# 古いバージョンのファイル (aviutl-installer.cmd 以外) を削除
+	Get-ChildItem -Path $scriptFileRoot | Where-Object { $_.Name -ne "aviutl-installer.cmd" } | Remove-Item -Recurse | Out-Null
+
+	# newver ディレクトリを作成し、カレントディレクトリを移動
+	New-Item -ItemType Directory -Path newver -Force | Out-Null
+	Set-Location newver
+
 	# 本体の最新版のダウンロードURLを取得
 	$AISDownloadUrl = GithubLatestReleaseUrl "menndouyukkuri/aviutl-installer-script"
+
 	# 本体のzipファイルをダウンロード (待機)
 	Start-Process -FilePath curl.exe -ArgumentList "-OL $AISDownloadUrl" -WindowStyle Hidden -Wait
+
 	# tagNameから先頭の「v」を削除
 	$tagName = $tagName.Substring(1)
+
 	# 本体のzipファイルを展開 (待機)
 	Start-Process powershell -ArgumentList "-command Expand-Archive -Path aviutl-installer_$tagName.zip -Force" -WindowStyle Hidden -Wait
+
 	# 展開後のzipを削除
 	Remove-Item aviutl-installer_$($tagName).zip
-    # 新バージョンのファイル(aviutl-installer.cmd 以外)をルードディレクトリに移動(Force)
-    Get-ChildItem -Path "aviutl-installer_$tagName" -Recurse | Where-Object { $_.Name -ne "aviutl-installer.cmd" } | Move-Item -Destination $scriptFileRoot -Force | Out-Null
-	# 競合防止でtmpフォルダを削除
-	Remove-Item -Path tmp -Recurse -Force | Out-Null
+
+	# 新バージョンのファイル (aviutl-installer.cmd 以外) をルードディレクトリにコピー
+	Get-ChildItem -Path "aviutl-installer_$tagName" | Where-Object { $_.Name -ne "aviutl-installer.cmd" } | Copy-Item -Destination $scriptFileRoot -Force | Out-Null
+
+	Write-Host "完了"
+
 	# 一旦ウィンドウをクリア(Host.UI.RauUI.WindowTitleとコンソールをクリア)にする
 	$Host.UI.RawUI.WindowTitle = ""
 	Clear-Host
-	# 新バージョンのcmdファイルの2行目からを展開し実行
-	$script = Get-Content -Path "aviutl-installer_$tagName\aviutl-installer.cmd" | Select-Object -Skip 1
-	Invoke-Expression $script
+
+	# 新バージョンのcmdファイルの2行目からを展開し実行 (待機)
+	$scriptObject = Get-Content -Path "aviutl-installer_$tagName\aviutl-installer.cmd" | Select-Object -Skip 1
+	$script = Out-String -InputObject $scriptObject
+	Start-Process powershell -ArgumentList "-command Invoke-Expression $script" -WindowStyle Hidden -Wait
+
+	# カレントディレクトリをスクリプトファイルのあるディレクトリに戻し、newver ディレクトリを削除 (待機)
+	Set-Location ..
+	Start-Process powershell -ArgumentList "-command Remove-Item newver -Recurse" -WindowStyle Hidden -Wait
+
 	# スクリプトを終了
-	Exit
+	exit
+
+# 最新版の情報と一致する場合
 } else {
-	Write-Host "更新はありません。"
+	Write-Host "完了"
+	Write-Host "${Version} は最新版です。"
 }
 
-Write-Host -NoNewline "AviUtlをインストールするフォルダを作成しています..."
+Write-Host -NoNewline "`r`nAviUtlをインストールするフォルダを作成しています..."
 
 # C:\Applications ディレクトリを作成する (待機)
 Start-Process powershell -ArgumentList "-command New-Item C:\Applications -ItemType Directory -Force" -WindowStyle Hidden -Wait
