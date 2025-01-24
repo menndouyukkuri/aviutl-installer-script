@@ -68,7 +68,7 @@ $AisRootDir = Split-Path $settingsDirectoryPath -Parent
 
 # 本体の更新確認 by Yu-yu0202 (20250121)
 $tagName = Invoke-RestMethod -Uri "https://api.github.com/repos/menndouyukkuri/aviutl-installer-script/releases/latest" | Select-Object -ExpandProperty tag_name
-if ($tagName -ne $Version) {
+if (($tagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Write-Host "完了"
 	Write-Host -NoNewline "新しいバージョンがあります。更新を行います..."
 
