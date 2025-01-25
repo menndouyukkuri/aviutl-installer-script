@@ -37,8 +37,8 @@ function GithubLatestReleaseUrl ($repo) {
 $scriptFileRoot = (Get-Location).Path
 
 # バージョン情報を記載
-$VerNum = "1.1.5"
-$ReleaseDate = "2025-01-24"
+$VerNum = "1.1.6"
+$ReleaseDate = "2025-01-26"
 
 # 更新確認用にバージョン情報を格納
 $Version = "v" + $VerNum
@@ -89,7 +89,9 @@ if (($tagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Write-Host -NoNewline "新しいバージョンがあります。更新を行います..."
 
 	# 古いバージョンのファイルを削除
-	Remove-Item "${AisRootDir}\*" -Recurse | Out-Null
+	Remove-Item "${AisRootDir}\docs" -Recurse | Out-Null
+	Remove-Item "${AisRootDir}\script_files" -Recurse | Out-Null
+	Remove-Item "${AisRootDir}\settings" -Recurse | Out-Null
 
 	# newver ディレクトリを作成し、カレントディレクトリを移動
 	New-Item -ItemType Directory -Path newver -Force | Out-Null
