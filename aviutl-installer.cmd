@@ -51,7 +51,7 @@ Write-Host "$($DisplayNameOfThisScript)`r`n`r`n"
 # PowerShellのバージョンを確認し、実行できない場合はそれを表示する
 if ((((Get-Host).Version) -split "\.")[0] -ne "5") {
 	Write-Host "For this script to work, PowerShell 5.x needs to launch when `"powershell`" command is executed in Command Prompt."
-	Write-Host "このスクリプトが動作するには コマンド プロンプト で `"powershell`" コマンドを実行した際に、PowerShell 5.x が起動する必要があります。"
+	Write-Host "このスクリプトが動作するには コマンド プロンプト で `"powershell`" コマンドを実行した際に、PowerShell 5.x が起動する必要があります。`r`n"
 	Pause
 	exit
 }
@@ -59,9 +59,17 @@ if ((((Get-Host).Version) -split "\.")[0] -ne "5") {
 # Windowsのバージョンを確認し、実行できない場合はそれを表示する
 $WindowsNtCurrentVersion = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
 if ($WindowsNtCurrentVersion.CurrentBuild -lt 17134) {
-	Write-Host "このスクリプトは Windows 10 April 2018 Update (バージョン 1803) 以降でのみ動作します。"
+	Write-Host "このスクリプトは Windows 10 April 2018 Update (バージョン 1803) 以降でのみ動作します。`r`n"
+
+	# サポートが終了しているバージョンのWindowsを使用しているため警告を出す
+	Write-Host "　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　                    `r`n　　警告: このバージョンの Windows は Microsoft によるサポートが終了しています。　　　　　　　　　　　`r`n　　　　  サポートが終了した Windows を使用し続けると、マルウェアに感染するなどの被害を受ける         `r`n　　　　  可能性があります。速やかにサポート中のバージョンへの更新を行ってください。                  `r`n　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　                    `r`n" -BackgroundColor Yellow -ForegroundColor Black
+
 	Pause
 	exit
+
+# スクリプトは実行可能だが、リリース時点でサポートが終了しているバージョンのWindowsを使用している場合に警告を出す
+} elseif (($WindowsNtCurrentVersion.CurrentBuild -lt 19045) -or (($WindowsNtCurrentVersion.CurrentBuild -ge 22000) -and ($WindowsNtCurrentVersion.CurrentBuild -lt 22630))) {
+	Write-Host "　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　                    `r`n　　警告: このバージョンの Windows は Microsoft によるサポートが終了しています。　　　　　　　　　　　`r`n　　　　  サポートが終了した Windows を使用し続けると、マルウェアに感染するなどの被害を受ける         `r`n　　　　  可能性があります。速やかにサポート中のバージョンへの更新を行ってください。                  `r`n　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　                    `r`n" -BackgroundColor Yellow -ForegroundColor Black
 }
 
 # settings ディレクトリの場所を確認
