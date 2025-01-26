@@ -42,7 +42,7 @@ Write-Host "必須プラグイン (patch.aul・L-SMASH Works・InputPipePlugin・x264guiEx
 # PowerShellのバージョンを確認し、実行できない場合はそれを表示する
 if ((((Get-Host).Version) -split "\.")[0] -ne "5") {
 	Write-Host "For this script to work, PowerShell 5.x needs to launch when `"powershell`" command is executed in Command Prompt."
-	Write-Host "このスクリプトが動作するには コマンド プロンプト で `"powershell`" コマンドを実行した際に、PowerShell 5.x が起動する必要があります。"
+	Write-Host "このスクリプトが動作するには コマンド プロンプト で `"powershell`" コマンドを実行した際に、PowerShell 5.x が起動する必要があります。`r`n"
 	Pause
 	exit
 }
