@@ -37,8 +37,8 @@ function GithubLatestReleaseUrl ($repo) {
 $scriptFileRoot = (Get-Location).Path
 
 # バージョン情報を記載
-$VerNum = "1.1.6"
-$ReleaseDate = "2025-01-26"
+$VerNum = "1.1.7"
+$ReleaseDate = "2025-01-27"
 
 # 更新確認用にバージョン情報を格納
 $Version = "v" + $VerNum
