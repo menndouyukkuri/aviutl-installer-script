@@ -22,11 +22,11 @@
  #  SOFTWARE.
 #>
 
-# GitHubãƒªãƒã‚¸ãƒˆãƒªã®æœ€æ–°ç‰ˆãƒªãƒªãƒ¼ã‚¹ã®æƒ…å ±ã‚’å–å¾—ã™ã‚‹
+# GitHubƒŠƒ|ƒWƒgƒŠ‚ÌÅV”ÅƒŠƒŠ[ƒX‚Ìî•ñ‚ğæ“¾‚·‚é
 function GithubLatestRelease ($repo) {
-	# GitHubã®APIã‹ã‚‰æœ€æ–°ç‰ˆãƒªãƒªãƒ¼ã‚¹ã®æƒ…å ±ã‚’å–å¾—ã™ã‚‹
+	# GitHub‚ÌAPI‚©‚çÅV”ÅƒŠƒŠ[ƒX‚Ìî•ñ‚ğæ“¾‚·‚é
 	$api = Invoke-RestMethod "https://api.github.com/repos/$repo/releases/latest"
 
-	# æœ€æ–°ç‰ˆãƒªãƒªãƒ¼ã‚¹ã®æƒ…å ±ã‚’è¿”ã™
+	# ÅV”ÅƒŠƒŠ[ƒX‚Ìî•ñ‚ğ•Ô‚·
 	return($api)
 }
