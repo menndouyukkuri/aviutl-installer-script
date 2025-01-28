@@ -24,15 +24,6 @@
  #  SOFTWARE.
 #>
 
-# GitHubリポジトリの最新版リリースのダウンロードURLを取得する
-function GithubLatestReleaseUrl ($repo) {
-	# GitHubのAPIから最新版リリースの情報を取得する
-	$api = Invoke-RestMethod "https://api.github.com/repos/$repo/releases/latest"
-
-	# 最新版リリースのダウンロードURLのみを返す
-	return($api.assets.browser_download_url)
-}
-
 # カレントディレクトリのパスを $scriptFileRoot に保存 (起動方法のせいで $PSScriptRoot が使用できないため)
 $scriptFileRoot = (Get-Location).Path
 
@@ -64,21 +55,34 @@ if ($WindowsNtCurrentVersion.CurrentBuild -lt 17134) {
 }
 
 # settings ディレクトリの場所を確認
-New-Variable settingsDirectoryPath
 if (Test-Path ".\settings") {
 	$settingsDirectoryPath = Convert-Path ".\settings"
 } elseif (Test-Path "..\settings") {
 	$settingsDirectoryPath = Convert-Path "..\settings"
 } else {
 	Write-Host "発生したエラー: settings フォルダが見つかりません。"
+	Pause
+	exit
 }
+
+# AviUtl Installer Scriptのzipファイルが展開されたと思われるディレクトリのパスを保存
+$AisRootDir = Split-Path $settingsDirectoryPath -Parent
+
+# script_files ディレクトリのパスを $scriptFilesDirectoryPath に格納
+	# settings ディレクトリと同じ親ディレクトリを持つことを前提としているので注意
+$scriptFilesDirectoryPath = Join-Path -Path $AisRootDir -ChildPath script_files
+
+# script_files\ais-shared-function.ps1 を読み込み
+. "${scriptFilesDirectoryPath}\ais-shared-function.ps1"
+
+# script_files\PSConvertFromJsonEditable\ConvertFrom-JsonEditable.ps1 を読み込み
+. "${scriptFilesDirectoryPath}\PSConvertFromJsonEditable\ConvertFrom-JsonEditable.ps1"
 
 Write-Host -NoNewline "AviUtlがインストールされているフォルダを確認しています..."
 
 Start-Sleep -Milliseconds 500
 
 # aviutl.exe が入っているディレクトリを探し、$aviutlExeDirectory にパスを保存
-New-Variable aviutlExeDirectory
 if (Test-Path "C:\AviUtl\aviutl.exe") {
 	Write-Host "完了"
 	$aviutlExeDirectory = "C:\AviUtl"
@@ -86,30 +90,124 @@ if (Test-Path "C:\AviUtl\aviutl.exe") {
 	Write-Host "完了"
 	$aviutlExeDirectory = "C:\Applications\AviUtl"
 } else { # 確認できなかった場合、ユーザーにパスを入力させる
+	# 1周目のメッセージの表示用に false に
+	$PathIncludingSpace = $false
+
 	# ユーザーにパスを入力させ、aviutl.exe が入っていることを確認したらループを抜ける
 	do {
-		Write-Host "完了"
-		Write-Host "AviUtlがインストールされているフォルダが確認できませんでした。`r`n"
-
-		Write-Host "aviutl.exe のパス、または aviutl.exe が入っているフォルダのパスを入力し、Enter を押してください。"
-		$userInputAviutlExePath = Read-Host
-
-		# ユーザーの入力をもとに aviutl.exe の入っているディレクトリのパスを $aviutlExeDirectory に代入
-		if ($userInputAviutlExePath -match "\\aviutl\.exe") {
-			$aviutlExeDirectory = Split-Path $userInputAviutlExePath -Parent
-		} else {
-			$aviutlExeDirectory = $userInputAviutlExePath
+		if (!($PathIncludingSpace)) {
+			Write-Host "完了"
+			Write-Host "AviUtlがインストールされているフォルダが確認できませんでした。`r`n"
 		}
 
-		Write-Host -NoNewline "`r`nAviUtlがインストールされているフォルダを確認しています..."
-	} while (!(Test-Path "${aviutlExeDirectory}\aviutl.exe"))
+		Write-Host "aviutl.exe のパス、または aviutl.exe が入っているフォルダのパスを入力し、Enter を押してください。"
+		Write-Host -NoNewline "> "
+		$userInputAviutlExePath = $Host.UI.ReadLine()
+
+		# 入力されたパスにスペースが含まれている場合
+		if ($userInputAviutlExePath.Contains(" ")) {
+			$PathIncludingSpace = $true
+
+			Write-Host "`r`nパスにスペースが含まれていると、不具合の原因になるため許可されていません。"
+
+			# ユーザーの入力をもとに aviutl.exe の入っているディレクトリのパスを $aviutlExeDirectory に代入
+			if ($userInputAviutlExePath -match "\\aviutl\.exe") {
+				$aviutlExeDirectory = Split-Path $userInputAviutlExePath -Parent
+			} else {
+				$aviutlExeDirectory = $userInputAviutlExePath
+			}
+
+			# aviutl.exe の入ったフォルダの名前にしかスペースがないのか、それ以外にもスペースがあるのかを判別してメッセージを変える
+			$aviutlExeDirectoryParent = Split-Path $aviutlExeDirectory -Parent
+			if ($aviutlExeDirectoryParent.Contains(" ")) {
+				Write-Host "aviutl.exe が入っているフォルダの場所を変更するなどして、パスにスペースが含まれないようにしてください。`r`n"
+			} else {
+				Write-Host "aviutl.exe が入っているフォルダの名前を変更するなどして、パスにスペースが含まれないようにしてください。`r`n"
+			}
+		# 入力されたパスにスペースが含まれていない場合
+		} else {
+			$PathIncludingSpace = $false
+
+			# ユーザーの入力をもとに aviutl.exe の入っているディレクトリのパスを $aviutlExeDirectory に代入
+			if ($userInputAviutlExePath -match "\\aviutl\.exe") {
+				$aviutlExeDirectory = Split-Path $userInputAviutlExePath -Parent
+			} else {
+				$aviutlExeDirectory = $userInputAviutlExePath
+			}
+
+			Write-Host -NoNewline "`r`nAviUtlがインストールされているフォルダを確認しています..."
+		}
+	} while (!(Test-Path "${aviutlExeDirectory}\aviutl.exe") -or $PathIncludingSpace)
 	Write-Host "完了"
 }
 
 Write-Host "${aviutlExeDirectory} に aviutl.exe を確認しました。"
+Write-Host -NoNewline "`r`napm.json を確認しています..."
 
-Start-Sleep -Milliseconds 500
+# apm.json が存在する場合、$apmJsonHash に読み込み、$apmJsonExist に true を格納
+$apmJsonExist = $false
+if (Test-Path "${aviutlExeDirectory}\apm.json") {
+	$apmJsonHash = Get-Content "${aviutlExeDirectory}\apm.json" | ConvertFrom-JsonEditable
+	$apmJsonExist = $true
 
+# apm.json が存在しない場合、apm.json の元になるハッシュテーブルを用意して $apmJsonHash に代入
+} else {
+	$apmJsonHash = [ordered]@{
+		"dataVersion" = "3"
+		"core" = [ordered]@{
+			"aviutl" = "1.10"
+			"exedit" = "0.92"
+		}
+		"packages" = [ordered]@{
+			"nazono/patch" = [ordered]@{
+				"id" = "nazono/patch"
+				"version" = "r43_68"
+			}
+			"MrOjii/LSMASHWorks" = [ordered]@{
+				"id" = "MrOjii/LSMASHWorks"
+				"version" = "2025/01/26"
+			}
+			"amate/InputPipePlugin" = [ordered]@{
+				"id" = "amate/InputPipePlugin"
+				"version" = "v2.0"
+			}
+			"rigaya/x264guiEx" = [ordered]@{
+				"id" = "rigaya/x264guiEx"
+				"version" = "3.31"
+			}
+			"amate/MFVideoReader" = [ordered]@{
+				"id" = "amate/MFVideoReader"
+				"version" = "v1.0"
+			}
+			"rigaya/NVEnc" = [ordered]@{
+				"id" = "rigaya/NVEnc"
+				"version" = "7.82"
+			}
+			"rigaya/QSVEnc" = [ordered]@{
+				"id" = "rigaya/QSVEnc"
+				"version" = "7.79"
+			}
+			"rigaya/VCEEnc" = [ordered]@{
+				"id" = "rigaya/VCEEnc"
+				"version" = "8.28"
+			}
+			"satsuki/satsuki" = [ordered]@{
+				"id" = "satsuki/satsuki"
+				"version" = "20160828"
+			}
+			"nagomiku/paracustomobj" = [ordered]@{
+				"id" = "nagomiku/paracustomobj"
+				"version" = "v2.10"
+			}
+			"ePi/LuaJIT" = [ordered]@{
+				"id" = "ePi/LuaJIT"
+				"version" = "2.1.0-beta3"
+			}
+		}
+	}
+}
+
+Write-Host "完了"
 Write-Host -NoNewline "`r`n一時的にファイルを保管するフォルダを作成しています..."
 
 # AviUtl ディレクトリ内に plugins, script, license, readme の4つのディレクトリを作成する (待機)
@@ -140,9 +238,10 @@ if ($ExplorerAdvancedRegKey.HideFileExt -ne "0") {
 Write-Host "完了"
 Write-Host -NoNewline "`r`nAviUtl本体のバージョンを確認しています..."
 
-# aviutl.vfp を発見した場合、1.00以前の可能性があるため更新する (1.10には aviutl.vfp は付属しないため)
-# VFPlugin
-if (Test-Path "${aviutlExeDirectory}\aviutl.vfp") {
+# apm.json が存在する場合、AviUtlのバージョンを参照して1.10でなければ更新する。また、apm.json が存在しない場合、
+# aviutl.vfp を発見したら1.00以前の可能性があるため更新する (1.10には aviutl.vfp は付属しないため)
+if (($apmJsonExist -and ($apmJsonHash["core"]["aviutl"] -ne "1.10")) -or
+	(($apmJsonExist -eq $false) -and (Test-Path "${aviutlExeDirectory}\aviutl.vfp"))) {
 	Write-Host "完了"
 	Write-Host -NoNewline "AviUtl本体 (version 1.10) をダウンロードしています..."
 
@@ -172,11 +271,14 @@ if (Test-Path "${aviutlExeDirectory}\aviutl.vfp") {
 	if (Test-Path "HKCU:\Software\VFPlugin") {
 		# aviutl.vfp のレジストリへのVFPlugin登録を確認
 		$vfpluginRegKey = Get-ItemProperty "HKCU:\Software\VFPlugin"
-		if ($vfpluginRegKey.AviUtl -ne $null) {
+		if ($null -ne $vfpluginRegKey.AviUtl) {
 			# aviutl.vfp のレジストリへのVFPlugin登録を削除
 			Remove-ItemProperty -Path "HKCU:\Software\VFPlugin" -Name AviUtl
 		}
 	}
+
+	# apm.json のAviUtlのバージョンを更新
+	$apmJsonHash["core"]["aviutl"] = "1.10"
 
 	# カレントディレクトリを tmp ディレクトリに変更
 	Set-Location ..
@@ -217,8 +319,11 @@ if (Test-Path "${aviutlPluginsDirectory}\exedit.auf") {
 Write-Host "完了"
 
 # 拡張編集Pluginが見つからない場合、拡張編集Pluginをダウンロードして導入する
-# また、拡張編集Plugin 0.93テスト版にのみ付属する lua51jit.dll を発見した場合、0.92で置き換える
-if ((!(Test-Path "${aviutlExeDirectory}\exedit.auf")) -or (Test-Path "${aviutlExeDirectory}\lua51jit.dll")) {
+# apm.json が存在する場合、拡張編集Pluginのバージョンを参照して0.92でなければ置き換える。また、apm.json が
+# 存在しない場合、拡張編集Plugin 0.93テスト版にのみ付属する lua51jit.dll を発見したら0.92で置き換える
+if ((!(Test-Path "${aviutlExeDirectory}\exedit.auf")) -or
+	($apmJsonExist -and ($apmJsonHash["core"]["exedit"] -ne "0.92")) -or
+	(($apmJsonExist -eq $false) -and (Test-Path "${aviutlExeDirectory}\lua51jit.dll"))) {
 	Write-Host -NoNewline "`r`n拡張編集Plugin version 0.92をダウンロードしています..."
 
 	# 拡張編集Plugin version 0.92のzipファイルをダウンロード (待機)
@@ -248,6 +353,9 @@ if ((!(Test-Path "${aviutlExeDirectory}\exedit.auf")) -or (Test-Path "${aviutlEx
 		Remove-Item "${aviutlExeDirectory}\lua51jit.dll"
 	}
 
+	# apm.json の拡張編集Pluginのバージョンを更新
+	$apmJsonHash["core"]["exedit"] = "0.92"
+
 	# カレントディレクトリを tmp ディレクトリに変更
 	Set-Location ..
 
@@ -257,42 +365,66 @@ if ((!(Test-Path "${aviutlExeDirectory}\exedit.auf")) -or (Test-Path "${aviutlEx
 Write-Host -NoNewline "`r`npatch.aul (謎さうなフォーク版) の最新版情報を取得しています..."
 
 # patch.aul (謎さうなフォーク版) の最新版のダウンロードURLを取得
-$patchAulUrl = GithubLatestReleaseUrl "nazonoSAUNA/patch.aul"
+$patchAulGithubApi = GithubLatestRelease "nazonoSAUNA/patch.aul"
+$patchAulUrl = $patchAulGithubApi.assets.browser_download_url
 
-Write-Host "完了"
-Write-Host -NoNewline "patch.aul (謎さうなフォーク版) をダウンロードしています..."
+# apm.json があり、かつ最新版の情報が記載されている場合はスキップする
+if (!($apmJsonExist -and $apmJsonHash.packages.Contains("nazono/patch") -and
+	($apmJsonHash["packages"]["nazono/patch"]["version"] -eq $patchAulGithubApi.tag_name))) {
+	Write-Host "完了"
+	Write-Host -NoNewline "patch.aul (謎さうなフォーク版) をダウンロードしています..."
 
-# patch.aul (謎さうなフォーク版) のzipファイルをダウンロード (待機)
-Start-Process -FilePath curl.exe -ArgumentList "-OL $patchAulUrl" -WindowStyle Hidden -Wait
+	# patch.aul (謎さうなフォーク版) のzipファイルをダウンロード (待機)
+	Start-Process -FilePath curl.exe -ArgumentList "-OL $patchAulUrl" -WindowStyle Hidden -Wait
 
-Write-Host "完了"
-Write-Host -NoNewline "patch.aul (謎さうなフォーク版) をインストールしています..."
+	Write-Host "完了"
+	Write-Host -NoNewline "patch.aul (謎さうなフォーク版) をインストールしています..."
 
-# patch.aulのzipファイルを展開 (待機)
-Start-Process powershell -ArgumentList "-command Expand-Archive -Path patch.aul_*.zip -Force" -WindowStyle Hidden -Wait
+	# patch.aulのzipファイルを展開 (待機)
+	Start-Process powershell -ArgumentList "-command Expand-Archive -Path patch.aul_*.zip -Force" -WindowStyle Hidden -Wait
 
-# カレントディレクトリをpatch.aulのzipファイルを展開したディレクトリに変更
-Set-Location "patch.aul_*"
+	# カレントディレクトリをpatch.aulのzipファイルを展開したディレクトリに変更
+	Set-Location "patch.aul_*"
 
-# AviUtl\license 内に patch-aul ディレクトリを作成 (待機)
-Start-Process powershell -ArgumentList "-command New-Item `"${LicenseDirectoryRoot}\patch-aul`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
+	# AviUtl\license 内に patch-aul ディレクトリを作成 (待機)
+	Start-Process powershell -ArgumentList "-command New-Item `"${LicenseDirectoryRoot}\patch-aul`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
 
-# patch.aul が plugins ディレクトリ内にある場合、削除して patch.aul.json を移動させる (エラーの防止)
-if (Test-Path "${aviutlPluginsDirectory}\patch.aul") {
-	Remove-Item "${aviutlPluginsDirectory}\patch.aul"
-	if ((Test-Path "${aviutlPluginsDirectory}\patch.aul.json") -and (!(Test-Path "${aviutlExeDirectory}\patch.aul.json"))) {
-		Move-Item "${aviutlPluginsDirectory}\patch.aul.json" $aviutlExeDirectory -Force
-	} elseif (Test-Path "${aviutlPluginsDirectory}\patch.aul.json") {
-		Remove-Item "${aviutlPluginsDirectory}\patch.aul.json"
+	# patch.aul が plugins ディレクトリ内にある場合、削除して patch.aul.json を移動させる (エラーの防止)
+	if (Test-Path "${aviutlPluginsDirectory}\patch.aul") {
+		Remove-Item "${aviutlPluginsDirectory}\patch.aul"
+		if ((Test-Path "${aviutlPluginsDirectory}\patch.aul.json") -and (!(Test-Path "${aviutlExeDirectory}\patch.aul.json"))) {
+			Move-Item "${aviutlPluginsDirectory}\patch.aul.json" $aviutlExeDirectory -Force
+		} elseif (Test-Path "${aviutlPluginsDirectory}\patch.aul.json") {
+			Remove-Item "${aviutlPluginsDirectory}\patch.aul.json"
+		}
 	}
+
+	# AviUtl ディレクトリ内に patch.aul を (待機) 、AviUtl\license\patch-aul 内にその他のファイルをそれぞれ移動
+	Start-Process powershell -ArgumentList "-command Move-Item patch.aul $aviutlExeDirectory -Force" -WindowStyle Hidden -Wait
+	Move-Item * "${LicenseDirectoryRoot}\patch-aul" -Force
+
+	# apm.json に ePi/patch が登録されている場合は削除
+	if ($apmJsonHash.packages.Contains("ePi/patch")) {
+		$apmJsonHash.packages.Remove("ePi/patch")
+	}
+
+	# apm.json に sets/scrapboxAviUtl が登録されている場合は削除
+	if ($apmJsonHash.packages.Contains("sets/scrapboxAviUtl")) {
+		$apmJsonHash.packages.Remove("sets/scrapboxAviUtl")
+	}
+
+	# apm.json に nazono/patch が登録されていない場合はキーを作成してidを登録
+	if (!($apmJsonHash.packages.Contains("nazono/patch"))) {
+		$apmJsonHash["packages"]["nazono/patch"] = [ordered]@{}
+		$apmJsonHash["packages"]["nazono/patch"]["id"] = "nazono/patch"
+	}
+
+	# apm.json の nazono/patch のバージョンを更新
+	$apmJsonHash["packages"]["nazono/patch"]["version"] = $patchAulGithubApi.tag_name
+
+	# カレントディレクトリを tmp ディレクトリに変更
+	Set-Location ..
 }
-
-# AviUtl ディレクトリ内に patch.aul を (待機) 、AviUtl\license\patch-aul 内にその他のファイルをそれぞれ移動
-Start-Process powershell -ArgumentList "-command Move-Item patch.aul $aviutlExeDirectory -Force" -WindowStyle Hidden -Wait
-Move-Item * "${LicenseDirectoryRoot}\patch-aul" -Force
-
-# カレントディレクトリを tmp ディレクトリに変更
-Set-Location ..
 
 Write-Host "完了"
 Write-Host -NoNewline "`r`npatch.aul (謎さうなフォーク版) と競合するプラグインの有無を確認しています..."
@@ -313,6 +445,11 @@ Get-ChildItem -Attributes Directory | ForEach-Object {
 	}
 }
 
+# apm.json に suzune/bakusoku が登録されている場合は削除
+if ($apmJsonHash.packages.Contains("suzune/bakusoku")) {
+	$apmJsonHash.packages.Remove("suzune/bakusoku")
+}
+
 # Boost.auf を確認し、あったら削除
 if (Test-Path "${aviutlExeDirectory}\Boost.auf") {
 	Remove-Item "${aviutlExeDirectory}\Boost.auf"
@@ -326,61 +463,19 @@ Get-ChildItem -Attributes Directory | ForEach-Object {
 	}
 }
 
+# apm.json に suzune/bakusoku が登録されている場合は削除
+if ($apmJsonHash.packages.Contains("yanagi/Boost")) {
+	$apmJsonHash.packages.Remove("yanagi/Boost")
+}
+
 # カレントディレクトリを tmp ディレクトリに変更
 Set-Location "${scriptFileRoot}\tmp"
 
 Write-Host "完了"
 Write-Host -NoNewline "`r`nL-SMASH Works (Mr-Ojii版) の最新版情報を取得しています..."
 
-# L-SMASH Works (Mr-Ojii版) の最新版のダウンロードURLを取得
-$lSmashWorksAllUrl = GithubLatestReleaseUrl "Mr-Ojii/L-SMASH-Works-Auto-Builds"
-
-# 複数ある中からAviUtl用のもののみ残す
-$lSmashWorksUrl = $lSmashWorksAllUrl | Where-Object {$_ -like "*Mr-Ojii_vimeo*"}
-
-Write-Host "完了"
-Write-Host -NoNewline "L-SMASH Works (Mr-Ojii版) をダウンロードしています..."
-
-# L-SMASH Works (Mr-Ojii版) のzipファイルをダウンロード (待機)
-Start-Process -FilePath curl.exe -ArgumentList "-OL $lSmashWorksUrl" -WindowStyle Hidden -Wait
-
-Write-Host "完了"
-Write-Host -NoNewline "L-SMASH Works (Mr-Ojii版) をインストールしています..."
-
-# AviUtl\license\l-smash_works 内に Licenses ディレクトリがあれば削除する (エラーの防止)
-if (Test-Path "${LicenseDirectoryRoot}\l-smash_works\Licenses") {
-	Remove-Item "${LicenseDirectoryRoot}\l-smash_works\Licenses" -Recurse
-}
-
-# カレントディレクトリを AviUtl ディレクトリに変更
-Set-Location $aviutlExeDirectory
-
-# AviUtl ディレクトリやそのサブディレクトリ内の .lwi ファイルを削除する (エラーの防止)
-if (Test-Path "*.lwi") {
-	Remove-Item "*.lwi"
-}
-Get-ChildItem -Attributes Directory -Recurse | ForEach-Object {
-	if (Test-Path -Path "${_}\*.lwi") {
-		Remove-Item "${_}\*.lwi"
-	}
-}
-
-# カレントディレクトリを tmp ディレクトリに変更
-Set-Location "${scriptFileRoot}\tmp"
-
-# L-SMASH Worksのzipファイルを展開 (待機)
-Start-Process powershell -ArgumentList "-command Expand-Archive -Path L-SMASH-Works_*.zip -Force" -WindowStyle Hidden -Wait
-
-# カレントディレクトリをL-SMASH Worksのzipファイルを展開したディレクトリに変更
-Set-Location "L-SMASH-Works_*"
-
-# AviUtl\readme, AviUtl\license 内に l-smash_works ディレクトリを作成 (待機)
-Start-Process powershell -ArgumentList "-command New-Item `"${ReadmeDirectoryRoot}\l-smash_works`", `"${LicenseDirectoryRoot}\l-smash_works`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
-
 # L-SMASH Worksの入っているディレクトリを探し、$lwinputAuiDirectory にパスを保存
 # $inputPipePluginDeleteCheckDirectory は $lwinputAuiDirectory の逆、後に使用
-New-Variable lwinputAuiDirectory
-New-Variable inputPipePluginDeleteCheckDirectory
 if (Test-Path "${aviutlExeDirectory}\lwinput.aui") {
 	$lwinputAuiDirectory = $aviutlExeDirectory
 	$inputPipePluginDeleteCheckDirectory = $aviutlPluginsDirectory
@@ -389,174 +484,306 @@ if (Test-Path "${aviutlExeDirectory}\lwinput.aui") {
 	$inputPipePluginDeleteCheckDirectory = $aviutlExeDirectory
 }
 
-Start-Sleep -Milliseconds 500
+# L-SMASH Works (Mr-Ojii版) の最新版のダウンロードURLを取得
+$lSmashWorksGithubApi = GithubLatestRelease "Mr-Ojii/L-SMASH-Works-Auto-Builds"
+$lSmashWorksAllUrl = $lSmashWorksGithubApi.assets.browser_download_url
+
+# 複数ある中からAviUtl用のもののみ残す
+$lSmashWorksUrl = $lSmashWorksAllUrl | Where-Object {$_ -like "*Mr-Ojii_vimeo*"}
+
+# apm.json 用にタグ名を取得してビルド日だけ取り出し yyyy/mm/dd に整形
+$lSmashWorksTagNameSplitArray = ($lSmashWorksGithubApi.tag_name) -split "-"
+$lSmashWorksBuildDate = $lSmashWorksTagNameSplitArray[1] + "/" + $lSmashWorksTagNameSplitArray[2] + "/" + $lSmashWorksTagNameSplitArray[3]
+
+# apm.json のL-SMASH Worksのバージョンを / で分割して $apmJsonLSmashWorksVersionArray に格納
+if ($apmJsonExist -and $apmJsonHash.packages.Contains("MrOjii/LSMASHWorks")) {
+	$apmJsonLSmashWorksVersionArray = $apmJsonHash["packages"]["MrOjii/LSMASHWorks"]["version"] -split "/"
+} else {
+	$apmJsonLSmashWorksVersionArray = 0, 0, 0
+}
+
+# $lSmashWorksUpdate にL-SMASH Worksを更新するかどうかを格納
+$lSmashWorksUpdate = $true
+
+# apm.json の年 > 取得したビルド日の年
+if ($apmJsonLSmashWorksVersionArray[0] -gt $lSmashWorksTagNameSplitArray[1]) {
+	$lSmashWorksUpdate = $false
+
+# apm.json の年 < 取得したビルド日の年
+} elseif ($apmJsonLSmashWorksVersionArray[0] -lt $lSmashWorksTagNameSplitArray[1]) {
+	# if文を離脱、これより下の条件は apm.json の年 = 取得したビルド日の年
+
+# apm.json の月 > 取得したビルド日の月
+} elseif ($apmJsonLSmashWorksVersionArray[1] -gt $lSmashWorksTagNameSplitArray[2]) {
+	$lSmashWorksUpdate = $false
+
+# apm.json の月 < 取得したビルド日の月
+} elseif ($apmJsonLSmashWorksVersionArray[1] -gt $lSmashWorksTagNameSplitArray[2]) {
+	# if文を離脱、これより下の条件は apm.json の月 = 取得したビルド日の月
+
+# apm.json の日 >= 取得したビルド日の日
+} elseif ($apmJsonLSmashWorksVersionArray[2] -ge $lSmashWorksTagNameSplitArray[3]) {
+	$lSmashWorksUpdate = $false
+}
+
+# apm.json のバージョンより取得したビルド日の方が新しい場合は更新する
+if ($lSmashWorksUpdate) {
+	Write-Host "完了"
+	Write-Host -NoNewline "L-SMASH Works (Mr-Ojii版) をダウンロードしています..."
+
+	# L-SMASH Works (Mr-Ojii版) のzipファイルをダウンロード (待機)
+	Start-Process -FilePath curl.exe -ArgumentList "-OL $lSmashWorksUrl" -WindowStyle Hidden -Wait
+
+	Write-Host "完了"
+	Write-Host -NoNewline "L-SMASH Works (Mr-Ojii版) をインストールしています..."
+
+	# AviUtl\license\l-smash_works 内に Licenses ディレクトリがあれば削除する (エラーの防止)
+	if (Test-Path "${LicenseDirectoryRoot}\l-smash_works\Licenses") {
+		Remove-Item "${LicenseDirectoryRoot}\l-smash_works\Licenses" -Recurse
+	}
+
+	# カレントディレクトリを AviUtl ディレクトリに変更
+	Set-Location $aviutlExeDirectory
+
+	# AviUtl ディレクトリやそのサブディレクトリ内の .lwi ファイルを削除する (エラーの防止)
+	if (Test-Path "*.lwi") {
+		Remove-Item "*.lwi"
+	}
+	Get-ChildItem -Attributes Directory -Recurse | ForEach-Object {
+		if (Test-Path -Path "${_}\*.lwi") {
+			Remove-Item "${_}\*.lwi"
+		}
+	}
+
+	# カレントディレクトリを tmp ディレクトリに変更
+	Set-Location "${scriptFileRoot}\tmp"
+
+	# L-SMASH Worksのzipファイルを展開 (待機)
+	Start-Process powershell -ArgumentList "-command Expand-Archive -Path L-SMASH-Works_*.zip -Force" -WindowStyle Hidden -Wait
+
+	# カレントディレクトリをL-SMASH Worksのzipファイルを展開したディレクトリに変更
+	Set-Location "L-SMASH-Works_*"
+
+	# AviUtl\readme, AviUtl\license 内に l-smash_works ディレクトリを作成 (待機)
+	Start-Process powershell -ArgumentList "-command New-Item `"${ReadmeDirectoryRoot}\l-smash_works`", `"${LicenseDirectoryRoot}\l-smash_works`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
+
+	# $lwinputAuiDirectory ディレクトリ内に lw*.au* を、AviUtl\readme\l-smash_works 内に READM* を (待機) 、
+	# AviUtl\license\l-smash_works 内にその他のファイルをそれぞれ移動
+	Start-Process powershell -ArgumentList "-command Move-Item lw*.au* $lwinputAuiDirectory -Force; Move-Item READM* `"${ReadmeDirectoryRoot}\l-smash_works`" -Force" -WindowStyle Hidden -Wait
+	Move-Item * "${LicenseDirectoryRoot}\l-smash_works" -Force
+
+	# apm.json に pop4bit/LSMASHWorks が登録されている場合は削除
+	if ($apmJsonHash.packages.Contains("pop4bit/LSMASHWorks")) {
+		$apmJsonHash.packages.Remove("pop4bit/LSMASHWorks")
+	}
+
+	# apm.json に VFRmaniac/LSMASHWorks が登録されている場合は削除
+	if ($apmJsonHash.packages.Contains("VFRmaniac/LSMASHWorks")) {
+		$apmJsonHash.packages.Remove("VFRmaniac/LSMASHWorks")
+	}
+
+	# apm.json に HolyWu/LSMASHWorks が登録されている場合は削除
+	if ($apmJsonHash.packages.Contains("HolyWu/LSMASHWorks")) {
+		$apmJsonHash.packages.Remove("HolyWu/LSMASHWorks")
+	}
+
+	# apm.json に MrOjii/LSMASHWorks が登録されていない場合はキーを作成してidを登録
+	if (!($apmJsonHash.packages.Contains("MrOjii/LSMASHWorks"))) {
+		$apmJsonHash["packages"]["MrOjii/LSMASHWorks"] = [ordered]@{}
+		$apmJsonHash["packages"]["MrOjii/LSMASHWorks"]["id"] = "MrOjii/LSMASHWorks"
+	}
+
+	# apm.json の MrOjii/LSMASHWorks のバージョンを更新
+	$apmJsonHash["packages"]["MrOjii/LSMASHWorks"]["version"] = $lSmashWorksBuildDate
+
+	# カレントディレクトリを tmp ディレクトリに変更
+	Set-Location ..
+}
 
 # L-SMASH Worksの設定ファイルが見つからない場合のみ、以下の処理を実行
 if (!(Test-Path "${lwinputAuiDirectory}\lsmash.ini")) {
 	Copy-Item "${settingsDirectoryPath}\lsmash.ini" $lwinputAuiDirectory
 }
 
-# AviUtl\plugins ディレクトリ内に lw*.au* を、AviUtl\readme\l-smash_works 内に READM* を (待機) 、
-# AviUtl\license\l-smash_works 内にその他のファイルをそれぞれ移動
-Start-Process powershell -ArgumentList "-command Move-Item lw*.au* $lwinputAuiDirectory -Force; Move-Item READM* `"${ReadmeDirectoryRoot}\l-smash_works`" -Force" -WindowStyle Hidden -Wait
-Move-Item * "${LicenseDirectoryRoot}\l-smash_works" -Force
-
-# カレントディレクトリを tmp ディレクトリに変更
-Set-Location ..
-
 Write-Host "完了"
 Write-Host -NoNewline "`r`nInputPipePluginの最新版情報を取得しています..."
 
 # InputPipePluginの最新版のダウンロードURLを取得
-$InputPipePluginUrl = GithubLatestReleaseUrl "amate/InputPipePlugin"
+$InputPipePluginGithubApi = GithubLatestRelease "amate/InputPipePlugin"
+$InputPipePluginUrl = $InputPipePluginGithubApi.assets.browser_download_url
 
-Write-Host "完了"
-Write-Host -NoNewline "InputPipePluginをダウンロードしています..."
+# apm.json があり、かつ最新版の情報が記載されている場合はスキップする
+if (!($apmJsonExist -and $apmJsonHash.packages.Contains("amate/InputPipePlugin") -and
+	($apmJsonHash["packages"]["amate/InputPipePlugin"]["version"] -eq $InputPipePluginGithubApi.tag_name))) {
+	Write-Host "完了"
+	Write-Host -NoNewline "InputPipePluginをダウンロードしています..."
 
-# InputPipePluginのzipファイルをダウンロード (待機)
-Start-Process -FilePath curl.exe -ArgumentList "-OL $InputPipePluginUrl" -WindowStyle Hidden -Wait
+	# InputPipePluginのzipファイルをダウンロード (待機)
+	Start-Process -FilePath curl.exe -ArgumentList "-OL $InputPipePluginUrl" -WindowStyle Hidden -Wait
 
-Write-Host "完了"
-Write-Host -NoNewline "InputPipePluginをインストールしています..."
+	Write-Host "完了"
+	Write-Host -NoNewline "InputPipePluginをインストールしています..."
 
-# InputPipePluginのzipファイルを展開 (待機)
-Start-Process powershell -ArgumentList "-command Expand-Archive -Path InputPipePlugin_*.zip -Force" -WindowStyle Hidden -Wait
+	# InputPipePluginのzipファイルを展開 (待機)
+	Start-Process powershell -ArgumentList "-command Expand-Archive -Path InputPipePlugin_*.zip -Force" -WindowStyle Hidden -Wait
 
-# カレントディレクトリをInputPipePluginのzipファイルを展開したディレクトリに変更
-Set-Location "InputPipePlugin_*\InputPipePlugin"
+	# カレントディレクトリをInputPipePluginのzipファイルを展開したディレクトリに変更
+	Set-Location "InputPipePlugin_*\InputPipePlugin"
 
-# AviUtl\readme, AviUtl\license 内に inputPipePlugin ディレクトリを作成 (待機)
-Start-Process powershell -ArgumentList "-command New-Item `"${ReadmeDirectoryRoot}\inputPipePlugin`", `"${LicenseDirectoryRoot}\inputPipePlugin`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
+	# AviUtl\readme, AviUtl\license 内に inputPipePlugin ディレクトリを作成 (待機)
+	Start-Process powershell -ArgumentList "-command New-Item `"${ReadmeDirectoryRoot}\inputPipePlugin`", `"${LicenseDirectoryRoot}\inputPipePlugin`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
 
-# AviUtl\license\inputPipePlugin 内に LICENSE を、AviUtl\readme\inputPipePlugin 内に Readme.md を (待機) 、
-# AviUtl\plugins ディレクトリ内にその他のファイルをそれぞれ移動
-Start-Process powershell -ArgumentList "-command Move-Item LICENSE `"${LicenseDirectoryRoot}\inputPipePlugin`" -Force; Move-Item Readme.md `"${ReadmeDirectoryRoot}\inputPipePlugin`" -Force" -WindowStyle Hidden -Wait
-Move-Item * $lwinputAuiDirectory -Force
+	# AviUtl\license\inputPipePlugin 内に LICENSE を、AviUtl\readme\inputPipePlugin 内に Readme.md を (待機) 、
+	# $lwinputAuiDirectory ディレクトリ内にその他のファイルをそれぞれ移動
+	Start-Process powershell -ArgumentList "-command Move-Item LICENSE `"${LicenseDirectoryRoot}\inputPipePlugin`" -Force; Move-Item Readme.md `"${ReadmeDirectoryRoot}\inputPipePlugin`" -Force" -WindowStyle Hidden -Wait
+	Move-Item * $lwinputAuiDirectory -Force
 
-# トラブルの原因になるファイルの除去
-Set-Location $inputPipePluginDeleteCheckDirectory
-if (Test-Path "InputPipe*") {
-	Remove-Item "InputPipe*"
+	# トラブルの原因になるファイルの除去
+	Set-Location $inputPipePluginDeleteCheckDirectory
+	if (Test-Path "InputPipe*") {
+		Remove-Item "InputPipe*"
+	}
+	Set-Location $scriptFileRoot
+
+	# apm.json に amate/InputPipePlugin が登録されていない場合はキーを作成してidを登録
+	if (!($apmJsonHash.packages.Contains("amate/InputPipePlugin"))) {
+		$apmJsonHash["packages"]["amate/InputPipePlugin"] = [ordered]@{}
+		$apmJsonHash["packages"]["amate/InputPipePlugin"]["id"] = "amate/InputPipePlugin"
+	}
+
+	# apm.json の amate/InputPipePlugin のバージョンを更新
+	$apmJsonHash["packages"]["amate/InputPipePlugin"]["version"] = $InputPipePluginGithubApi.tag_name
+
+	# カレントディレクトリを tmp ディレクトリに変更
+	Set-Location tmp
 }
-Set-Location $scriptFileRoot
-
-# カレントディレクトリを tmp ディレクトリに変更
-Set-Location tmp
 
 Write-Host "完了"
 Write-Host -NoNewline "`r`nx264guiExの最新版情報を取得しています..."
 
 # x264guiExの最新版のダウンロードURLを取得
-$x264guiExUrl = GithubLatestReleaseUrl "rigaya/x264guiEx"
+$x264guiExGithubApi = GithubLatestRelease "rigaya/x264guiEx"
+$x264guiExUrl = $x264guiExGithubApi.assets.browser_download_url
 
-Write-Host "完了"
-Write-Host -NoNewline "x264guiExをダウンロードしています..."
+# apm.json があり、かつ最新版の情報が記載されている場合はスキップする
+if (!($apmJsonExist -and $apmJsonHash.packages.Contains("rigaya/x264guiEx") -and
+	($apmJsonHash["packages"]["rigaya/x264guiEx"]["version"] -eq $x264guiExGithubApi.tag_name))) {
+	Write-Host "完了"
+	Write-Host -NoNewline "x264guiExをダウンロードしています..."
 
-# x264guiExのzipファイルをダウンロード (待機)
-Start-Process -FilePath curl.exe -ArgumentList "-OL $x264guiExUrl" -WindowStyle Hidden -Wait
+	# x264guiExのzipファイルをダウンロード (待機)
+	Start-Process -FilePath curl.exe -ArgumentList "-OL $x264guiExUrl" -WindowStyle Hidden -Wait
 
-# x264guiExのzipファイルを展開 (待機)
-Start-Process powershell -ArgumentList "-command Expand-Archive -Path x264guiEx_*.zip -Force" -WindowStyle Hidden -Wait
+	# x264guiExのzipファイルを展開 (待機)
+	Start-Process powershell -ArgumentList "-command Expand-Archive -Path x264guiEx_*.zip -Force" -WindowStyle Hidden -Wait
 
-# カレントディレクトリをx264guiExのzipファイルを展開したディレクトリに変更
-Set-Location "x264guiEx_*\x264guiEx_*"
+	# カレントディレクトリをx264guiExのzipファイルを展開したディレクトリに変更
+	Set-Location "x264guiEx_*\x264guiEx_*"
 
-# カレントディレクトリをx264guiExのzipファイルを展開したディレクトリ内の plugins ディレクトリに変更
-Set-Location plugins
-
-Write-Host "完了"
-
-# AviUtl\plugins 内に x264guiEx_stg ディレクトリがあれば以下の処理を実行
-if (Test-Path "${aviutlPluginsDirectory}\x264guiEx_stg") {
-	# プロファイルを上書きするかどうかユーザーに確認する (既定は 上書きしない)
-	# 選択ここから
-
-	$x264guiExChoiceTitle = "x264guiExのプロファイルを上書きしますか？"
-	$x264guiExChoiceMessage = "プロファイルは更新で新しくなっている可能性がありますが、上書きを実行すると追加したプロファイルやプロファイルへの変更が削除されます。"
-
-	$x264guiExTChoiceDescription = "System.Management.Automation.Host.ChoiceDescription"
-	$x264guiExChoiceOptions = @(
-		New-Object $x264guiExTChoiceDescription ("はい(&Y)",  "上書きを実行します。")
-		New-Object $x264guiExTChoiceDescription ("いいえ(&N)", "上書きをせず、スキップして次の処理に進みます。")
-	)
-
-	$x264guiExChoiceResult = $host.ui.PromptForChoice($x264guiExChoiceTitle, $x264guiExChoiceMessage, $x264guiExChoiceOptions, 1)
-	switch ($x264guiExChoiceResult) {
-		0 {
-			Write-Host -NoNewline "プロファイルを上書きします..."
-
-			# AviUtl\plugins 内の x264guiEx_stg ディレクトリを削除する (待機)
-			Start-Process powershell -ArgumentList "-command Remove-Item `"${aviutlPluginsDirectory}\x264guiEx_stg`" -Recurse" -WindowStyle Hidden -Wait
-
-			# AviUtl\plugins 内に x264guiEx_stg ディレクトリを移動
-			Move-Item x264guiEx_stg $aviutlPluginsDirectory -Force
-
-			Write-Host "完了`r`n"
-			break
-		}
-		1 {
-			# 後で邪魔になるので削除
-			Remove-Item x264guiEx_stg -Recurse
-
-			Write-Host "プロファイルの上書きをスキップしました。`r`n"
-			break
-		}
-	}
-
-	# 選択ここまで
-}
-
-Write-Host -NoNewline "x264guiExをインストールしています..."
-
-Start-Sleep -Milliseconds 500
-
-# AviUtl\plugins 内に現在のディレクトリのファイルを全て移動
-Move-Item * $aviutlPluginsDirectory -Force
-
-# カレントディレクトリをx264guiExのzipファイルを展開したディレクトリ内の exe_files ディレクトリに変更
-Set-Location ..\exe_files
-
-# AviUtl ディレクトリ内に exe_files ディレクトリを作成 (待機)
-Start-Process powershell -ArgumentList "-command New-Item `"${aviutlExeDirectory}\exe_files`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
-
-# AviUtl\exe_files 内に x264_*.exe があれば削除 (待機)
-Start-Process powershell -ArgumentList "-command if (Test-Path `"${aviutlExeDirectory}\exe_files\x264_*.exe`") { Remove-Item `"${aviutlExeDirectory}\exe_files\x264_*.exe`" }" -WindowStyle Hidden -Wait
-
-# AviUtl\exe_files 内に現在のディレクトリのファイルを全て移動
-Move-Item * "${aviutlExeDirectory}\exe_files" -Force
-
-# カレントディレクトリをx264guiExのzipファイルを展開したディレクトリに変更
-Set-Location ..
-
-# AviUtl\readme 内に x264guiEx ディレクトリを作成 (待機)
-Start-Process powershell -ArgumentList "-command New-Item `"${ReadmeDirectoryRoot}\x264guiEx`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
-
-# AviUtl\readme\x264guiEx 内に x264guiEx_readme.txt を移動
-Move-Item x264guiEx_readme.txt "${ReadmeDirectoryRoot}\x264guiEx" -Force
-
-# カレントディレクトリを tmp ディレクトリに変更
-Set-Location ..\..
-
-Write-Host "完了"
-Write-Host -NoNewline "`r`nMFVideoReaderを確認しています..."
-
-# MFVideoReaderの入っているディレクトリを探し、$MFVideoReaderAuiDirectory にパスを保存
-New-Variable MFVideoReaderAuiDirectory
-if (Test-Path "${aviutlExeDirectory}\MFVideoReaderPlugin.aui") {
-	$MFVideoReaderAuiDirectory = $aviutlExeDirectory
-} elseif (Test-Path "${aviutlPluginsDirectory}\MFVideoReaderPlugin.aui") {
-	$MFVideoReaderAuiDirectory = $aviutlPluginsDirectory
-
-# MFVideoReaderが導入されていない場合のみ、以下の処理を実行
-} else {
-	$MFVideoReaderAuiDirectory = $aviutlPluginsDirectory
+	# カレントディレクトリをx264guiExのzipファイルを展開したディレクトリ内の plugins ディレクトリに変更
+	Set-Location plugins
 
 	Write-Host "完了"
-	Write-Host -NoNewline "`r`nMFVideoReaderの最新版情報を取得しています..."
 
-	# MFVideoReaderの最新版のダウンロードURLを取得
-	$MFVideoReaderUrl = GithubLatestReleaseUrl "amate/MFVideoReader"
+	# AviUtl\plugins 内に x264guiEx_stg ディレクトリがあれば以下の処理を実行
+	if (Test-Path "${aviutlPluginsDirectory}\x264guiEx_stg") {
+		# プロファイルを上書きするかどうかユーザーに確認する (既定は 上書きしない)
 
+		# 選択ここから
+
+		$x264guiExChoiceTitle = "x264guiExのプロファイルを上書きしますか？"
+		$x264guiExChoiceMessage = "プロファイルは更新で新しくなっている可能性がありますが、上書きを実行すると追加したプロファイルやプロファイルへの変更が削除されます。"
+
+		$x264guiExTChoiceDescription = "System.Management.Automation.Host.ChoiceDescription"
+		$x264guiExChoiceOptions = @(
+			New-Object $x264guiExTChoiceDescription ("はい(&Y)",  "上書きを実行します。")
+			New-Object $x264guiExTChoiceDescription ("いいえ(&N)", "上書きをせず、スキップして次の処理に進みます。")
+		)
+
+		$x264guiExChoiceResult = $host.ui.PromptForChoice($x264guiExChoiceTitle, $x264guiExChoiceMessage, $x264guiExChoiceOptions, 1)
+		switch ($x264guiExChoiceResult) {
+			0 {
+				Write-Host -NoNewline "プロファイルを上書きします..."
+
+				# AviUtl\plugins 内の x264guiEx_stg ディレクトリを削除する (待機)
+				Start-Process powershell -ArgumentList "-command Remove-Item `"${aviutlPluginsDirectory}\x264guiEx_stg`" -Recurse" -WindowStyle Hidden -Wait
+
+				# AviUtl\plugins 内に x264guiEx_stg ディレクトリを移動
+				Move-Item x264guiEx_stg $aviutlPluginsDirectory -Force
+
+				Write-Host "完了`r`n"
+				break
+			}
+			1 {
+				# 後で邪魔になるので削除
+				Remove-Item x264guiEx_stg -Recurse
+
+				Write-Host "プロファイルの上書きをスキップしました。`r`n"
+				break
+			}
+		}
+
+		# 選択ここまで
+	}
+
+	Write-Host -NoNewline "x264guiExをインストールしています..."
+
+	Start-Sleep -Milliseconds 500
+
+	# AviUtl\plugins 内に現在のディレクトリのファイルを全て移動
+	Move-Item * $aviutlPluginsDirectory -Force
+
+	# カレントディレクトリをx264guiExのzipファイルを展開したディレクトリ内の exe_files ディレクトリに変更
+	Set-Location ..\exe_files
+
+	# AviUtl ディレクトリ内に exe_files ディレクトリを作成 (待機)
+	Start-Process powershell -ArgumentList "-command New-Item `"${aviutlExeDirectory}\exe_files`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
+
+	# AviUtl\exe_files 内に x264_*.exe があれば削除 (待機)
+	Start-Process powershell -ArgumentList "-command if (Test-Path `"${aviutlExeDirectory}\exe_files\x264_*.exe`") { Remove-Item `"${aviutlExeDirectory}\exe_files\x264_*.exe`" }" -WindowStyle Hidden -Wait
+
+	# AviUtl\exe_files 内に現在のディレクトリのファイルを全て移動
+	Move-Item * "${aviutlExeDirectory}\exe_files" -Force
+
+	# カレントディレクトリをx264guiExのzipファイルを展開したディレクトリに変更
+	Set-Location ..
+
+	# AviUtl\readme 内に x264guiEx ディレクトリを作成 (待機)
+	Start-Process powershell -ArgumentList "-command New-Item `"${ReadmeDirectoryRoot}\x264guiEx`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
+
+	# AviUtl\readme\x264guiEx 内に x264guiEx_readme.txt を移動
+	Move-Item x264guiEx_readme.txt "${ReadmeDirectoryRoot}\x264guiEx" -Force
+
+	# apm.json に rigaya/x264guiEx が登録されていない場合はキーを作成してidを登録
+	if (!($apmJsonHash.packages.Contains("rigaya/x264guiEx"))) {
+		$apmJsonHash["packages"]["rigaya/x264guiEx"] = [ordered]@{}
+		$apmJsonHash["packages"]["rigaya/x264guiEx"]["id"] = "rigaya/x264guiEx"
+	}
+
+	# apm.json の rigaya/x264guiEx のバージョンを更新
+	$apmJsonHash["packages"]["rigaya/x264guiEx"]["version"] = $x264guiExGithubApi.tag_name
+
+	# カレントディレクトリを tmp ディレクトリに変更
+	Set-Location ..\..
+}
+
+Write-Host "完了"
+Write-Host -NoNewline "`r`nMFVideoReaderの最新版情報を取得しています..."
+
+# MFVideoReaderの入っているディレクトリを探し、$MFVideoReaderAuiDirectory にパスを保存
+if (Test-Path "${aviutlExeDirectory}\MFVideoReaderPlugin.aui") {
+	$MFVideoReaderAuiDirectory = $aviutlExeDirectory
+} else {
+	$MFVideoReaderAuiDirectory = $aviutlPluginsDirectory
+}
+
+# MFVideoReaderの最新版のダウンロードURLを取得
+$MFVideoReaderGithubApi = GithubLatestRelease "amate/MFVideoReader"
+$MFVideoReaderUrl = $MFVideoReaderGithubApi.assets.browser_download_url
+
+# apm.json があり、かつ最新版の情報が記載されている場合はスキップする
+if (!($apmJsonExist -and $apmJsonHash.packages.Contains("amate/MFVideoReader") -and
+	($apmJsonHash["packages"]["amate/MFVideoReader"]["version"] -eq $MFVideoReaderGithubApi.tag_name))) {
 	Write-Host "完了"
 	Write-Host -NoNewline "MFVideoReaderをダウンロードしています..."
 
@@ -576,9 +803,18 @@ if (Test-Path "${aviutlExeDirectory}\MFVideoReaderPlugin.aui") {
 	Start-Process powershell -ArgumentList "-command New-Item `"${ReadmeDirectoryRoot}\MFVideoReader`", `"${LicenseDirectoryRoot}\MFVideoReader`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
 
 	# AviUtl\license\MFVideoReader 内に LICENSE を、AviUtl\readme\MFVideoReader 内に Readme.md を (待機) 、
-	# AviUtl\plugins ディレクトリ内にその他のファイルをそれぞれ移動
+	# $MFVideoReaderAuiDirectory ディレクトリ内にその他のファイルをそれぞれ移動
 	Start-Process powershell -ArgumentList "-command Move-Item LICENSE `"${LicenseDirectoryRoot}\MFVideoReader`" -Force; Move-Item Readme.md `"${ReadmeDirectoryRoot}\MFVideoReader`" -Force" -WindowStyle Hidden -Wait
-	Move-Item * $aviutlPluginsDirectory -Force
+	Move-Item * $MFVideoReaderAuiDirectory -Force
+
+	# apm.json に amate/MFVideoReader が登録されていない場合はキーを作成してidを登録
+	if (!($apmJsonHash.packages.Contains("amate/MFVideoReader"))) {
+		$apmJsonHash["packages"]["amate/MFVideoReader"] = [ordered]@{}
+		$apmJsonHash["packages"]["amate/MFVideoReader"]["id"] = "amate/MFVideoReader"
+	}
+
+	# apm.json の amate/MFVideoReader のバージョンを更新
+	$apmJsonHash["packages"]["amate/MFVideoReader"]["version"] = $MFVideoReaderGithubApi.tag_name
 
 	# カレントディレクトリを tmp ディレクトリに変更
 	Set-Location ..\..
@@ -624,7 +860,8 @@ Write-Host "完了"
 Write-Host -NoNewline "`r`nifheifの最新版情報を取得しています..."
 
 # ifheifの最新版のダウンロードURLを取得
-$ifheifUrl = GithubLatestReleaseUrl "Mr-Ojii/ifheif"
+$ifheifGithubApi = GithubLatestRelease "Mr-Ojii/ifheif"
+$ifheifUrl = $ifheifGithubApi.assets.browser_download_url
 
 Write-Host "完了"
 Write-Host -NoNewline "ifheifをダウンロードしています..."
@@ -682,9 +919,8 @@ Set-Location "${scriptFileRoot}\tmp"
 
 Start-Sleep -Milliseconds 500
 
-Write-Host "完了"
-
 if (!($CheckAviUtlScriptSet)) {
+	Write-Host "完了"
 	Write-Host -NoNewline "「AviUtlスクリプト一式」をダウンロードしています..."
 
 	# 「AviUtlスクリプト一式」のzipファイルをダウンロード (待機)
@@ -727,10 +963,16 @@ if (!($CheckAviUtlScriptSet)) {
 
 	# カレントディレクトリを tmp ディレクトリに変更
 	Set-Location ..\..
-
-	Write-Host "完了"
 }
 
+# apm.json に satsuki/satsuki が登録されていない場合はキーを作成してidとversionを登録
+if (!($apmJsonHash.packages.Contains("satsuki/satsuki"))) {
+	$apmJsonHash["packages"]["satsuki/satsuki"] = [ordered]@{}
+	$apmJsonHash["packages"]["satsuki/satsuki"]["id"] = "satsuki/satsuki"
+	$apmJsonHash["packages"]["satsuki/satsuki"]["version"] = "20160828"
+}
+
+Write-Host "完了"
 Write-Host -NoNewline "`r`n「値で図形」を確認しています..."
 
 # カレントディレクトリを script ディレクトリに変更
@@ -754,9 +996,8 @@ Set-Location "${scriptFileRoot}\tmp"
 
 Start-Sleep -Milliseconds 500
 
-Write-Host "完了"
-
 if (!($CheckShapeWithValuesObj)) {
+	Write-Host "完了"
 	Write-Host -NoNewline "「値で図形」をダウンロードしています..."
 
 	# 値で図形.obj をダウンロード (待機)
@@ -767,10 +1008,16 @@ if (!($CheckShapeWithValuesObj)) {
 
 	# AviUtl\script 内に 値で図形.obj を移動
 	Move-Item "値で図形.obj" $aviutlScriptDirectory -Force
-
-	Write-Host "完了"
 }
 
+# apm.json に nagomiku/paracustomobj が登録されていない場合はキーを作成してidとversionを登録
+if (!($apmJsonHash.packages.Contains("nagomiku/paracustomobj"))) {
+	$apmJsonHash["packages"]["nagomiku/paracustomobj"] = [ordered]@{}
+	$apmJsonHash["packages"]["nagomiku/paracustomobj"]["id"] = "nagomiku/paracustomobj"
+	$apmJsonHash["packages"]["nagomiku/paracustomobj"]["version"] = "v2.10"
+}
+
+Write-Host "完了"
 Write-Host -NoNewline "`r`n直線スクリプトを確認しています..."
 
 # カレントディレクトリを script ディレクトリに変更
@@ -837,7 +1084,8 @@ if (Test-Path "${aviutlExeDirectory}\old_lua51.dll") {
 Write-Host -NoNewline "`r`nLuaJITの最新版情報を取得しています..."
 
 # LuaJITの最新版のダウンロードURLを取得
-$luaJitAllUrl = GithubLatestReleaseUrl "Per-Terra/LuaJIT-Auto-Builds"
+$luaJitGithubApi = GithubLatestRelease "Per-Terra/LuaJIT-Auto-Builds"
+$luaJitAllUrl = $luaJitGithubApi.assets.browser_download_url
 
 # 複数ある中からAviUtl用のもののみ残す
 $luaJitUrl = $luaJitAllUrl | Where-Object {$_ -like "*LuaJIT_2.1_Win_x86.zip"}
@@ -878,6 +1126,13 @@ Move-Item doc "${ReadmeDirectoryRoot}\LuaJIT" -Force
 Move-Item COPYRIGHT "${LicenseDirectoryRoot}\LuaJIT" -Force
 Move-Item "About-This-Build.txt" "${LicenseDirectoryRoot}\LuaJIT" -Force
 
+# apm.json に ePi/LuaJIT が登録されていない場合はキーを作成してidとversionを登録
+if (!($apmJsonHash.packages.Contains("ePi/LuaJIT"))) {
+	$apmJsonHash["packages"]["ePi/LuaJIT"] = [ordered]@{}
+	$apmJsonHash["packages"]["ePi/LuaJIT"]["id"] = "ePi/LuaJIT"
+	$apmJsonHash["packages"]["ePi/LuaJIT"]["version"] = "2.1.0-beta3"
+}
+
 # カレントディレクトリを tmp ディレクトリに変更
 Set-Location ..
 
@@ -890,6 +1145,13 @@ $hwEncoders = [ordered]@{
 	"NVEnc"  = "NVEncC.exe"
 	"QSVEnc" = "QSVEncC.exe"
 	"VCEEnc" = "VCEEncC.exe"
+}
+
+# ハードウェアエンコードの出力プラグインを削除した時に記録するハッシュテーブルを用意
+$hwEncodersRemove = @{
+	"NVEnc" = $false
+	"QSVEnc" = $false
+	"VCEEnc" = $false
 }
 
 # ハードウェアエンコードの出力プラグインのインストールチェック用の変数を用意
@@ -905,85 +1167,103 @@ foreach ($hwEncoder in $hwEncoders.GetEnumerator()) {
 
 		Write-Host "完了"
 
-		# ExitCodeが0 (使用可能) の場合は更新、それ以外なら削除 (エラーの防止)
+		# ExitCodeが0 (使用可能) の場合は更新確認、それ以外なら削除 (エラーの防止)
 		if ($process.ExitCode -eq 0) {
 			# ハードウェアエンコードの出力プラグインのインストールチェック用の変数を true に
 			$CheckHwEncoder = $true
 
-			Write-Host -NoNewline "$($hwEncoder.Key)を更新します。ダウンロードしています..."
+			Write-Host -NoNewline "$($hwEncoder.Key)の最新版情報を取得しています..."
 
 			# 最新版のダウンロードURLを取得
-			$downloadAllUrl = GithubLatestReleaseUrl "rigaya/$($hwEncoder.Key)"
+			$hwEncoderGithubApi = GithubLatestRelease "rigaya/$($hwEncoder.Key)"
+			$downloadAllUrl = $hwEncoderGithubApi.assets.browser_download_url
 
 			# 複数ある中からAviUtl用のもののみ残す
 			$downloadUrl = $downloadAllUrl | Where-Object {$_ -like "*Aviutl*"}
 
-			# zipファイルをダウンロード (待機)
-			Start-Process -FilePath curl.exe -ArgumentList "-OL $downloadUrl" -WindowStyle Hidden -Wait
+			# apm.json があり、かつ最新版の情報が記載されている場合はスキップする
+			if (!($apmJsonExist -and $apmJsonHash.packages.Contains("rigaya/$($hwEncoder.Key)") -and
+				($apmJsonHash["packages"]["rigaya/$($hwEncoder.Key)"]["version"] -eq $hwEncoderGithubApi.tag_name))) {
+				Write-Host "完了"
+				Write-Host -NoNewline "$($hwEncoder.Key)を更新します。ダウンロードしています..."
 
-			# zipファイルを展開 (待機)
-			Start-Process powershell -ArgumentList "-command Expand-Archive -Path Aviutl_$($hwEncoder.Key)_*.zip -Force" -WindowStyle Hidden -Wait
+				# zipファイルをダウンロード (待機)
+				Start-Process -FilePath curl.exe -ArgumentList "-OL $downloadUrl" -WindowStyle Hidden -Wait
 
-			# 展開されたディレクトリのパスを格納
-			Set-Location "Aviutl_$($hwEncoder.Key)_*"
-			$extdir = (Get-Location).Path
-			Set-Location ..
+				# zipファイルを展開 (待機)
+				Start-Process powershell -ArgumentList "-command Expand-Archive -Path Aviutl_$($hwEncoder.Key)_*.zip -Force" -WindowStyle Hidden -Wait
 
-			Write-Host "完了"
+				# 展開されたディレクトリのパスを格納
+				Set-Location "Aviutl_$($hwEncoder.Key)_*"
+				$extdir = (Get-Location).Path
+				Set-Location ..
 
-			# AviUtl\plugins 内に (NVEnc/QSVEnc/VCEEnc)_stg ディレクトリがあれば以下の処理を実行
-			if (Test-Path "${aviutlPluginsDirectory}\$($hwEncoder.Key)_stg") {
-				# プロファイルを上書きするかどうかユーザーに確認する (既定は 上書きしない)
-				# 選択ここから
+				Write-Host "完了"
 
-				$hwEncoderChoiceTitle = "$($hwEncoder.Key)のプロファイルを上書きしますか？"
-				$hwEncoderChoiceMessage = "プロファイルは更新で新しくなっている可能性がありますが、上書きを実行すると追加したプロファイルやプロファイルへの変更が削除されます。"
+				# AviUtl\plugins 内に (NVEnc/QSVEnc/VCEEnc)_stg ディレクトリがあれば以下の処理を実行
+				if (Test-Path "${aviutlPluginsDirectory}\$($hwEncoder.Key)_stg") {
+					# プロファイルを上書きするかどうかユーザーに確認する (既定は 上書きしない)
 
-				$hwEncoderTChoiceDescription = "System.Management.Automation.Host.ChoiceDescription"
-				$hwEncoderChoiceOptions = @(
-					New-Object $hwEncoderTChoiceDescription ("はい(&Y)",  "上書きを実行します。")
-					New-Object $hwEncoderTChoiceDescription ("いいえ(&N)", "上書きをせず、スキップして次の処理に進みます。")
-				)
+					# 選択ここから
 
-				$hwEncoderChoiceResult = $host.ui.PromptForChoice($hwEncoderChoiceTitle, $hwEncoderChoiceMessage, $hwEncoderChoiceOptions, 1)
-				switch ($hwEncoderChoiceResult) {
-					0 {
-						Write-Host -NoNewline "プロファイルを上書きします..."
+					$hwEncoderChoiceTitle = "$($hwEncoder.Key)のプロファイルを上書きしますか？"
+					$hwEncoderChoiceMessage = "プロファイルは更新で新しくなっている可能性がありますが、上書きを実行すると追加したプロファイルやプロファイルへの変更が削除されます。"
 
-						# AviUtl\plugins 内の (NVEnc/QSVEnc/VCEEnc)_stg ディレクトリを削除する (待機)
-						Start-Process powershell -ArgumentList "-command Remove-Item `"${aviutlPluginsDirectory}\$($hwEncoder.Key)_stg`" -Recurse" -WindowStyle Hidden -Wait
+					$hwEncoderTChoiceDescription = "System.Management.Automation.Host.ChoiceDescription"
+					$hwEncoderChoiceOptions = @(
+						New-Object $hwEncoderTChoiceDescription ("はい(&Y)",  "上書きを実行します。")
+						New-Object $hwEncoderTChoiceDescription ("いいえ(&N)", "上書きをせず、スキップして次の処理に進みます。")
+					)
 
-						# ダウンロードして展開した (NVEnc/QSVEnc/VCEEnc)_stg を AviUtl\plugins 内に移動
-						Move-Item "$extdir\plugins\$($hwEncoder.Key)_stg" $aviutlPluginsDirectory -Force
+					$hwEncoderChoiceResult = $host.ui.PromptForChoice($hwEncoderChoiceTitle, $hwEncoderChoiceMessage, $hwEncoderChoiceOptions, 1)
+					switch ($hwEncoderChoiceResult) {
+						0 {
+							Write-Host -NoNewline "プロファイルを上書きします..."
 
-						Write-Host "完了`r`n"
-						break
+							# AviUtl\plugins 内の (NVEnc/QSVEnc/VCEEnc)_stg ディレクトリを削除する (待機)
+							Start-Process powershell -ArgumentList "-command Remove-Item `"${aviutlPluginsDirectory}\$($hwEncoder.Key)_stg`" -Recurse" -WindowStyle Hidden -Wait
+
+							# ダウンロードして展開した (NVEnc/QSVEnc/VCEEnc)_stg を AviUtl\plugins 内に移動
+							Move-Item "$extdir\plugins\$($hwEncoder.Key)_stg" $aviutlPluginsDirectory -Force
+
+							Write-Host "完了`r`n"
+							break
+						}
+						1 {
+							# 後で邪魔になるので削除
+							Remove-Item "$extdir\plugins\$($hwEncoder.Key)_stg" -Recurse
+
+							Write-Host "プロファイルの上書きをスキップしました。`r`n"
+							break
+						}
 					}
-					1 {
-						# 後で邪魔になるので削除
-						Remove-Item "$extdir\plugins\$($hwEncoder.Key)_stg" -Recurse
 
-						Write-Host "プロファイルの上書きをスキップしました。`r`n"
-						break
-					}
+					# 選択ここまで
 				}
 
-				# 選択ここまで
+				Write-Host -NoNewline "$($hwEncoder.Key)をインストールしています..."
+
+				# AviUtl\exe_files\(NVEnc/QSVEnc/VCEEnc)C が後で邪魔になるので削除
+				Remove-Item "${aviutlExeDirectory}\exe_files\$($hwEncoder.Key)C" -Recurse
+
+				# readme ディレクトリを作成
+				New-Item -ItemType Directory -Path "${ReadmeDirectoryRoot}\$($hwEncoder.Key)" -Force | Out-Null
+
+				# 展開後のそれぞれのファイルを移動
+				Move-Item -Path "$extdir\*.bat" -Destination $aviutlExeDirectory -Force
+				Move-Item -Path "$extdir\plugins\*" -Destination $aviutlPluginsDirectory -Force
+				Move-Item -Path "$extdir\exe_files\*" -Destination "${aviutlExeDirectory}\exe_files" -Force
+				Move-Item -Path "$extdir\*_readme.txt" -Destination "${ReadmeDirectoryRoot}\$($hwEncoder.Key)" -Force
+
+				# apm.json に rigaya/$($hwEncoder.Key) が登録されていない場合はキーを作成してidを登録
+				if (!($apmJsonHash.packages.Contains("rigaya/$($hwEncoder.Key)"))) {
+					$apmJsonHash["packages"]["rigaya/$($hwEncoder.Key)"] = [ordered]@{}
+					$apmJsonHash["packages"]["rigaya/$($hwEncoder.Key)"]["id"] = "rigaya/$($hwEncoder.Key)"
+				}
+
+				# apm.json の rigaya/$($hwEncoder.Key) のバージョンを更新
+				$apmJsonHash["packages"]["rigaya/$($hwEncoder.Key)"]["version"] = $hwEncoderGithubApi.tag_name
 			}
-
-			Write-Host -NoNewline "$($hwEncoder.Key)をインストールしています..."
-
-			# AviUtl\exe_files\(NVEnc/QSVEnc/VCEEnc)C が後で邪魔になるので削除
-			Remove-Item "${aviutlExeDirectory}\exe_files\$($hwEncoder.Key)C" -Recurse
-
-			# readme ディレクトリを作成
-			New-Item -ItemType Directory -Path "${ReadmeDirectoryRoot}\$($hwEncoder.Key)" -Force | Out-Null
-
-			# 展開後のそれぞれのファイルを移動
-			Move-Item -Path "$extdir\*.bat" -Destination $aviutlExeDirectory -Force
-			Move-Item -Path "$extdir\plugins\*" -Destination $aviutlPluginsDirectory -Force
-			Move-Item -Path "$extdir\exe_files\*" -Destination "${aviutlExeDirectory}\exe_files" -Force
-			Move-Item -Path "$extdir\*_readme.txt" -Destination "${ReadmeDirectoryRoot}\$($hwEncoder.Key)" -Force
 
 			Write-Host "完了"
 		} else {
@@ -996,20 +1276,42 @@ foreach ($hwEncoder in $hwEncoders.GetEnumerator()) {
 				Remove-Item "${ReadmeDirectoryRoot}\$($hwEncoder.Key)" -Recurse
 			}
 
+			# apm.json に rigaya/$($hwEncoder.Key) が登録されている場合は削除
+			if ($apmJsonHash.packages.Contains("rigaya/$($hwEncoder.Key)")) {
+				$apmJsonHash.packages.Remove("rigaya/$($hwEncoder.Key)")
+			}
+
+			# $hwEncodersRemove.$($hwEncoder.Key) に $true を代入
+			$hwEncodersRemove.$($hwEncoder.Key) = $true
+
 			Write-Host "完了"
+		}
+	} else {
+		# apm.json に rigaya/$($hwEncoder.Key) が登録されている場合は削除
+		if ($apmJsonHash.packages.Contains("rigaya/$($hwEncoder.Key)")) {
+			$apmJsonHash.packages.Remove("rigaya/$($hwEncoder.Key)")
 		}
 	}
 }
 
-Write-Host "ハードウェアエンコードの出力プラグインの確認が完了しました。"
+Write-Host "`r`nハードウェアエンコードの出力プラグインの確認が完了しました。"
 
 
-# ハードウェアエンコードの出力プラグインが1つも入っていない場合にインストールチェックする
-if (!($CheckHwEncoder)) {
+# ハードウェアエンコードの出力プラグインが1つも入っていない (上の処理で削除された場合含む) 場合にインストールチェックする
+# ただし、上の処理で全てのプラグインが削除されている場合はインストールチェックをする意味がないのでスキップする
+if ((!($CheckHwEncoder)) -and
+	(!($hwEncodersRemove.NVEnc -and $hwEncodersRemove.QSVEnc -and $hwEncodersRemove.VCEEnc))) {
 	# HWエンコーディングの使用可否をチェックし、可能であれば出力プラグインをインストール by Yu-yu0202 (20250107)
 
 	Write-Host "`r`nハードウェアエンコード (NVEnc / QSVEnc / VCEEnc) が使用できるかチェックします。"
 	Write-Host -NoNewline "必要なファイルをダウンロードしています (数分かかる場合があります) "
+
+	# apm.json 生成用にタグ名を保存するハッシュテーブルを作成
+	$hwEncodersTagName = @{
+		"NVEnc"  = "xxx"
+		"QSVEnc" = "xxx"
+		"VCEEnc" = "xxx"
+	}
 
 	$hwEncoderRepos = @("rigaya/NVEnc", "rigaya/QSVEnc", "rigaya/VCEEnc")
 	foreach ($hwRepo in $hwEncoderRepos) {
@@ -1017,10 +1319,14 @@ if (!($CheckHwEncoder)) {
 		$repoName = ($hwRepo -split "/")[-1]
 
 		# 最新版のダウンロードURLを取得
-		$downloadAllUrl = GithubLatestReleaseUrl $hwRepo
+		$hwEncoderGithubApi = GithubLatestRelease $hwRepo
+		$downloadAllUrl = $hwEncoderGithubApi.assets.browser_download_url
 
 		# 複数ある中からAviUtl用のもののみ残す
 		$downloadUrl = $downloadAllUrl | Where-Object {$_ -like "*Aviutl*"}
+
+		# apm.json 生成用に $hwEncodersTagName にタグ名を保存
+		$hwEncodersTagName.$repoName = $hwEncoderGithubApi.tag_name
 
 		Write-Host -NoNewline "."
 
@@ -1052,25 +1358,34 @@ if (!($CheckHwEncoder)) {
 			# ExitCodeが0の場合はインストール
 			if ($process.ExitCode -eq 0) {
 				# AviUtl\exe_files 内に $($hwEncoder.Key)C ディレクトリがあれば削除する (エラーの防止)
-				if (Test-Path "C:\Applications\AviUtl\exe_files\$($hwEncoder.Key)C") {
-					Remove-Item "C:\Applications\AviUtl\exe_files\$($hwEncoder.Key)C" -Recurse
+				if (Test-Path "${aviutlExeDirectory}\exe_files\$($hwEncoder.Key)C") {
+					Remove-Item "${aviutlExeDirectory}\exe_files\$($hwEncoder.Key)C" -Recurse
 				}
 
 				# AviUtl\plugins 内に $($hwEncoder.Key)_stg ディレクトリがあれば削除する (エラーの防止)
-				if (Test-Path "C:\Applications\AviUtl\plugins\$($hwEncoder.Key)_stg") {
-					Remove-Item "C:\Applications\AviUtl\plugins\$($hwEncoder.Key)_stg" -Recurse
+				if (Test-Path "${aviutlPluginsDirectory}\$($hwEncoder.Key)_stg") {
+					Remove-Item "${aviutlPluginsDirectory}\$($hwEncoder.Key)_stg" -Recurse
 				}
 
 				Write-Host -NoNewline "$($hwEncoder.Key)が使用可能です。$($hwEncoder.Key)をインストールしています..."
 
 				# readme ディレクトリを作成
-				New-Item -ItemType Directory -Path C:\Applications\AviUtl\readme\$($hwEncoder.Key) -Force | Out-Null
+				New-Item -ItemType Directory -Path "${ReadmeDirectoryRoot}\$($hwEncoder.Key)" -Force | Out-Null
 
 				# 展開後のそれぞれのファイルを移動
-				Move-Item -Path "$extdir\exe_files\*" -Destination C:\Applications\AviUtl\exe_files -Force
-				Move-Item -Path "$extdir\plugins\*" -Destination C:\Applications\AviUtl\plugins -Force
-				Move-Item -Path "$extdir\*.bat" -Destination C:\Applications\AviUtl -Force
-				Move-Item -Path "$extdir\*_readme.txt" -Destination C:\Applications\AviUtl\readme\$($hwEncoder.Key) -Force
+				Move-Item -Path "$extdir\exe_files\*" -Destination "${aviutlExeDirectory}\exe_files" -Force
+				Move-Item -Path "$extdir\plugins\*" -Destination $aviutlPluginsDirectory -Force
+				Move-Item -Path "$extdir\*.bat" -Destination $aviutlExeDirectory -Force
+				Move-Item -Path "$extdir\*_readme.txt" -Destination "${ReadmeDirectoryRoot}\$($hwEncoder.Key)" -Force
+
+				# apm.json に rigaya/$($hwEncoder.Key) が登録されていない場合はキーを作成してidを登録
+				if (!($apmJsonHash.packages.Contains("rigaya/$($hwEncoder.Key)"))) {
+					$apmJsonHash["packages"]["rigaya/$($hwEncoder.Key)"] = [ordered]@{}
+					$apmJsonHash["packages"]["rigaya/$($hwEncoder.Key)"]["id"] = "rigaya/$($hwEncoder.Key)"
+				}
+
+				# apm.json の rigaya/$($hwEncoder.Key) のバージョンを更新
+				$apmJsonHash["packages"]["rigaya/$($hwEncoder.Key)"]["version"] = $hwEncodersTagName.$($hwEncoder.Key)
 
 				Write-Host "完了"
 
@@ -1213,19 +1528,8 @@ if ($Vc2015App -and $Vc2008App) {
 			Write-Host "`r`nMicrosoft Visual C++ 2015-20xx Redistributable (x86) と`r`nMicrosoft Visual C++ 2008 Redistributable - x86 のインストールを行います。"
 			Write-Host "デバイスへの変更が必要になります。ユーザーアカウント制御のポップアップが出たら [はい] を押して許可してください。`r`n"
 
-			# VCruntimeInstall2015and2008.cmd の存在するディレクトリを確認
-				# VCruntimeInstall2015and2008.cmd は Visual C++ 2015-20xx Redistributable (x86) と
-				# Visual C++ 2008 Redistributable - x86 のインストーラーを順番に実行していくだけのスクリプト
-			$VCruntimeInstallCmdDirectory = Join-Path -Path $scriptFileRoot -ChildPath script_files
-			$VCruntimeInstallCmdPath = Join-Path -Path $VCruntimeInstallCmdDirectory -ChildPath "VCruntimeInstall2015and2008.cmd"
-			if (!(Test-Path $VCruntimeInstallCmdPath)) {
-				$VCruntimeInstallCmdDirectory = $scriptFileRoot
-			}
-
-			Start-Sleep -Milliseconds 500
-
 			# VCruntimeInstall2015and2008.cmd を管理者権限で実行 (待機)
-			Start-Process -FilePath cmd.exe -ArgumentList "/C cd $VCruntimeInstallCmdDirectory & call VCruntimeInstall2015and2008.cmd & exit" -Verb RunAs -WindowStyle Hidden -Wait
+			Start-Process -FilePath cmd.exe -ArgumentList "/C cd $scriptFilesDirectoryPath & call VCruntimeInstall2015and2008.cmd & exit" -Verb RunAs -WindowStyle Hidden -Wait
 
 			Write-Host "インストーラーが終了しました。"
 			break
@@ -1247,6 +1551,12 @@ if ($Vc2015App -and $Vc2008App) {
 	# 選択ここまで
 }
 
+Write-Host -NoNewline "`r`napm.json を作成しています..."
+
+# $apmJsonHash をJSON形式に変換し、apm.json として出力する
+ConvertTo-Json $apmJsonHash -Depth 8 -Compress | ForEach-Object{ $_+"`n" } | ForEach-Object{ [Text.Encoding]::UTF8.GetBytes($_) } | Set-Content -Encoding Byte -Path "${aviutlExeDirectory}\apm.json"
+
+Write-Host "完了"
 Write-Host -NoNewline "`r`n更新に使用した不要なファイルを削除しています..."
 
 # カレントディレクトリをスクリプトファイルのあるディレクトリに変更

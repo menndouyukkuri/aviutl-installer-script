@@ -24,21 +24,12 @@
  #  SOFTWARE.
 #>
 
-# GitHubリポジトリの最新版リリースのダウンロードURLを取得する
-function GithubLatestReleaseUrl ($repo) {
-	# GitHubのAPIから最新版リリースの情報を取得する
-	$api = Invoke-RestMethod "https://api.github.com/repos/$repo/releases/latest"
-
-	# 最新版リリースのダウンロードURLのみを返す
-	return($api.assets.browser_download_url)
-}
-
 # カレントディレクトリのパスを $scriptFileRoot に保存 (起動方法のせいで $PSScriptRoot が使用できないため)
 $scriptFileRoot = (Get-Location).Path
 
 # バージョン情報を記載
-$VerNum = "1.1.7"
-$ReleaseDate = "2025-01-27"
+$VerNum = "1.1.8"
+$ReleaseDate = "2025-01-29"
 
 # 更新確認用にバージョン情報を格納
 $Version = "v" + $VerNum
@@ -73,26 +64,33 @@ if ($WindowsNtCurrentVersion.CurrentBuild -lt 17134) {
 }
 
 # settings ディレクトリの場所を確認
-New-Variable settingsDirectoryPath
 if (Test-Path ".\settings") {
 	$settingsDirectoryPath = Convert-Path ".\settings"
 } elseif (Test-Path "..\settings") {
 	$settingsDirectoryPath = Convert-Path "..\settings"
 } else {
 	Write-Host "発生したエラー: settings フォルダが見つかりません。"
+	Pause
+	exit
 }
-
-Write-Host -NoNewline "AviUtl Installer Scriptの更新を確認します..."
-
-Start-Sleep -Milliseconds 500
 
 # AviUtl Installer Scriptのzipファイルが展開されたと思われるディレクトリのパスを保存
 $AisRootDir = Split-Path $settingsDirectoryPath -Parent
 
+# script_files ディレクトリのパスを $scriptFilesDirectoryPath に格納
+	# settings ディレクトリと同じ親ディレクトリを持つことを前提としているので注意
+$scriptFilesDirectoryPath = Join-Path -Path $AisRootDir -ChildPath script_files
+
+# script_files\ais-shared-function.ps1 を読み込み
+. "${scriptFilesDirectoryPath}\ais-shared-function.ps1"
+
 
 # 本体の更新確認 by Yu-yu0202 (20250121)
-$tagName = Invoke-RestMethod -Uri "https://api.github.com/repos/menndouyukkuri/aviutl-installer-script/releases/latest" | Select-Object -ExpandProperty tag_name
-if (($tagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
+Write-Host -NoNewline "AviUtl Installer Scriptの更新を確認します..."
+
+$AisGithubApi = GithubLatestRelease "menndouyukkuri/aviutl-installer-script"
+$AisTagName = $AisGithubApi.tag_name
+if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Write-Host "完了"
 	Write-Host -NoNewline "新しいバージョンがあります。更新を行います..."
 
@@ -106,23 +104,23 @@ if (($tagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Set-Location newver
 
 	# 本体の最新版のダウンロードURLを取得
-	$AISDownloadUrl = GithubLatestReleaseUrl "menndouyukkuri/aviutl-installer-script"
+	$AISDownloadUrl = $AisGithubApi.assets.browser_download_url
 
 	# 本体のzipファイルをダウンロード (待機)
 	Start-Process -FilePath curl.exe -ArgumentList "-OL $AISDownloadUrl" -WindowStyle Hidden -Wait
 
-	# tagNameから先頭の「v」を削除
-	$tagName = $tagName.Substring(1)
+	# $AisTagName から先頭の「v」を削除
+	$AisTagName = $AisTagName.Substring(1)
 
 	# 本体のzipファイルを展開 (待機)
-	Start-Process powershell -ArgumentList "-command Expand-Archive -Path aviutl-installer_$tagName.zip -Force" -WindowStyle Hidden -Wait
+	Start-Process powershell -ArgumentList "-command Expand-Archive -Path aviutl-installer_$AisTagName.zip -Force" -WindowStyle Hidden -Wait
 
 	# 展開後のzipを削除
-	Remove-Item aviutl-installer_$($tagName).zip
+	Remove-Item aviutl-installer_$($AisTagName).zip
 
 	# 新バージョンのファイル (aviutl-installer.cmd 以外) をAviUtl Installer Scriptのzipファイルが展開されたと
 	# 思われるディレクトリに移動
-	Get-ChildItem -Path "aviutl-installer_$tagName" | Where-Object { $_.Name -ne "aviutl-installer.cmd" } | Move-Item -Destination $AisRootDir -Force | Out-Null
+	Get-ChildItem -Path "aviutl-installer_$AisTagName" | Where-Object { $_.Name -ne "aviutl-installer.cmd" } | Move-Item -Destination $AisRootDir -Force | Out-Null
 
 	Write-Host "完了"
 
@@ -134,21 +132,77 @@ if (($tagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Set-Location ..
 
 	# 新バージョンのcmdファイルの2行目からを展開し実行
-	$scriptObject = Get-Content -Path "newver\aviutl-installer_$tagName\aviutl-installer.cmd" | Select-Object -Skip 1
+	$scriptObject = Get-Content -Path "newver\aviutl-installer_$AisTagName\aviutl-installer.cmd" | Select-Object -Skip 1
 	$script = Out-String -InputObject $scriptObject
 	Invoke-Expression $script
+
 
 } else {
 	Write-Host "完了"
 
 	# 最新版の情報と一致しない場合
-	if ($tagName -ne $Version) {
+	if ($AisTagName -ne $Version) {
 		# 最新版の情報を通知
-		Write-Host "${tagName} がリリースされていますが、自動更新が利用できません。最新版を利用するためには`r`n　　https://github.com/menndouyukkuri/aviutl-installer-script/releases/latest`r`nからダウンロードする必要があります。"
+		Write-Host "${AisTagName} がリリースされていますが、自動更新が利用できません。最新版を利用するためには`r`n　　https://github.com/menndouyukkuri/aviutl-installer-script/releases/latest`r`nからダウンロードする必要があります。"
 
 	# 最新版の情報と一致する場合
 	} else {
 		Write-Host "${Version} は最新版です。"
+	}
+
+	# apm.json の元になるハッシュテーブル $apmJsonHash を用意
+	$apmJsonHash = [ordered]@{
+		"dataVersion" = "3"
+		"core" = [ordered]@{
+			"aviutl" = "1.10"
+			"exedit" = "0.92"
+		}
+		"packages" = [ordered]@{
+			"nazono/patch" = [ordered]@{
+				"id" = "nazono/patch"
+				"version" = "r43_68"
+			}
+			"MrOjii/LSMASHWorks" = [ordered]@{
+				"id" = "MrOjii/LSMASHWorks"
+				"version" = "2025/01/26"
+			}
+			"amate/InputPipePlugin" = [ordered]@{
+				"id" = "amate/InputPipePlugin"
+				"version" = "v2.0"
+			}
+			"rigaya/x264guiEx" = [ordered]@{
+				"id" = "rigaya/x264guiEx"
+				"version" = "3.31"
+			}
+			"amate/MFVideoReader" = [ordered]@{
+				"id" = "amate/MFVideoReader"
+				"version" = "v1.0"
+			}
+			"rigaya/NVEnc" = [ordered]@{
+				"id" = "rigaya/NVEnc"
+				"version" = "7.82"
+			}
+			"rigaya/QSVEnc" = [ordered]@{
+				"id" = "rigaya/QSVEnc"
+				"version" = "7.79"
+			}
+			"rigaya/VCEEnc" = [ordered]@{
+				"id" = "rigaya/VCEEnc"
+				"version" = "8.28"
+			}
+			"satsuki/satsuki" = [ordered]@{
+				"id" = "satsuki/satsuki"
+				"version" = "20160828"
+			}
+			"nagomiku/paracustomobj" = [ordered]@{
+				"id" = "nagomiku/paracustomobj"
+				"version" = "v2.10"
+			}
+			"ePi/LuaJIT" = [ordered]@{
+				"id" = "ePi/LuaJIT"
+				"version" = "2.1.0-beta3"
+			}
+		}
 	}
 
 	Write-Host -NoNewline "`r`nAviUtlをインストールするフォルダを作成しています..."
@@ -240,7 +294,11 @@ if (($tagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Write-Host -NoNewline "`r`npatch.aul (謎さうなフォーク版) の最新版情報を取得しています..."
 
 	# patch.aul (謎さうなフォーク版) の最新版のダウンロードURLを取得
-	$patchAulUrl = GithubLatestReleaseUrl "nazonoSAUNA/patch.aul"
+	$patchAulGithubApi = GithubLatestRelease "nazonoSAUNA/patch.aul"
+	$patchAulUrl = $patchAulGithubApi.assets.browser_download_url
+
+	# $apmJsonHash のバージョン情報をGitHubから取得したデータで最新のものに更新
+	$apmJsonHash["packages"]["nazono/patch"]["version"] = $patchAulGithubApi.tag_name
 
 	Write-Host "完了"
 	Write-Host -NoNewline "patch.aul (謎さうなフォーク版) をダウンロードしています..."
@@ -271,10 +329,17 @@ if (($tagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Write-Host -NoNewline "`r`nL-SMASH Works (Mr-Ojii版) の最新版情報を取得しています..."
 
 	# L-SMASH Works (Mr-Ojii版) の最新版のダウンロードURLを取得
-	$lSmashWorksAllUrl = GithubLatestReleaseUrl "Mr-Ojii/L-SMASH-Works-Auto-Builds"
+	$lSmashWorksGithubApi = GithubLatestRelease "Mr-Ojii/L-SMASH-Works-Auto-Builds"
+	$lSmashWorksAllUrl = $lSmashWorksGithubApi.assets.browser_download_url
 
 	# 複数ある中からAviUtl用のもののみ残す
 	$lSmashWorksUrl = $lSmashWorksAllUrl | Where-Object {$_ -like "*Mr-Ojii_vimeo*"}
+
+	# $apmJsonHash のバージョン情報をGitHubから取得したデータで最新のものに更新
+		# yyyy/mm/dd を入れる必要があるため tag_name を分割してビルド日のみ取り出して使用
+	$lSmashWorksTagNameSplitArray = ($lSmashWorksGithubApi.tag_name) -split "-"
+	$lSmashWorksBuildDate = $lSmashWorksTagNameSplitArray[1] + "/" + $lSmashWorksTagNameSplitArray[2] + "/" + $lSmashWorksTagNameSplitArray[3]
+	$apmJsonHash["packages"]["MrOjii/LSMASHWorks"]["version"] = $lSmashWorksBuildDate
 
 	Write-Host "完了"
 	Write-Host -NoNewline "L-SMASH Works (Mr-Ojii版) をダウンロードしています..."
@@ -311,7 +376,11 @@ if (($tagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Write-Host -NoNewline "`r`nInputPipePluginの最新版情報を取得しています..."
 
 	# InputPipePluginの最新版のダウンロードURLを取得
-	$InputPipePluginUrl = GithubLatestReleaseUrl "amate/InputPipePlugin"
+	$InputPipePluginGithubApi = GithubLatestRelease "amate/InputPipePlugin"
+	$InputPipePluginUrl = $InputPipePluginGithubApi.assets.browser_download_url
+
+	# $apmJsonHash のバージョン情報をGitHubから取得したデータで最新のものに更新
+	$apmJsonHash["packages"]["amate/InputPipePlugin"]["version"] = $InputPipePluginGithubApi.tag_name
 
 	Write-Host "完了"
 	Write-Host -NoNewline "InputPipePluginをダウンロードしています..."
@@ -343,7 +412,11 @@ if (($tagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Write-Host -NoNewline "`r`nx264guiExの最新版情報を取得しています..."
 
 	# x264guiExの最新版のダウンロードURLを取得
-	$x264guiExUrl = GithubLatestReleaseUrl "rigaya/x264guiEx"
+	$x264guiExGithubApi = GithubLatestRelease "rigaya/x264guiEx"
+	$x264guiExUrl = $x264guiExGithubApi.assets.browser_download_url
+
+	# $apmJsonHash のバージョン情報をGitHubから取得したデータで最新のものに更新
+	$apmJsonHash["packages"]["rigaya/x264guiEx"]["version"] = $x264guiExGithubApi.tag_name
 
 	Write-Host "完了"
 	Write-Host -NoNewline "x264guiExをダウンロードしています..."
@@ -396,7 +469,11 @@ if (($tagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Write-Host -NoNewline "`r`nMFVideoReaderの最新版情報を取得しています..."
 
 	# MFVideoReaderの最新版のダウンロードURLを取得
-	$MFVideoReaderUrl = GithubLatestReleaseUrl "amate/MFVideoReader"
+	$MFVideoReaderGithubApi = GithubLatestRelease "amate/MFVideoReader"
+	$MFVideoReaderUrl = $MFVideoReaderGithubApi.assets.browser_download_url
+
+	# $apmJsonHash のバージョン情報をGitHubから取得したデータで最新のものに更新
+	$apmJsonHash["packages"]["amate/MFVideoReader"]["version"] = $MFVideoReaderGithubApi.tag_name
 
 	Write-Host "完了"
 	Write-Host -NoNewline "MFVideoReaderをダウンロードしています..."
@@ -453,7 +530,8 @@ if (($tagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Write-Host -NoNewline "`r`nifheifの最新版情報を取得しています..."
 
 	# ifheifの最新版のダウンロードURLを取得
-	$ifheifUrl = GithubLatestReleaseUrl "Mr-Ojii/ifheif"
+	$ifheifGithubApi = GithubLatestRelease "Mr-Ojii/ifheif"
+	$ifheifUrl = $ifheifGithubApi.assets.browser_download_url
 
 	Write-Host "完了"
 	Write-Host -NoNewline "ifheifをダウンロードしています..."
@@ -583,7 +661,8 @@ if (($tagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Write-Host -NoNewline "`r`nLuaJITの最新版情報を取得しています..."
 
 	# LuaJITの最新版のダウンロードURLを取得
-	$luaJitAllUrl = GithubLatestReleaseUrl "Per-Terra/LuaJIT-Auto-Builds"
+	$luaJitGithubApi = GithubLatestRelease "Per-Terra/LuaJIT-Auto-Builds"
+	$luaJitAllUrl = $luaJitGithubApi.assets.browser_download_url
 
 	# 複数ある中からAviUtl用のもののみ残す
 	$luaJitUrl = $luaJitAllUrl | Where-Object {$_ -like "*LuaJIT_2.1_Win_x86.zip"}
@@ -633,16 +712,27 @@ if (($tagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Write-Host "`r`nハードウェアエンコード (NVEnc / QSVEnc / VCEEnc) が使用できるかチェックします。"
 	Write-Host -NoNewline "必要なファイルをダウンロードしています (数分かかる場合があります) "
 
+	# apm.json 生成用にタグ名を保存するハッシュテーブルを作成
+	$hwEncodersTagName = @{
+		"NVEnc"  = "xxx"
+		"QSVEnc" = "xxx"
+		"VCEEnc" = "xxx"
+	}
+
 	$hwEncoderRepos = @("rigaya/NVEnc", "rigaya/QSVEnc", "rigaya/VCEEnc")
 	foreach ($hwRepo in $hwEncoderRepos) {
 		# あとで使うのでリポジトリ名を取っておく
 		$repoName = ($hwRepo -split "/")[-1]
 
 		# 最新版のダウンロードURLを取得
-		$downloadAllUrl = GithubLatestReleaseUrl $hwRepo
+		$hwEncoderGithubApi = GithubLatestRelease $hwRepo
+		$downloadAllUrl = $hwEncoderGithubApi.assets.browser_download_url
 
 		# 複数ある中からAviUtl用のもののみ残す
 		$downloadUrl = $downloadAllUrl | Where-Object {$_ -like "*Aviutl*"}
+
+		# apm.json 生成用に $hwEncodersTagName にタグ名を保存
+		$hwEncodersTagName.$repoName = $hwEncoderGithubApi.tag_name
 
 		Write-Host -NoNewline "."
 
@@ -677,7 +767,7 @@ if (($tagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 			# ハードウェアエンコードできるかチェック
 			$process = Start-Process -FilePath $encoderPath -ArgumentList "--check-hw" -Wait -WindowStyle Hidden -PassThru
 
-			# ExitCodeが0の場合はインストール
+			# ExitCode が 0 = 使用可能な場合はインストール
 			if ($process.ExitCode -eq 0) {
 				# AviUtl\exe_files 内に $($hwEncoder.Key)C ディレクトリがあれば削除する (エラーの防止)
 				if (Test-Path "C:\Applications\AviUtl\exe_files\$($hwEncoder.Key)C") {
@@ -700,14 +790,23 @@ if (($tagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 				Move-Item -Path "$extdir\*.bat" -Destination C:\Applications\AviUtl -Force
 				Move-Item -Path "$extdir\*_readme.txt" -Destination C:\Applications\AviUtl\readme\$($hwEncoder.Key) -Force
 
+				# $apmJsonHash のバージョン情報をGitHubから取得したデータで最新のものに更新
+				$apmJsonHash["packages"]["rigaya/$($hwEncoder.Key)"]["version"] = $hwEncodersTagName.$($hwEncoder.Key)
+
 				Write-Host "完了"
 
 				# 一応、出力プラグインが共存しないようbreakでforeachを抜ける
 				break
 
-			# 最後のVCEEncも使用不可だった場合、ハードウェアエンコードが使用できない旨のメッセージを表示
-			} elseif ($($hwEncoder.Key) -eq "VCEEnc") {
-				Write-Host "この環境ではハードウェアエンコードは使用できません。"
+			# ExitCode が 0 ではない = 使用不可能な場合
+			} else {
+				# $apmJsonHash からインストールしないプラグインの項目を削除
+				$apmJsonHash.packages.Remove("rigaya/$($hwEncoder.Key)")
+
+				# 最後のVCEEncも使用不可だった場合、ハードウェアエンコードが使用できない旨のメッセージを表示
+				if ($($hwEncoder.Key) -eq "VCEEnc") {
+					Write-Host "この環境ではハードウェアエンコードは使用できません。"
+				}
 			}
 
 		# エンコーダーの実行ファイルが確認できない場合、エラーメッセージを表示する
@@ -840,19 +939,8 @@ if (($tagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 				Write-Host "`r`nMicrosoft Visual C++ 2015-20xx Redistributable (x86) と`r`nMicrosoft Visual C++ 2008 Redistributable - x86 のインストールを行います。"
 				Write-Host "デバイスへの変更が必要になります。ユーザーアカウント制御のポップアップが出たら [はい] を押して許可してください。`r`n"
 
-				# VCruntimeInstall2015and2008.cmd の存在するディレクトリを確認
-					# VCruntimeInstall2015and2008.cmd は Visual C++ 2015-20xx Redistributable (x86) と
-					# Visual C++ 2008 Redistributable - x86 のインストーラーを順番に実行していくだけのスクリプト
-				$VCruntimeInstallCmdDirectory = Join-Path -Path $scriptFileRoot -ChildPath script_files
-				$VCruntimeInstallCmdPath = Join-Path -Path $VCruntimeInstallCmdDirectory -ChildPath "VCruntimeInstall2015and2008.cmd"
-				if (!(Test-Path $VCruntimeInstallCmdPath)) {
-					$VCruntimeInstallCmdDirectory = $scriptFileRoot
-				}
-
-				Start-Sleep -Milliseconds 500
-
 				# VCruntimeInstall2015and2008.cmd を管理者権限で実行 (待機)
-				Start-Process -FilePath cmd.exe -ArgumentList "/C cd $VCruntimeInstallCmdDirectory & call VCruntimeInstall2015and2008.cmd & exit" -Verb RunAs -WindowStyle Hidden -Wait
+				Start-Process -FilePath cmd.exe -ArgumentList "/C cd $scriptFilesDirectoryPath & call VCruntimeInstall2015and2008.cmd & exit" -Verb RunAs -WindowStyle Hidden -Wait
 
 				Write-Host "インストーラーが終了しました。"
 				break
@@ -885,9 +973,11 @@ if (($tagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Copy-Item "${settingsDirectoryPath}\exedit.ini" C:\Applications\AviUtl
 	Copy-Item "${settingsDirectoryPath}\デフォルト.cfg" C:\Applications\AviUtl
 
-	# AviUtl ディレクトリ内に apm.json をコピー
-	# 競合などの管理のためにAviUtl Package Managerに導入内容を教える目的で同梱しているのでバージョンや正確性は重要視していない
-	Copy-Item "${settingsDirectoryPath}\apm.json" C:\Applications\AviUtl
+	Write-Host "完了"
+	Write-Host -NoNewline "`r`napm.json を作成しています..."
+
+	# $apmJsonHash をJSON形式に変換し、apm.json として出力する
+	ConvertTo-Json $apmJsonHash -Depth 8 -Compress | ForEach-Object{ $_+"`n" } | ForEach-Object{ [Text.Encoding]::UTF8.GetBytes($_) } | Set-Content -Encoding Byte -Path "C:\Applications\AviUtl\apm.json"
 
 	Write-Host "完了"
 	Write-Host -NoNewline "`r`nデスクトップにショートカットファイルを作成しています..."

@@ -1,0 +1,9 @@
+AviUtl Installer Script uses and includes software from the following
+open-source project.
+
+
+PSConvertFromJsonEditable
+URL:        https://github.com/shwiws/PSConvertFromJsonEditable/tree/85e3180
+Author:     ShwIws
+License:    MIT License
+            LICENSE file is located in script_files\PSConvertFromJsonEditable
