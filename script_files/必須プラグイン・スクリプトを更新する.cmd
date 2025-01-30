@@ -1017,6 +1017,12 @@ Set-Location "${scriptFileRoot}\tmp"
 # apm.json があり、かつ最新版の情報が記載されている場合はスキップする
 if (!($apmJsonExist -and $apmJsonHash.packages.Contains("satsuki/satsuki") -and
 	($apmJsonHash["packages"]["satsuki/satsuki"]["version"] -eq "20160828"))) {
+
+	# $AviUtlScriptSetDirectory 内に 削除済み ディレクトリがあれば削除する (エラーの防止)
+	if (Test-Path "${AviUtlScriptSetDirectory}\削除済み") {
+		Remove-Item "${AviUtlScriptSetDirectory}\削除済み" -Recurse
+	}
+
 	Write-Host "完了"
 	Write-Host -NoNewline "「AviUtlスクリプト一式」をダウンロードしています..."
 
