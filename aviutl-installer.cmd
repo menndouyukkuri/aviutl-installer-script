@@ -207,20 +207,20 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 
 	# ais.json の元になるハッシュテーブル $aisJsonHash を用意
 	$aisJsonHash = [ordered]@{
-	    "dataVersion" = "1"
+		"dataVersion" = "1"
 		"packages" = [ordered]@{
-	        "TORO/iftwebp" = @{
-	            "version" = "1.1"
-	        }
+			"TORO/iftwebp" = @{
+				"version" = "1.1"
+			}
 			"Mr-Ojii/ifheif" = @{
-	            "version" = "r62"
-	        }
-	        "tikubonn/straightLineObj" = @{
-	            "version" = "2021/03/07"
-	        }
-	        "Per-Terra/LuaJIT" = @{
-	            "version" = "2025/01/30"
-	        }
+				"version" = "r62"
+			}
+			"tikubonn/straightLineObj" = @{
+				"version" = "2021/03/07"
+			}
+			"Per-Terra/LuaJIT" = @{
+				"version" = "2025/01/30"
+			}
 		}
 	}
 

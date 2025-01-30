@@ -219,20 +219,20 @@ if (Test-Path "${aviutlExeDirectory}\ais.json") {
 # ais.json が存在しない場合、ais.json の元になるハッシュテーブルを用意して $aisJsonHash に代入
 } else {
 	$aisJsonHash = [ordered]@{
-	    "dataVersion" = "1"
+		"dataVersion" = "1"
 		"packages" = [ordered]@{
-	        "TORO/iftwebp" = @{
-	            "version" = "1.1"
-	        }
+			"TORO/iftwebp" = @{
+				"version" = "1.1"
+			}
 			"Mr-Ojii/ifheif" = @{
-	            "version" = "r62"
-	        }
-	        "tikubonn/straightLineObj" = @{
-	            "version" = "2021/03/07"
-	        }
-	        "Per-Terra/LuaJIT" = @{
-	            "version" = "2025/01/30"
-	        }
+				"version" = "r62"
+			}
+			"tikubonn/straightLineObj" = @{
+				"version" = "2021/03/07"
+			}
+			"Per-Terra/LuaJIT" = @{
+				"version" = "2025/01/30"
+			}
 		}
 	}
 }
