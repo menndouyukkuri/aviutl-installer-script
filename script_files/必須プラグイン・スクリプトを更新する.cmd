@@ -208,6 +208,36 @@ if (Test-Path "${aviutlExeDirectory}\apm.json") {
 }
 
 Write-Host "完了"
+Write-Host -NoNewline "`r`nais.json を確認しています..."
+
+# ais.json が存在する場合、$aisJsonHash に読み込み、$aisJsonExist に true を格納
+$aisJsonExist = $false
+if (Test-Path "${aviutlExeDirectory}\ais.json") {
+	$aisJsonHash = Get-Content "${aviutlExeDirectory}\ais.json" | ConvertFrom-JsonEditable
+	$aisJsonExist = $true
+
+# ais.json が存在しない場合、ais.json の元になるハッシュテーブルを用意して $aisJsonHash に代入
+} else {
+	$aisJsonHash = [ordered]@{
+	    "dataVersion" = "1"
+		"packages" = [ordered]@{
+	        "TORO/iftwebp" = @{
+	            "version" = "1.1"
+	        }
+			"Mr-Ojii/ifheif" = @{
+	            "version" = "r62"
+	        }
+	        "tikubonn/straightLineObj" = @{
+	            "version" = "2021/03/07"
+	        }
+	        "Per-Terra/LuaJIT" = @{
+	            "version" = "2025/01/30"
+	        }
+		}
+	}
+}
+
+Write-Host "完了"
 Write-Host -NoNewline "`r`n一時的にファイルを保管するフォルダを作成しています..."
 
 # AviUtl ディレクトリ内に plugins, script, license, readme の4つのディレクトリを作成する (待機)
@@ -828,8 +858,9 @@ if (!(Test-Path "${MFVideoReaderAuiDirectory}\MFVideoReaderConfig.ini")) {
 Write-Host "完了"
 Write-Host -NoNewline "`r`nWebP Susie Plug-inを確認しています..."
 
-# WebP Susie Plug-inが導入されていない場合のみ以下の処理を実行
-if (!(Test-Path "${aviutlExeDirectory}\iftwebp.spi")) {
+# ais.json があり、かつ TORO/iftwebp が記載されている場合はスキップする
+if (!($aisJsonExist -and $aisJsonHash.packages.Contains("TORO/iftwebp") -and
+	($aisJsonHash["packages"]["TORO/iftwebp"]["version"] -eq "1.1"))) {
 	Write-Host "完了"
 	Write-Host -NoNewline "WebP Susie Plug-inをダウンロードしています..."
 
@@ -863,37 +894,44 @@ Write-Host -NoNewline "`r`nifheifの最新版情報を取得しています..."
 $ifheifGithubApi = GithubLatestRelease "Mr-Ojii/ifheif"
 $ifheifUrl = $ifheifGithubApi.assets.browser_download_url
 
-Write-Host "完了"
-Write-Host -NoNewline "ifheifをダウンロードしています..."
+# ais.json があり、かつ最新版の情報が記載されている場合はスキップする
+if (!($aisJsonExist -and $aisJsonHash.packages.Contains("Mr-Ojii/ifheif") -and
+	($aisJsonHash["packages"]["Mr-Ojii/ifheif"]["version"] -eq $ifheifGithubApi.tag_name))) {
+	Write-Host "完了"
+	Write-Host -NoNewline "ifheifをダウンロードしています..."
 
-# ifheifのzipファイルをダウンロード (待機)
-Start-Process -FilePath curl.exe -ArgumentList "-OL $ifheifUrl" -WindowStyle Hidden -Wait
+	# ifheifのzipファイルをダウンロード (待機)
+	Start-Process -FilePath curl.exe -ArgumentList "-OL $ifheifUrl" -WindowStyle Hidden -Wait
 
-Write-Host "完了"
-Write-Host -NoNewline "ifheifをインストールしています..."
+	Write-Host "完了"
+	Write-Host -NoNewline "ifheifをインストールしています..."
 
-# AviUtl\license\ifheif 内に Licenses ディレクトリがあれば削除する (エラーの防止)
-if (Test-Path "${LicenseDirectoryRoot}\ifheif\Licenses") {
-	Remove-Item "${LicenseDirectoryRoot}\ifheif\Licenses" -Recurse
+	# AviUtl\license\ifheif 内に Licenses ディレクトリがあれば削除する (エラーの防止)
+	if (Test-Path "${LicenseDirectoryRoot}\ifheif\Licenses") {
+		Remove-Item "${LicenseDirectoryRoot}\ifheif\Licenses" -Recurse
+	}
+
+	# ifheifのzipファイルを展開 (待機)
+	Start-Process powershell -ArgumentList "-command Expand-Archive -Path ifheif.zip -Force" -WindowStyle Hidden -Wait
+
+	# カレントディレクトリをifheifのzipファイルを展開したディレクトリに変更
+	Set-Location "ifheif"
+
+	# AviUtl\readme, AviUtl\license 内に ifheif ディレクトリを作成 (待機)
+	Start-Process powershell -ArgumentList "-command New-Item `"${ReadmeDirectoryRoot}\ifheif`", `"${LicenseDirectoryRoot}\ifheif`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
+
+	# AviUtl ディレクトリ内に ifheif.spi を、AviUtl\license\ifheif 内に LICENSE と Licenses ディレクトリを、
+	# AviUtl\readme\ifheif 内に Readme.md をそれぞれ移動
+	Move-Item ifheif.spi $aviutlExeDirectory -Force
+	Move-Item "LICENS*" "${LicenseDirectoryRoot}\ifheif" -Force
+	Move-Item Readme.md "${ReadmeDirectoryRoot}\ifheif" -Force
+
+	# ais.json の Mr-Ojii/ifheif のバージョンを更新
+	$aisJsonHash["packages"]["Mr-Ojii/ifheif"]["version"] = $ifheifGithubApi.tag_name
+
+	# カレントディレクトリを tmp ディレクトリに変更
+	Set-Location ..
 }
-
-# ifheifのzipファイルを展開 (待機)
-Start-Process powershell -ArgumentList "-command Expand-Archive -Path ifheif.zip -Force" -WindowStyle Hidden -Wait
-
-# カレントディレクトリをifheifのzipファイルを展開したディレクトリに変更
-Set-Location "ifheif"
-
-# AviUtl\readme, AviUtl\license 内に ifheif ディレクトリを作成 (待機)
-Start-Process powershell -ArgumentList "-command New-Item `"${ReadmeDirectoryRoot}\ifheif`", `"${LicenseDirectoryRoot}\ifheif`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
-
-# AviUtl ディレクトリ内に ifheif.spi を、AviUtl\license\ifheif 内に LICENSE と Licenses ディレクトリを、
-# AviUtl\readme\ifheif 内に Readme.md をそれぞれ移動
-Move-Item ifheif.spi $aviutlExeDirectory -Force
-Move-Item "LICENS*" "${LicenseDirectoryRoot}\ifheif" -Force
-Move-Item Readme.md "${ReadmeDirectoryRoot}\ifheif" -Force
-
-# カレントディレクトリを tmp ディレクトリに変更
-Set-Location ..
 
 Write-Host "完了"
 Write-Host -NoNewline "`r`n「AviUtlスクリプト一式」を確認しています..."
@@ -901,25 +939,84 @@ Write-Host -NoNewline "`r`n「AviUtlスクリプト一式」を確認しています..."
 # カレントディレクトリを script ディレクトリに変更
 Set-Location $aviutlScriptDirectory
 
-# script ディレクトリ、またはそのサブディレクトリに @ANM1.anm があるか確認し、ある場合は
-# $CheckAviUtlScriptSet (初期値: false) を true とする
+# script ディレクトリ、またはそのサブディレクトリに @ANM1.anm があるか確認し、ある場合は $CheckAviUtlScriptSet を
+# true とし、$AviUtlScriptSetDirectory にディレクトリのパスを記録する
 $CheckAviUtlScriptSet = $false
 if (Test-Path "${aviutlScriptDirectory}\@ANM1.anm") {
 	$CheckAviUtlScriptSet = $true
+	$AviUtlScriptSetDirectory = $aviutlScriptDirectory
 } else {
 	Get-ChildItem -Attributes Directory | ForEach-Object {
 		if (Test-Path -Path "${_}\@ANM1.anm") {
 			$CheckAviUtlScriptSet = $true
+			$AviUtlScriptSetDirectory = $_
 		}
 	}
+}
+
+Start-Sleep -Milliseconds 500
+
+# @ANM1.anm を発見できなかった場合、$AviUtlScriptSetDirectory に AviUtl\script\さつき を記録する
+# また、AviUtl\script 内に さつき ディレクトリを作成する
+if (!($CheckAviUtlScriptSet)) {
+	$AviUtlScriptSetDirectory = "${aviutlScriptDirectory}\さつき"
+	Start-Process powershell -ArgumentList "-command New-Item `"${aviutlScriptDirectory}\さつき`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
+}
+
+# script ディレクトリ、またはそのサブディレクトリに 震える_連動.anm があるか確認し、ある場合は $CheckAnmSsd を
+# true とし、$anmSsdDirectory にディレクトリのパスを記録する
+$CheckAnmSsd = $false
+if (Test-Path "${aviutlScriptDirectory}\震える_連動.anm") {
+	$CheckAnmSsd = $true
+	$anmSsdDirectory = $aviutlScriptDirectory
+} else {
+	Get-ChildItem -Attributes Directory | ForEach-Object {
+		if (Test-Path -Path "${_}\震える_連動.anm") {
+			$CheckAnmSsd = $true
+			$anmSsdDirectory = $_
+		}
+	}
+}
+
+Start-Sleep -Milliseconds 500
+
+# 震える_連動.anm を発見できなかった場合、$anmSsdDirectory に AviUtl\script\ANM_ssd を記録する
+# また、AviUtl\script 内に ANM_ssd ディレクトリを作成する
+if (!($CheckAnmSsd)) {
+	$anmSsdDirectory = "${aviutlScriptDirectory}\ANM_ssd"
+	Start-Process powershell -ArgumentList "-command New-Item `"${aviutlScriptDirectory}\ANM_ssd`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
+}
+
+# script ディレクトリ、またはそのサブディレクトリに TA位置調整で移動.anm があるか確認し、ある場合は $CheckTaSsd を
+# true とし、$taSsdDirectory にディレクトリのパスを記録する
+$CheckTaSsd = $false
+if (Test-Path "${aviutlScriptDirectory}\TA位置調整で移動.anm") {
+	$CheckTaSsd = $true
+	$taSsdDirectory = $aviutlScriptDirectory
+} else {
+	Get-ChildItem -Attributes Directory | ForEach-Object {
+		if (Test-Path -Path "${_}\TA位置調整で移動.anm") {
+			$CheckTaSsd = $true
+			$taSsdDirectory = $_
+		}
+	}
+}
+
+Start-Sleep -Milliseconds 500
+
+# TA位置調整で移動.anm を発見できなかった場合、$taSsdDirectory に AviUtl\script\TA_ssd を記録する
+# また、AviUtl\script 内に TA_ssd ディレクトリを作成する
+if (!($CheckTaSsd)) {
+	$taSsdDirectory = "${aviutlScriptDirectory}\TA_ssd"
+	Start-Process powershell -ArgumentList "-command New-Item `"${aviutlScriptDirectory}\TA_ssd`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
 }
 
 # カレントディレクトリを tmp ディレクトリに変更
 Set-Location "${scriptFileRoot}\tmp"
 
-Start-Sleep -Milliseconds 500
-
-if (!($CheckAviUtlScriptSet)) {
+# apm.json があり、かつ最新版の情報が記載されている場合はスキップする
+if (!($apmJsonExist -and $apmJsonHash.packages.Contains("satsuki/satsuki") -and
+	($apmJsonHash["packages"]["satsuki/satsuki"]["version"] -eq "20160828"))) {
 	Write-Host "完了"
 	Write-Host -NoNewline "「AviUtlスクリプト一式」をダウンロードしています..."
 
@@ -929,47 +1026,32 @@ if (!($CheckAviUtlScriptSet)) {
 	Write-Host "完了"
 	Write-Host -NoNewline "「AviUtlスクリプト一式」をインストールしています..."
 
-	# AviUtl\script 内に さつき_AviUtlスクリプト一式 ディレクトリがあれば削除する (エラーの防止)
-	if (Test-Path "${aviutlScriptDirectory}\さつき_AviUtlスクリプト一式") {
-		Remove-Item "${aviutlScriptDirectory}\さつき_AviUtlスクリプト一式" -Recurse
-	}
-
-	# AviUtl\script 内に さつき_ANM_ssd ディレクトリがあれば削除する (エラーの防止)
-	if (Test-Path "${aviutlScriptDirectory}\さつき_ANM_ssd") {
-		Remove-Item "${aviutlScriptDirectory}\さつき_ANM_ssd" -Recurse
-	}
-
-	# AviUtl\script 内に さつき_TA_ssd ディレクトリがあれば削除する (エラーの防止)
-	if (Test-Path "${aviutlScriptDirectory}\さつき_TA_ssd") {
-		Remove-Item "${aviutlScriptDirectory}\さつき_TA_ssd" -Recurse
-	}
-
 	# 「AviUtlスクリプト一式」のzipファイルを展開 (待機)
 	Start-Process powershell -ArgumentList "-command Expand-Archive -Path script_20160828.zip -Force" -WindowStyle Hidden -Wait
 
 	# カレントディレクトリを script_20160828\script_20160828 ディレクトリに変更
 	Set-Location script_20160828\script_20160828
 
-	# ANM_ssd ディレクトリを さつき_ANM_ssd に、TA_ssd ディレクトリを さつき_TA_ssd にそれぞれリネーム (待機)
-	Start-Process powershell -ArgumentList "-command Rename-Item `"ANM_ssd`" `"さつき_ANM_ssd`"; Rename-Item `"TA_ssd`" `"さつき_TA_ssd`"" -WindowStyle Hidden -Wait
+	# AviUtl\readme 内に AviUtlスクリプト一式 ディレクトリを作成 (待機)
+	Start-Process powershell -ArgumentList "-command New-Item `"${ReadmeDirectoryRoot}\AviUtlスクリプト一式`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
 
-	# AviUtl\script 内に さつき_AviUtlスクリプト一式 ディレクトリを、AviUtl\readme 内に AviUtlスクリプト一式 ディレクトリを作成 (待機)
-	Start-Process powershell -ArgumentList "-command New-Item `"${aviutlScriptDirectory}\さつき_AviUtlスクリプト一式`", `"${ReadmeDirectoryRoot}\AviUtlスクリプト一式`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
+	# $anmSsdDirectory 内に ANM_ssd の中身を、$taSsdDirectory 内に TA_ssd の中身を (待機) 、
+	# AviUtl\readme\AviUtlスクリプト一式 内に readme.txt と 使い方.txt を (待機) 、
+	# $AviUtlScriptSetDirectory 内にその他のファイルをそれぞれ移動
+	Start-Process powershell -ArgumentList "-command Move-Item `"ANM_ssd\*`" $anmSsdDirectory -Force; Move-Item `"TA_ssd\*`" $taSsdDirectory -Force; Move-Item *.txt `"${ReadmeDirectoryRoot}\AviUtlスクリプト一式`" -Force" -WindowStyle Hidden -Wait
+	Move-Item * $AviUtlScriptSetDirectory -Force
 
-	# AviUtl\script 内に さつき_ANM_ssd と さつき_TA_ssd を、AviUtl\readme\AviUtlスクリプト一式 内に readme.txt と 使い方.txt を (待機) 、
-	# AviUtl\script\さつき_AviUtlスクリプト一式 内にその他のファイルをそれぞれ移動
-	Start-Process powershell -ArgumentList "-command Move-Item `"さつき_ANM_ssd`" $aviutlScriptDirectory -Force; Move-Item `"さつき_TA_ssd`" $aviutlScriptDirectory -Force; Move-Item *.txt `"${ReadmeDirectoryRoot}\AviUtlスクリプト一式`" -Force" -WindowStyle Hidden -Wait
-	Move-Item * "${aviutlScriptDirectory}\さつき_AviUtlスクリプト一式" -Force
+	# apm.json に satsuki/satsuki が登録されていない場合はキーを作成してidを登録
+	if (!($apmJsonHash.packages.Contains("satsuki/satsuki"))) {
+		$apmJsonHash["packages"]["satsuki/satsuki"] = [ordered]@{}
+		$apmJsonHash["packages"]["satsuki/satsuki"]["id"] = "satsuki/satsuki"
+	}
+
+	# apm.json の satsuki/satsuki のバージョンを更新
+	$apmJsonHash["packages"]["satsuki/satsuki"]["version"] = "20160828"
 
 	# カレントディレクトリを tmp ディレクトリに変更
 	Set-Location ..\..
-}
-
-# apm.json に satsuki/satsuki が登録されていない場合はキーを作成してidとversionを登録
-if (!($apmJsonHash.packages.Contains("satsuki/satsuki"))) {
-	$apmJsonHash["packages"]["satsuki/satsuki"] = [ordered]@{}
-	$apmJsonHash["packages"]["satsuki/satsuki"]["id"] = "satsuki/satsuki"
-	$apmJsonHash["packages"]["satsuki/satsuki"]["version"] = "20160828"
 }
 
 Write-Host "完了"
@@ -978,25 +1060,36 @@ Write-Host -NoNewline "`r`n「値で図形」を確認しています..."
 # カレントディレクトリを script ディレクトリに変更
 Set-Location $aviutlScriptDirectory
 
-# script ディレクトリ、またはそのサブディレクトリに 値で図形.obj があるか確認し、ある場合は
-# $CheckShapeWithValuesObj (初期値: false) を true とする
+# script ディレクトリ、またはそのサブディレクトリに 値で図形.obj があるか確認し、ある場合は $CheckShapeWithValuesObj を
+# true とし、$shapeWithValuesObjDirectory にディレクトリのパスを記録する
 $CheckShapeWithValuesObj = $false
 if (Test-Path "${aviutlScriptDirectory}\値で図形.obj") {
 	$CheckShapeWithValuesObj = $true
+	$shapeWithValuesObjDirectory = $aviutlScriptDirectory
 } else {
 	Get-ChildItem -Attributes Directory | ForEach-Object {
 		if (Test-Path -Path "${_}\値で図形.obj") {
 			$CheckShapeWithValuesObj = $true
+			$shapeWithValuesObjDirectory = $_
 		}
 	}
+}
+
+Start-Sleep -Milliseconds 500
+
+# 値で図形.obj を発見できなかった場合、$shapeWithValuesObjDirectory に AviUtl\script\Nagomiku を記録する
+# また、AviUtl\script 内に Nagomiku ディレクトリを作成する
+if (!($CheckShapeWithValuesObj)) {
+	$shapeWithValuesObjDirectory = "${aviutlScriptDirectory}\Nagomiku"
+	Start-Process powershell -ArgumentList "-command New-Item `"${aviutlScriptDirectory}\Nagomiku`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
 }
 
 # カレントディレクトリを tmp ディレクトリに変更
 Set-Location "${scriptFileRoot}\tmp"
 
-Start-Sleep -Milliseconds 500
-
-if (!($CheckShapeWithValuesObj)) {
+# apm.json があり、かつ最新版の情報が記載されている場合はスキップする
+if (!($apmJsonExist -and $apmJsonHash.packages.Contains("nagomiku/paracustomobj") -and
+	($apmJsonHash["packages"]["nagomiku/paracustomobj"]["version"] -eq "v2.10"))) {
 	Write-Host "完了"
 	Write-Host -NoNewline "「値で図形」をダウンロードしています..."
 
@@ -1008,12 +1101,14 @@ if (!($CheckShapeWithValuesObj)) {
 
 	# AviUtl\script 内に 値で図形.obj を移動
 	Move-Item "値で図形.obj" $aviutlScriptDirectory -Force
-}
 
-# apm.json に nagomiku/paracustomobj が登録されていない場合はキーを作成してidとversionを登録
-if (!($apmJsonHash.packages.Contains("nagomiku/paracustomobj"))) {
-	$apmJsonHash["packages"]["nagomiku/paracustomobj"] = [ordered]@{}
-	$apmJsonHash["packages"]["nagomiku/paracustomobj"]["id"] = "nagomiku/paracustomobj"
+	# apm.json に nagomiku/paracustomobj が登録されていない場合はキーを作成してidを登録
+	if (!($apmJsonHash.packages.Contains("nagomiku/paracustomobj"))) {
+		$apmJsonHash["packages"]["nagomiku/paracustomobj"] = [ordered]@{}
+		$apmJsonHash["packages"]["nagomiku/paracustomobj"]["id"] = "nagomiku/paracustomobj"
+	}
+
+	# apm.json の nagomiku/paracustomobj のバージョンを更新
 	$apmJsonHash["packages"]["nagomiku/paracustomobj"]["version"] = "v2.10"
 }
 
@@ -1023,27 +1118,38 @@ Write-Host -NoNewline "`r`n直線スクリプトを確認しています..."
 # カレントディレクトリを script ディレクトリに変更
 Set-Location $aviutlScriptDirectory
 
-# script ディレクトリ、またはそのサブディレクトリに 直線.obj があるか確認し、ある場合は
-# $CheckStraightLineObj (初期値: false) を true とする
+# script ディレクトリ、またはそのサブディレクトリに 直線.obj があるか確認し、ある場合は $CheckStraightLineObj を
+# true とし、$straightLineObjDirectory にディレクトリのパスを記録する
 $CheckStraightLineObj = $false
 if (Test-Path "${aviutlScriptDirectory}\直線.obj") {
 	$CheckStraightLineObj = $true
+	$straightLineObjDirectory = $aviutlScriptDirectory
 } else {
 	Get-ChildItem -Attributes Directory | ForEach-Object {
 		if (Test-Path -Path "${_}\直線.obj") {
 			$CheckStraightLineObj = $true
+			$straightLineObjDirectory = $_
 		}
 	}
+}
+
+Start-Sleep -Milliseconds 500
+
+# 直線.obj を発見できなかった場合、$taSsdDirectory に AviUtl\script\ちくぼん を記録する
+# また、AviUtl\script 内に ちくぼん ディレクトリを作成する (待機)
+if (!($CheckStraightLineObj)) {
+	$straightLineObjDirectory = "${aviutlScriptDirectory}\ちくぼん"
+	Start-Process powershell -ArgumentList "-command New-Item `"${aviutlScriptDirectory}\ちくぼん`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
 }
 
 # カレントディレクトリを tmp ディレクトリに変更
 Set-Location "${scriptFileRoot}\tmp"
 
-Start-Sleep -Milliseconds 500
-
 Write-Host "完了"
 
-if (!($CheckStraightLineObj)) {
+# ais.json があり、かつ最新版の情報が記載されている場合はスキップする
+if (!($aisJsonExist -and $aisJsonHash.packages.Contains("tikubonn/straightLineObj") -and
+	($aisJsonHash["packages"]["tikubonn/straightLineObj"]["version"] -eq "2021/03/07"))) {
 	Write-Host -NoNewline "直線スクリプトをダウンロードしています..."
 
 	# 直線スクリプトのzipファイルをダウンロード (待機)
@@ -1066,6 +1172,9 @@ if (!($CheckStraightLineObj)) {
 	Start-Process powershell -ArgumentList "-command Move-Item `"直線.obj`" $aviutlScriptDirectory -Force; Move-Item LICENSE.txt `"${LicenseDirectoryRoot}\直線スクリプト`" -Force" -WindowStyle Hidden -Wait
 	Move-Item * "${ReadmeDirectoryRoot}\直線スクリプト" -Force
 
+	# ais.json の tikubonn/straightLineObj のバージョンを更新
+	$aisJsonHash["packages"]["tikubonn/straightLineObj"]["version"] = "2021/03/07"
+
 	# カレントディレクトリを tmp ディレクトリに変更
 	Set-Location ..
 
@@ -1075,12 +1184,6 @@ if (!($CheckStraightLineObj)) {
 
 # LuaJITの更新 by Yu-yu0202 (20250109)
 	# 不具合が直らなかったため再実装 by menndouyukkuri (20250110)
-
-# AviUtl ディレクトリ内に old_lua51.dll があれば削除する
-if (Test-Path "${aviutlExeDirectory}\old_lua51.dll") {
-	Remove-Item "${aviutlExeDirectory}\old_lua51.dll"
-}
-
 Write-Host -NoNewline "`r`nLuaJITの最新版情報を取得しています..."
 
 # LuaJITの最新版のダウンロードURLを取得
@@ -1090,51 +1193,92 @@ $luaJitAllUrl = $luaJitGithubApi.assets.browser_download_url
 # 複数ある中からAviUtl用のもののみ残す
 $luaJitUrl = $luaJitAllUrl | Where-Object {$_ -like "*LuaJIT_2.1_Win_x86.zip"}
 
-Write-Host "完了"
-Write-Host -NoNewline "LuaJITをダウンロードしています..."
+# ais.json 用にタグ名を取得してビルド日だけ取り出し yyyy/mm/dd に整形
+$luaJitTagNameSplitArray = ($luaJitGithubApi.tag_name) -split "-"
+$luaJitBuildDate = $luaJitTagNameSplitArray[1] + "/" + $luaJitTagNameSplitArray[2] + "/" + $luaJitTagNameSplitArray[3]
 
-# LuaJITのzipファイルをダウンロード (待機)
-Start-Process -FilePath curl.exe -ArgumentList "-OL $luaJitUrl" -WindowStyle Hidden -Wait
-
-Write-Host "完了"
-Write-Host -NoNewline "LuaJITをインストールしています..."
-
-# AviUtl ディレクトリ内に exedit_lua51.dll がない場合、既にある lua51.dll をリネームしてバックアップする
-if (!(Test-Path "${aviutlExeDirectory}\exedit_lua51.dll")) {
-	Rename-Item "${aviutlExeDirectory}\lua51.dll" "old_lua51.dll" -Force
+# ais.json のLuaJITのバージョンを / で分割して $aisJsonluaJitVersionArray に格納
+if ($aisJsonExist -and $aisJsonHash.packages.Contains("Per-Terra/LuaJIT")) {
+	$aisJsonluaJitVersionArray = $aisJsonHash["packages"]["Per-Terra/LuaJIT"]["version"] -split "/"
+} else {
+	$aisJsonluaJitVersionArray = 0, 0, 0
 }
 
-# AviUtl\readme\LuaJIT 内に doc ディレクトリがあれば削除する (エラーの防止)
-if (Test-Path "${ReadmeDirectoryRoot}\LuaJIT\doc") {
-	Remove-Item "${ReadmeDirectoryRoot}\LuaJIT\doc" -Recurse
+# $luaJitUpdate にLuaJITを更新するかどうかを格納
+$luaJitUpdate = $true
+
+# ais.json の年 > 取得したビルド日の年
+if ($aisJsonluaJitVersionArray[0] -gt $luaJitTagNameSplitArray[1]) {
+	$luaJitUpdate = $false
+
+# ais.json の年 < 取得したビルド日の年
+} elseif ($aisJsonluaJitVersionArray[0] -lt $luaJitTagNameSplitArray[1]) {
+	# if文を離脱、これより下の条件は ais.json の年 = 取得したビルド日の年
+
+# ais.json の月 > 取得したビルド日の月
+} elseif ($aisJsonluaJitVersionArray[1] -gt $luaJitTagNameSplitArray[2]) {
+	$luaJitUpdate = $false
+
+# ais.json の月 < 取得したビルド日の月
+} elseif ($aisJsonluaJitVersionArray[1] -gt $luaJitTagNameSplitArray[2]) {
+	# if文を離脱、これより下の条件は ais.json の月 = 取得したビルド日の月
+
+# ais.json の日 >= 取得したビルド日の日
+} elseif ($aisJsonluaJitVersionArray[2] -ge $luaJitTagNameSplitArray[3]) {
+	$luaJitUpdate = $false
 }
 
-# LuaJITのzipファイルを展開 (待機)
-Start-Process powershell -ArgumentList "-command Expand-Archive -Path `"LuaJIT_2.1_Win_x86.zip`" -Force" -WindowStyle Hidden -Wait
+# ais.json のバージョンより取得したビルド日の方が新しい場合は更新する
+if ($luaJitUpdate) {
+	Write-Host "完了"
+	Write-Host -NoNewline "LuaJITをダウンロードしています..."
 
-# カレントディレクトリをLuaJITのzipファイルを展開したディレクトリに変更
-Set-Location "LuaJIT_2.1_Win_x86"
+	# LuaJITのzipファイルをダウンロード (待機)
+	Start-Process -FilePath curl.exe -ArgumentList "-OL $luaJitUrl" -WindowStyle Hidden -Wait
 
-# AviUtl\readme, AviUtl\license 内に LuaJIT ディレクトリを作成 (待機)
-Start-Process powershell -ArgumentList "-command New-Item `"${ReadmeDirectoryRoot}\LuaJIT`", `"${LicenseDirectoryRoot}\LuaJIT`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
+	Write-Host "完了"
+	Write-Host -NoNewline "LuaJITをインストールしています..."
 
-# AviUtl ディレクトリ内に lua51.dll を、AviUtl\readme\LuaJIT 内に README と doc を、AviUtl\license\LuaJIT 内に
-# COPYRIGHT と About-This-Build.txt をそれぞれ移動
-Move-Item "lua51.dll" $aviutlExeDirectory -Force
-Move-Item README "${ReadmeDirectoryRoot}\LuaJIT" -Force
-Move-Item doc "${ReadmeDirectoryRoot}\LuaJIT" -Force
-Move-Item COPYRIGHT "${LicenseDirectoryRoot}\LuaJIT" -Force
-Move-Item "About-This-Build.txt" "${LicenseDirectoryRoot}\LuaJIT" -Force
+	# AviUtl ディレクトリ内に exedit_lua51.dll も old_lua51.dll もない場合、既にある lua51.dll をリネームしてバックアップする
+	if (!(Test-Path "${aviutlExeDirectory}\exedit_lua51.dll") -and !(Test-Path "${aviutlExeDirectory}\old_lua51.dll")) {
+		Rename-Item "${aviutlExeDirectory}\lua51.dll" "old_lua51.dll" -Force
+	}
 
-# apm.json に ePi/LuaJIT が登録されていない場合はキーを作成してidとversionを登録
-if (!($apmJsonHash.packages.Contains("ePi/LuaJIT"))) {
-	$apmJsonHash["packages"]["ePi/LuaJIT"] = [ordered]@{}
-	$apmJsonHash["packages"]["ePi/LuaJIT"]["id"] = "ePi/LuaJIT"
-	$apmJsonHash["packages"]["ePi/LuaJIT"]["version"] = "2.1.0-beta3"
+	# AviUtl\readme\LuaJIT 内に doc ディレクトリがあれば削除する (エラーの防止)
+	if (Test-Path "${ReadmeDirectoryRoot}\LuaJIT\doc") {
+		Remove-Item "${ReadmeDirectoryRoot}\LuaJIT\doc" -Recurse
+	}
+
+	# LuaJITのzipファイルを展開 (待機)
+	Start-Process powershell -ArgumentList "-command Expand-Archive -Path `"LuaJIT_2.1_Win_x86.zip`" -Force" -WindowStyle Hidden -Wait
+
+	# カレントディレクトリをLuaJITのzipファイルを展開したディレクトリに変更
+	Set-Location "LuaJIT_2.1_Win_x86"
+
+	# AviUtl\readme, AviUtl\license 内に LuaJIT ディレクトリを作成 (待機)
+	Start-Process powershell -ArgumentList "-command New-Item `"${ReadmeDirectoryRoot}\LuaJIT`", `"${LicenseDirectoryRoot}\LuaJIT`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
+
+	# AviUtl ディレクトリ内に lua51.dll を、AviUtl\readme\LuaJIT 内に README と doc を、AviUtl\license\LuaJIT 内に
+	# COPYRIGHT と About-This-Build.txt をそれぞれ移動
+	Move-Item "lua51.dll" $aviutlExeDirectory -Force
+	Move-Item README "${ReadmeDirectoryRoot}\LuaJIT" -Force
+	Move-Item doc "${ReadmeDirectoryRoot}\LuaJIT" -Force
+	Move-Item COPYRIGHT "${LicenseDirectoryRoot}\LuaJIT" -Force
+	Move-Item "About-This-Build.txt" "${LicenseDirectoryRoot}\LuaJIT" -Force
+
+	# apm.json に ePi/LuaJIT が登録されていない場合はキーを作成してidとversionを登録
+	if (!($apmJsonHash.packages.Contains("ePi/LuaJIT"))) {
+		$apmJsonHash["packages"]["ePi/LuaJIT"] = [ordered]@{}
+		$apmJsonHash["packages"]["ePi/LuaJIT"]["id"] = "ePi/LuaJIT"
+		$apmJsonHash["packages"]["ePi/LuaJIT"]["version"] = "2.1.0-beta3"
+	}
+
+	# ais.json の Per-Terra/LuaJIT のバージョンを更新
+	$aisJsonHash["packages"]["Per-Terra/LuaJIT"]["version"] = $luaJitBuildDate
+
+	# カレントディレクトリを tmp ディレクトリに変更
+	Set-Location ..
 }
-
-# カレントディレクトリを tmp ディレクトリに変更
-Set-Location ..
 
 Write-Host "完了"
 
@@ -1266,6 +1410,7 @@ foreach ($hwEncoder in $hwEncoders.GetEnumerator()) {
 			}
 
 			Write-Host "完了"
+
 		} else {
 			Write-Host -NoNewline "$($hwEncoder.Key)は使用できません。削除しています..."
 
@@ -1296,11 +1441,12 @@ foreach ($hwEncoder in $hwEncoders.GetEnumerator()) {
 
 Write-Host "`r`nハードウェアエンコードの出力プラグインの確認が完了しました。"
 
-
 # ハードウェアエンコードの出力プラグインが1つも入っていない (上の処理で削除された場合含む) 場合にインストールチェックする
 # ただし、上の処理で全てのプラグインが削除されている場合はインストールチェックをする意味がないのでスキップする
 if ((!($CheckHwEncoder)) -and
 	(!($hwEncodersRemove.NVEnc -and $hwEncodersRemove.QSVEnc -and $hwEncodersRemove.VCEEnc))) {
+
+
 	# HWエンコーディングの使用可否をチェックし、可能であれば出力プラグインをインストール by Yu-yu0202 (20250107)
 
 	Write-Host "`r`nハードウェアエンコード (NVEnc / QSVEnc / VCEEnc) が使用できるかチェックします。"
@@ -1555,6 +1701,12 @@ Write-Host -NoNewline "`r`napm.json を作成しています..."
 
 # $apmJsonHash をJSON形式に変換し、apm.json として出力する
 ConvertTo-Json $apmJsonHash -Depth 8 -Compress | ForEach-Object{ $_+"`n" } | ForEach-Object{ [Text.Encoding]::UTF8.GetBytes($_) } | Set-Content -Encoding Byte -Path "${aviutlExeDirectory}\apm.json"
+
+Write-Host "完了"
+Write-Host -NoNewline "`r`nais.json を作成しています..."
+
+# $aisJsonHash をJSON形式に変換し、ais.json として出力する
+ConvertTo-Json $aisJsonHash -Depth 8 -Compress | ForEach-Object{ $_+"`n" } | ForEach-Object{ [Text.Encoding]::UTF8.GetBytes($_) } | Set-Content -Encoding Byte -Path "${aviutlExeDirectory}\ais.json"
 
 Write-Host "完了"
 Write-Host -NoNewline "`r`n更新に使用した不要なファイルを削除しています..."

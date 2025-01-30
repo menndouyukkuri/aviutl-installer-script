@@ -27,6 +27,13 @@ function GithubLatestRelease ($repo) {
 	# GitHubのAPIから最新版リリースの情報を取得する
 	$api = Invoke-RestMethod "https://api.github.com/repos/$repo/releases/latest"
 
-	# 最新版リリースの情報を返す
-	return($api)
+	if ($api -eq $null) {
+		# null の場合、メッセージを表示して終了
+		Write-Host "`r`n`r`nエラー: GitHub APIからのデータの取得に失敗しました。`r`n`r`nGitHub APIでは同一IPからのアクセスが1時間あたり60回までに制限されています。しばらく時間を空けて再度お試しください。`r`nそれでも失敗する場合は、スクリプトにバグがあるか、GitHubに何らかの障害が発生している可能性があります。`r`n`r`n"
+		Pause
+		exit
+	} else {
+		# 最新版リリースの情報を返す
+		return($api)
+	}
 }

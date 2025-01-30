@@ -28,8 +28,8 @@
 $scriptFileRoot = (Get-Location).Path
 
 # バージョン情報を記載
-$VerNum = "1.1.8"
-$ReleaseDate = "2025-01-29"
+$VerNum = "1.1.9"
+$ReleaseDate = "2025-01-31"
 
 # 更新確認用にバージョン情報を格納
 $Version = "v" + $VerNum
@@ -202,6 +202,25 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 				"id" = "ePi/LuaJIT"
 				"version" = "2.1.0-beta3"
 			}
+		}
+	}
+
+	# ais.json の元になるハッシュテーブル $aisJsonHash を用意
+	$aisJsonHash = [ordered]@{
+	    "dataVersion" = "1"
+		"packages" = [ordered]@{
+	        "TORO/iftwebp" = @{
+	            "version" = "1.1"
+	        }
+			"Mr-Ojii/ifheif" = @{
+	            "version" = "r62"
+	        }
+	        "tikubonn/straightLineObj" = @{
+	            "version" = "2021/03/07"
+	        }
+	        "Per-Terra/LuaJIT" = @{
+	            "version" = "2025/01/30"
+	        }
 		}
 	}
 
@@ -533,6 +552,9 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	$ifheifGithubApi = GithubLatestRelease "Mr-Ojii/ifheif"
 	$ifheifUrl = $ifheifGithubApi.assets.browser_download_url
 
+	# $aisJsonHash のバージョン情報をGitHubから取得したデータで最新のものに更新
+	$aisJsonHash["packages"]["Mr-Ojii/ifheif"]["version"] = $ifheifGithubApi.tag_name
+
 	Write-Host "完了"
 	Write-Host -NoNewline "ifheifをダウンロードしています..."
 
@@ -574,19 +596,19 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Write-Host "完了"
 	Write-Host -NoNewline "「AviUtlスクリプト一式」をインストールしています..."
 
-	# AviUtl\script 内に さつき_AviUtlスクリプト一式 ディレクトリがあれば削除する (エラーの防止)
-	if (Test-Path "C:\Applications\AviUtl\script\さつき_AviUtlスクリプト一式") {
-		Remove-Item "C:\Applications\AviUtl\script\さつき_AviUtlスクリプト一式" -Recurse
+	# AviUtl\script 内に さつき ディレクトリがあれば削除する (エラーの防止)
+	if (Test-Path "C:\Applications\AviUtl\script\さつき") {
+		Remove-Item "C:\Applications\AviUtl\script\さつき" -Recurse
 	}
 
-	# AviUtl\script 内に さつき_ANM_ssd ディレクトリがあれば削除する (エラーの防止)
-	if (Test-Path "C:\Applications\AviUtl\script\さつき_ANM_ssd") {
-		Remove-Item "C:\Applications\AviUtl\script\さつき_ANM_ssd" -Recurse
+	# AviUtl\script 内に ANM_ssd ディレクトリがあれば削除する (エラーの防止)
+	if (Test-Path "C:\Applications\AviUtl\script\ANM_ssd") {
+		Remove-Item "C:\Applications\AviUtl\script\ANM_ssd" -Recurse
 	}
 
-	# AviUtl\script 内に さつき_TA_ssd ディレクトリがあれば削除する (エラーの防止)
-	if (Test-Path "C:\Applications\AviUtl\script\さつき_TA_ssd") {
-		Remove-Item "C:\Applications\AviUtl\script\さつき_TA_ssd" -Recurse
+	# AviUtl\script 内に TA_ssd ディレクトリがあれば削除する (エラーの防止)
+	if (Test-Path "C:\Applications\AviUtl\script\TA_ssd") {
+		Remove-Item "C:\Applications\AviUtl\script\TA_ssd" -Recurse
 	}
 
 	# 「AviUtlスクリプト一式」のzipファイルを展開 (待機)
@@ -595,16 +617,13 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	# カレントディレクトリを script_20160828\script_20160828 ディレクトリに変更
 	Set-Location script_20160828\script_20160828
 
-	# ANM_ssd ディレクトリを さつき_ANM_ssd に、TA_ssd ディレクトリを さつき_TA_ssd にそれぞれリネーム (待機)
-	Start-Process powershell -ArgumentList "-command Rename-Item `"ANM_ssd`" `"さつき_ANM_ssd`"; Rename-Item `"TA_ssd`" `"さつき_TA_ssd`"" -WindowStyle Hidden -Wait
+	# AviUtl\script 内に さつき ディレクトリを、AviUtl\readme 内に AviUtlスクリプト一式 ディレクトリを作成 (待機)
+	Start-Process powershell -ArgumentList "-command New-Item `"C:\Applications\AviUtl\script\さつき`", `"C:\Applications\AviUtl\readme\AviUtlスクリプト一式`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
 
-	# AviUtl\script 内に さつき_AviUtlスクリプト一式 ディレクトリを、AviUtl\readme 内に AviUtlスクリプト一式 ディレクトリを作成 (待機)
-	Start-Process powershell -ArgumentList "-command New-Item `"C:\Applications\AviUtl\script\さつき_AviUtlスクリプト一式`", `"C:\Applications\AviUtl\readme\AviUtlスクリプト一式`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
-
-	# AviUtl\script 内に さつき_ANM_ssd と さつき_TA_ssd を、AviUtl\readme\AviUtlスクリプト一式 内に readme.txt と 使い方.txt を (待機) 、
-	# AviUtl\script\さつき_AviUtlスクリプト一式 内にその他のファイルをそれぞれ移動
-	Start-Process powershell -ArgumentList "-command Move-Item `"さつき_ANM_ssd`" C:\Applications\AviUtl\script -Force; Move-Item `"さつき_TA_ssd`" C:\Applications\AviUtl\script -Force; Move-Item *.txt `"C:\Applications\AviUtl\readme\AviUtlスクリプト一式`" -Force" -WindowStyle Hidden -Wait
-	Move-Item * "C:\Applications\AviUtl\script\さつき_AviUtlスクリプト一式" -Force
+	# AviUtl\script 内に ANM_ssd と TA_ssd を、AviUtl\readme\AviUtlスクリプト一式 内に readme.txt と 使い方.txt を (待機) 、
+	# AviUtl\script\さつき 内にその他のファイルをそれぞれ移動
+	Start-Process powershell -ArgumentList "-command Move-Item ANM_ssd C:\Applications\AviUtl\script -Force; Move-Item TA_ssd C:\Applications\AviUtl\script -Force; Move-Item *.txt `"C:\Applications\AviUtl\readme\AviUtlスクリプト一式`" -Force" -WindowStyle Hidden -Wait
+	Move-Item * "C:\Applications\AviUtl\script\さつき" -Force
 
 	# カレントディレクトリを tmp ディレクトリに変更
 	Set-Location ..\..
@@ -618,8 +637,11 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Write-Host "完了"
 	Write-Host -NoNewline "「値で図形」をインストールしています..."
 
-	# AviUtl\script 内に 値で図形.obj を移動
-	Move-Item "値で図形.obj" "C:\Applications\AviUtl\script" -Force
+	# AviUtl\script 内に Nagomiku ディレクトリを作成 (待機)
+	Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\script\Nagomiku -ItemType Directory -Force" -WindowStyle Hidden -Wait
+
+	# AviUtl\script\Nagomiku 内に 値で図形.obj を移動
+	Move-Item "値で図形.obj" "C:\Applications\AviUtl\script\Nagomiku" -Force
 
 	Write-Host "完了"
 	Write-Host -NoNewline "`r`n直線スクリプトをダウンロードしています..."
@@ -636,12 +658,12 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	# カレントディレクトリを 直線スクリプト ディレクトリに変更
 	Set-Location "直線スクリプト"
 
-	# AviUtl\readme, AviUtl\license 内に 直線スクリプト ディレクトリを作成 (待機)
-	Start-Process powershell -ArgumentList "-command New-Item `"C:\Applications\AviUtl\readme\直線スクリプト`", `"C:\Applications\AviUtl\license\直線スクリプト`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
+	# AviUtl\script 内に ちくぼん ディレクトリを、AviUtl\readme, AviUtl\license 内に 直線スクリプト ディレクトリを作成 (待機)
+	Start-Process powershell -ArgumentList "-command New-Item `"C:\Applications\AviUtl\script\ちくぼん`", `"C:\Applications\AviUtl\readme\直線スクリプト`", `"C:\Applications\AviUtl\license\直線スクリプト`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
 
-	# AviUtl\script 内に 直線.obj を、AviUtl\license\直線スクリプト 内に LICENSE.txt を (待機) 、
+	# AviUtl\script\ちくぼん 内に 直線.obj を、AviUtl\license\直線スクリプト 内に LICENSE.txt を (待機) 、
 	# AviUtl\readme\直線スクリプト 内にその他のファイルをそれぞれ移動
-	Start-Process powershell -ArgumentList "-command Move-Item `"直線.obj`" C:\Applications\AviUtl\script -Force; Move-Item LICENSE.txt `"C:\Applications\AviUtl\license\直線スクリプト`" -Force" -WindowStyle Hidden -Wait
+	Start-Process powershell -ArgumentList "-command Move-Item `"直線.obj`" `"C:\Applications\AviUtl\script\ちくぼん`" -Force; Move-Item LICENSE.txt `"C:\Applications\AviUtl\license\直線スクリプト`" -Force" -WindowStyle Hidden -Wait
 	Move-Item * "C:\Applications\AviUtl\readme\直線スクリプト" -Force
 
 	# カレントディレクトリを tmp ディレクトリに変更
@@ -666,6 +688,12 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 
 	# 複数ある中からAviUtl用のもののみ残す
 	$luaJitUrl = $luaJitAllUrl | Where-Object {$_ -like "*LuaJIT_2.1_Win_x86.zip"}
+
+	# $aisJsonHash のバージョン情報をGitHubから取得したデータで最新のものに更新
+		# yyyy/mm/dd を入れる必要があるため tag_name を分割してビルド日のみ取り出して使用
+	$luaJitTagNameSplitArray = ($luaJitGithubApi.tag_name) -split "-"
+	$luaJitBuildDate = $luaJitTagNameSplitArray[1] + "/" + $luaJitTagNameSplitArray[2] + "/" + $luaJitTagNameSplitArray[3]
+	$aisJsonHash["packages"]["Per-Terra/LuaJIT"]["version"] = $luaJitBuildDate
 
 	Write-Host "完了"
 	Write-Host -NoNewline "LuaJITをダウンロードしています..."
@@ -978,6 +1006,12 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 
 	# $apmJsonHash をJSON形式に変換し、apm.json として出力する
 	ConvertTo-Json $apmJsonHash -Depth 8 -Compress | ForEach-Object{ $_+"`n" } | ForEach-Object{ [Text.Encoding]::UTF8.GetBytes($_) } | Set-Content -Encoding Byte -Path "C:\Applications\AviUtl\apm.json"
+
+	Write-Host "完了"
+	Write-Host -NoNewline "`r`nais.json を作成しています..."
+
+	# $aisJsonHash をJSON形式に変換し、ais.json として出力する
+	ConvertTo-Json $aisJsonHash -Depth 8 -Compress | ForEach-Object{ $_+"`n" } | ForEach-Object{ [Text.Encoding]::UTF8.GetBytes($_) } | Set-Content -Encoding Byte -Path "C:\Applications\AviUtl\ais.json"
 
 	Write-Host "完了"
 	Write-Host -NoNewline "`r`nデスクトップにショートカットファイルを作成しています..."
