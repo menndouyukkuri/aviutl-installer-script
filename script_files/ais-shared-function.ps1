@@ -24,16 +24,48 @@
 
 # GitHubリポジトリの最新版リリースの情報を取得する
 function GithubLatestRelease ($repo) {
-	# GitHubのAPIから最新版リリースの情報を取得する
-	$api = Invoke-RestMethod "https://api.github.com/repos/$repo/releases/latest"
+	# try-catch で Invoke-RestMethod のエラーを捉えられるようにする
+	$ErrorActionPreference = "Stop"
 
-	if ($api -eq $null) {
-		# null の場合、メッセージを表示して終了
-		Write-Host "`r`n`r`nエラー: GitHub APIからのデータの取得に失敗しました。`r`n`r`nGitHub APIでは同一IPからのアクセスが1時間あたり60回までに制限されています。しばらく時間を空けて再度お試しください。`r`nそれでも失敗する場合は、スクリプトにバグがあるか、GitHubに何らかの障害が発生している可能性があります。`r`n`r`n"
+	try {
+		# GitHubのAPIから最新版リリースの情報を取得する
+		$api = Invoke-RestMethod "https://api.github.com/repos/$repo/releases/latest"
+	} catch {
+		# $Error[0] が JSON 形式なので PSObject に変換する
+		$ErrorJsonObject = ConvertFrom-Json $Error[0]
+
+		# エラー表示の共通部分を表示
+		Write-Host "`r`n`r`nエラー: GitHub APIからのデータの取得に失敗しました。"
+
+		# API rate limit とそれ以外に分ける
+		if ($ErrorJsonObject.message.Contains("API rate limit")){
+			# API rate limit のエラーメッセージからIPアドレスを取り出す
+			$ApiRateLimitMessageIpAddress = ((($ErrorJsonObject.message) -split " ")[5]).Trim(".")
+
+			# API rate limit のエラーメッセージを日本語に直したものを表示
+			Write-Host "内容　: $ApiRateLimitMessageIpAddress に対するAPIレート制限を超えました (しかし良いニュースがあります: 認証されたリクエストにはより高いレート制限が適用されます。詳細についてはドキュメントをご覧ください) 。"
+			Write-Host "　　　  Ctrl キーを押しながらクリックするとリンク先が表示できます。`r`n　　　  https://docs.github.com/rest/using-the-rest-api/rate-limits-for-the-rest-api`r`n"
+
+			# ユーザーに向けて対処法を表示
+			Write-Host "対処法: GitHub APIでは同一IPからのアクセスが1時間あたり60回までに制限されています。`r`n　　　  しばらく時間を空けて再度実行すれば、問題なく実行できます。`r`n"
+
+		} else {
+			# エラーメッセージの表示
+			Write-Host "内容　: $($ErrorJsonObject.message)"
+
+			# ドキュメントのURLがある場合、それも表示する
+			if ($ErrorJsonObject.PSObject.Properties["documentation_url"]) {
+				Write-Host "　　　  詳細は下記のドキュメントをご覧ください。Ctrl キーを押しながらクリックするとリンク先が表示できます。`r`n　　　  $($ErrorJsonObject.documentation_url)"
+			}
+
+			Write-Host ""
+		}
+
+		# ユーザーの反応を待って終了
 		Pause
-		exit
-	} else {
-		# 最新版リリースの情報を返す
-		return($api)
+		exit 1
 	}
+
+	# 最新版リリースの情報を返す
+	return($api)
 }
