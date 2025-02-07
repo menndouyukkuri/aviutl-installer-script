@@ -1,6 +1,6 @@
 ---
 name: 01-bug report
-about: 改善を手助けするためにバグの報告を作成してください
+about: 'バグの報告: 改善を手助けするためにバグの報告を作成してください'
 title: "[Bug]: "
 labels: bug, unconfirmed
 assignees: menndouyukkuri

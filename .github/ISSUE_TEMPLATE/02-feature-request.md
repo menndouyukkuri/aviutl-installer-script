@@ -1,6 +1,6 @@
 ---
-name: 2. 機能のリクエスト
-about: プロジェクトへのアイデアを提案してください
+name: 02-feature request
+about: '機能のリクエスト: プロジェクトへのアイデアを提案してください'
 title: "[Feature request]: "
 labels: enhancement, unconfirmed
 assignees: menndouyukkuri
