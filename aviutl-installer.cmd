@@ -28,8 +28,8 @@
 $scriptFileRoot = (Get-Location).Path
 
 # バージョン情報を記載
-$VerNum = "1.1.10"
-$ReleaseDate = "2025-02-05"
+$VerNum = "1.1.11"
+$ReleaseDate = "2025-02-08"
 
 # 更新確認用にバージョン情報を格納
 $Version = "v" + $VerNum

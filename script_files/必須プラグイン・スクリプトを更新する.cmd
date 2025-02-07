@@ -548,7 +548,7 @@ if ($apmJsonLSmashWorksVersionArray[0] -gt $lSmashWorksTagNameSplitArray[1]) {
 	$lSmashWorksUpdate = $false
 
 # apm.json の月 < 取得したビルド日の月
-} elseif ($apmJsonLSmashWorksVersionArray[1] -gt $lSmashWorksTagNameSplitArray[2]) {
+} elseif ($apmJsonLSmashWorksVersionArray[1] -lt $lSmashWorksTagNameSplitArray[2]) {
 	# if文を離脱、これより下の条件は apm.json の月 = 取得したビルド日の月
 
 # apm.json の日 >= 取得したビルド日の日
@@ -1226,7 +1226,7 @@ if ($aisJsonluaJitVersionArray[0] -gt $luaJitTagNameSplitArray[1]) {
 	$luaJitUpdate = $false
 
 # ais.json の月 < 取得したビルド日の月
-} elseif ($aisJsonluaJitVersionArray[1] -gt $luaJitTagNameSplitArray[2]) {
+} elseif ($aisJsonluaJitVersionArray[1] -lt $luaJitTagNameSplitArray[2]) {
 	# if文を離脱、これより下の条件は ais.json の月 = 取得したビルド日の月
 
 # ais.json の日 >= 取得したビルド日の日
