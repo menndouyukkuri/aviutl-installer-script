@@ -257,12 +257,12 @@ Write-Host "完了"
 Write-Host -NoNewline "`r`nフォルダーオプションを確認しています..."
 
 # フォルダーオプションの「登録されている拡張子は表示しない」が有効の場合、無効にする
-$ExplorerAdvancedRegKey = Get-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+$ExplorerAdvancedRegKey = Get-ItemProperty -LiteralPath "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
 if ($ExplorerAdvancedRegKey.HideFileExt -ne "0") {
 	Write-Host "完了"
 	Write-Host -NoNewline "「登録されている拡張子は表示しない」を無効にしています..."
 
-	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name HideFileExt -Value "0" -Force
+	Set-ItemProperty -LiteralPath "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name HideFileExt -Value "0" -Force
 }
 
 Write-Host "完了"
