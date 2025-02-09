@@ -256,8 +256,8 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 		# C:\Applications\AviUtl-Installer-Script ディレクトリを作成する (待機)
 		Start-Process powershell -ArgumentList "-command New-Item `"C:\Applications\AviUtl-Installer-Script`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
 
-		# "HKCU:\SOFTWARE\Microsoft\Windows" をバックアップ (待機)
-		Start-Process powershell -ArgumentList "-command reg export `"HKCU:\SOFTWARE\Microsoft\Windows`" `"C:\Applications\AviUtl-Installer-Script\Backup.reg`"" -WindowStyle Hidden -Wait
+		# "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion" をバックアップ (待機)
+		Start-Process powershell -ArgumentList "-command reg export `"HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion`" `"C:\Applications\AviUtl-Installer-Script\Backup.reg`"" -WindowStyle Hidden -Wait
 
 		# "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" がない場合、作成する (待機)
 		if (!(Test-Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced")) {
