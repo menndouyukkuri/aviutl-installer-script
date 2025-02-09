@@ -262,6 +262,18 @@ if ($ExplorerAdvancedRegKey.HideFileExt -ne "0") {
 	Write-Host "完了"
 	Write-Host -NoNewline "「登録されている拡張子は表示しない」を無効にしています..."
 
+	# C:\Applications, C:\Applications\AviUtl-Installer-Script ディレクトリを作成する (待機)
+	Start-Process powershell -ArgumentList "-command New-Item `"C:\Applications`", `"C:\Applications\AviUtl-Installer-Script`" -ItemType Directory -Force" -WindowStyle Hidden -Wait
+
+	# "HKCU:\SOFTWARE\Microsoft\Windows" をバックアップ (待機)
+	Start-Process powershell -ArgumentList "-command reg export `"HKCU:\SOFTWARE\Microsoft\Windows`" `"C:\Applications\AviUtl-Installer-Script\Backup.reg`"" -WindowStyle Hidden -Wait
+
+	# "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" がない場合、作成する (待機)
+	if (!(Test-Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced")) {
+		Start-Process powershell -ArgumentList "-command New-Item `"HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced`" -Force" -WindowStyle Hidden -Wait
+	}
+
+	# レジストリを書き換えて「登録されている拡張子は表示しない」を無効化
 	Set-ItemProperty -LiteralPath "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name HideFileExt -Value "0" -Force
 }
 
