@@ -28,8 +28,8 @@
 $scriptFileRoot = (Get-Location).Path
 
 # バージョン情報を記載
-$VerNum = "1.1.13"
-$ReleaseDate = "2025-02-09"
+$VerNum = "1.1.14"
+$ReleaseDate = "2025-02-14"
 
 # 更新確認用にバージョン情報を格納
 $Version = "v" + $VerNum
@@ -81,11 +81,21 @@ $AisRootDir = Split-Path $settingsDirectoryPath -Parent
 	# settings ディレクトリと同じ親ディレクトリを持つことを前提としているので注意
 $scriptFilesDirectoryPath = Join-Path -Path $AisRootDir -ChildPath script_files
 
+Write-Host -NoNewline "準備中..."
+
+# script_files ディレクトリ内の .cmd ファイルと .ps1 ファイルのブロックを解除 (実行時に無駄な警告を表示させないため)
+Get-ChildItem -Path $scriptFilesDirectoryPath -Include "*.cmd", "*.ps1" -Recurse | Unblock-File
+
+Start-Sleep -Milliseconds 500
+
 # script_files\ais-shared-function.ps1 を読み込み
 . "${scriptFilesDirectoryPath}\ais-shared-function.ps1"
 
+Write-Host "完了"
+
 
 # 本体の更新確認 by Yu-yu0202 (20250121)
+
 Write-Host -NoNewline "AviUtl Installer Scriptの更新を確認します..."
 
 $AisGithubApi = GithubLatestRelease "menndouyukkuri/aviutl-installer-script"

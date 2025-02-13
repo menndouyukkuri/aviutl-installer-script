@@ -72,12 +72,20 @@ $AisRootDir = Split-Path $settingsDirectoryPath -Parent
 	# settings ディレクトリと同じ親ディレクトリを持つことを前提としているので注意
 $scriptFilesDirectoryPath = Join-Path -Path $AisRootDir -ChildPath script_files
 
+Write-Host -NoNewline "準備中..."
+
+# script_files ディレクトリ内の .cmd ファイルと .ps1 ファイルのブロックを解除 (実行時に無駄な警告を表示させないため)
+Get-ChildItem -Path $scriptFilesDirectoryPath -Include "*.cmd", "*.ps1" -Recurse | Unblock-File
+
+Start-Sleep -Milliseconds 500
+
 # script_files\ais-shared-function.ps1 を読み込み
 . "${scriptFilesDirectoryPath}\ais-shared-function.ps1"
 
 # script_files\PSConvertFromJsonEditable\ConvertFrom-JsonEditable.ps1 を読み込み
 . "${scriptFilesDirectoryPath}\PSConvertFromJsonEditable\ConvertFrom-JsonEditable.ps1"
 
+Write-Host "完了"
 Write-Host -NoNewline "AviUtlがインストールされているフォルダを確認しています..."
 
 Start-Sleep -Milliseconds 500
@@ -471,9 +479,6 @@ if (!($apmJsonExist -and $apmJsonHash.packages.Contains("nazono/patch") -and
 Write-Host "完了"
 Write-Host -NoNewline "`r`npatch.aul (謎さうなフォーク版) と競合するプラグインの有無を確認しています..."
 
-# カレントディレクトリを plugins ディレクトリに変更
-Set-Location $aviutlPluginsDirectory
-
 # bakusoku.auf を確認し、あったら削除
 if (Test-Path "${aviutlExeDirectory}\bakusoku.auf") {
 	Remove-Item "${aviutlExeDirectory}\bakusoku.auf"
@@ -481,7 +486,7 @@ if (Test-Path "${aviutlExeDirectory}\bakusoku.auf") {
 if (Test-Path "${aviutlPluginsDirectory}\bakusoku.auf") {
 	Remove-Item "${aviutlPluginsDirectory}\bakusoku.auf"
 }
-Get-ChildItem -Attributes Directory | ForEach-Object {
+Get-ChildItem -Path $aviutlPluginsDirectory -Directory | ForEach-Object {
 	if (Test-Path -Path "${_}\bakusoku.auf") {
 		Remove-Item "${_}\bakusoku.auf"
 	}
@@ -499,7 +504,7 @@ if (Test-Path "${aviutlExeDirectory}\Boost.auf") {
 if (Test-Path "${aviutlPluginsDirectory}\Boost.auf") {
 	Remove-Item "${aviutlPluginsDirectory}\Boost.auf"
 }
-Get-ChildItem -Attributes Directory | ForEach-Object {
+Get-ChildItem -Path $aviutlPluginsDirectory -Directory | ForEach-Object {
 	if (Test-Path -Path "${_}\Boost.auf") {
 		Remove-Item "${_}\Boost.auf"
 	}
@@ -509,9 +514,6 @@ Get-ChildItem -Attributes Directory | ForEach-Object {
 if ($apmJsonHash.packages.Contains("yanagi/Boost")) {
 	$apmJsonHash.packages.Remove("yanagi/Boost")
 }
-
-# カレントディレクトリを tmp ディレクトリに変更
-Set-Location "${scriptFileRoot}\tmp"
 
 Write-Host "完了"
 Write-Host -NoNewline "`r`nL-SMASH Works (Mr-Ojii版) の最新版情報を取得しています..."
@@ -584,21 +586,15 @@ if ($lSmashWorksUpdate) {
 		Remove-Item "${LicenseDirectoryRoot}\l-smash_works\Licenses" -Recurse
 	}
 
-	# カレントディレクトリを AviUtl ディレクトリに変更
-	Set-Location $aviutlExeDirectory
-
 	# AviUtl ディレクトリやそのサブディレクトリ内の .lwi ファイルを削除する (エラーの防止)
 	if (Test-Path "*.lwi") {
 		Remove-Item "*.lwi"
 	}
-	Get-ChildItem -Attributes Directory -Recurse | ForEach-Object {
+	Get-ChildItem -Path $aviutlExeDirectory -Directory -Recurse | ForEach-Object {
 		if (Test-Path -Path "${_}\*.lwi") {
 			Remove-Item "${_}\*.lwi"
 		}
 	}
-
-	# カレントディレクトリを tmp ディレクトリに変更
-	Set-Location "${scriptFileRoot}\tmp"
 
 	# L-SMASH Worksのzipファイルを展開 (待機)
 	Start-Process powershell -ArgumentList "-command Expand-Archive -Path L-SMASH-Works_*.zip -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
@@ -948,9 +944,6 @@ if (!($aisJsonExist -and $aisJsonHash.packages.Contains("Mr-Ojii/ifheif") -and
 Write-Host "完了"
 Write-Host -NoNewline "`r`n「AviUtlスクリプト一式」を確認しています..."
 
-# カレントディレクトリを script ディレクトリに変更
-Set-Location $aviutlScriptDirectory
-
 # script ディレクトリ、またはそのサブディレクトリに @ANM1.anm があるか確認し、ある場合は $CheckAviUtlScriptSet を
 # true とし、$AviUtlScriptSetDirectory にディレクトリのパスを記録する
 $CheckAviUtlScriptSet = $false
@@ -958,7 +951,7 @@ if (Test-Path "${aviutlScriptDirectory}\@ANM1.anm") {
 	$CheckAviUtlScriptSet = $true
 	$AviUtlScriptSetDirectory = $aviutlScriptDirectory
 } else {
-	Get-ChildItem -Attributes Directory | ForEach-Object {
+	Get-ChildItem -Path $aviutlScriptDirectory -Directory | ForEach-Object {
 		if (Test-Path -Path "${_}\@ANM1.anm") {
 			$CheckAviUtlScriptSet = $true
 			$AviUtlScriptSetDirectory = $_
@@ -982,7 +975,7 @@ if (Test-Path "${aviutlScriptDirectory}\震える_連動.anm") {
 	$CheckAnmSsd = $true
 	$anmSsdDirectory = $aviutlScriptDirectory
 } else {
-	Get-ChildItem -Attributes Directory | ForEach-Object {
+	Get-ChildItem -Path $aviutlScriptDirectory -Directory | ForEach-Object {
 		if (Test-Path -Path "${_}\震える_連動.anm") {
 			$CheckAnmSsd = $true
 			$anmSsdDirectory = $_
@@ -1006,7 +999,7 @@ if (Test-Path "${aviutlScriptDirectory}\TA位置調整で移動.anm") {
 	$CheckTaSsd = $true
 	$taSsdDirectory = $aviutlScriptDirectory
 } else {
-	Get-ChildItem -Attributes Directory | ForEach-Object {
+	Get-ChildItem -Path $aviutlScriptDirectory -Directory | ForEach-Object {
 		if (Test-Path -Path "${_}\TA位置調整で移動.anm") {
 			$CheckTaSsd = $true
 			$taSsdDirectory = $_
@@ -1022,9 +1015,6 @@ if (!($CheckTaSsd)) {
 	$taSsdDirectory = "${aviutlScriptDirectory}\TA_ssd"
 	Start-Process powershell -ArgumentList "-command New-Item `"${aviutlScriptDirectory}\TA_ssd`" -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
 }
-
-# カレントディレクトリを tmp ディレクトリに変更
-Set-Location "${scriptFileRoot}\tmp"
 
 # apm.json があり、かつ最新版の情報が記載されている場合はスキップする
 if (!($apmJsonExist -and $apmJsonHash.packages.Contains("satsuki/satsuki") -and
@@ -1075,9 +1065,6 @@ if (!($apmJsonExist -and $apmJsonHash.packages.Contains("satsuki/satsuki") -and
 Write-Host "完了"
 Write-Host -NoNewline "`r`n「値で図形」を確認しています..."
 
-# カレントディレクトリを script ディレクトリに変更
-Set-Location $aviutlScriptDirectory
-
 # script ディレクトリ、またはそのサブディレクトリに 値で図形.obj があるか確認し、ある場合は $CheckShapeWithValuesObj を
 # true とし、$shapeWithValuesObjDirectory にディレクトリのパスを記録する
 $CheckShapeWithValuesObj = $false
@@ -1085,7 +1072,7 @@ if (Test-Path "${aviutlScriptDirectory}\値で図形.obj") {
 	$CheckShapeWithValuesObj = $true
 	$shapeWithValuesObjDirectory = $aviutlScriptDirectory
 } else {
-	Get-ChildItem -Attributes Directory | ForEach-Object {
+	Get-ChildItem -Path $aviutlScriptDirectory -Directory | ForEach-Object {
 		if (Test-Path -Path "${_}\値で図形.obj") {
 			$CheckShapeWithValuesObj = $true
 			$shapeWithValuesObjDirectory = $_
@@ -1101,9 +1088,6 @@ if (!($CheckShapeWithValuesObj)) {
 	$shapeWithValuesObjDirectory = "${aviutlScriptDirectory}\Nagomiku"
 	Start-Process powershell -ArgumentList "-command New-Item `"${aviutlScriptDirectory}\Nagomiku`" -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
 }
-
-# カレントディレクトリを tmp ディレクトリに変更
-Set-Location "${scriptFileRoot}\tmp"
 
 # apm.json があり、かつ最新版の情報が記載されている場合はスキップする
 if (!($apmJsonExist -and $apmJsonHash.packages.Contains("nagomiku/paracustomobj") -and
@@ -1133,9 +1117,6 @@ if (!($apmJsonExist -and $apmJsonHash.packages.Contains("nagomiku/paracustomobj"
 Write-Host "完了"
 Write-Host -NoNewline "`r`n直線スクリプトを確認しています..."
 
-# カレントディレクトリを script ディレクトリに変更
-Set-Location $aviutlScriptDirectory
-
 # script ディレクトリ、またはそのサブディレクトリに 直線.obj があるか確認し、ある場合は $CheckStraightLineObj を
 # true とし、$straightLineObjDirectory にディレクトリのパスを記録する
 $CheckStraightLineObj = $false
@@ -1143,7 +1124,7 @@ if (Test-Path "${aviutlScriptDirectory}\直線.obj") {
 	$CheckStraightLineObj = $true
 	$straightLineObjDirectory = $aviutlScriptDirectory
 } else {
-	Get-ChildItem -Attributes Directory | ForEach-Object {
+	Get-ChildItem -Path $aviutlScriptDirectory -Directory | ForEach-Object {
 		if (Test-Path -Path "${_}\直線.obj") {
 			$CheckStraightLineObj = $true
 			$straightLineObjDirectory = $_
@@ -1159,9 +1140,6 @@ if (!($CheckStraightLineObj)) {
 	$straightLineObjDirectory = "${aviutlScriptDirectory}\ちくぼん"
 	Start-Process powershell -ArgumentList "-command New-Item `"${aviutlScriptDirectory}\ちくぼん`" -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
 }
-
-# カレントディレクトリを tmp ディレクトリに変更
-Set-Location "${scriptFileRoot}\tmp"
 
 Write-Host "完了"
 
