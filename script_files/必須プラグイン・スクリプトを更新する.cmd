@@ -68,21 +68,23 @@ if (Test-Path ".\settings") {
 # AviUtl Installer Scriptのzipファイルが展開されたと思われるディレクトリのパスを保存
 $AisRootDir = Split-Path $settingsDirectoryPath -Parent
 
+Write-Host -NoNewline "準備中..."
+
+# AviUtl Installer Scriptのzipファイルが展開されたと思われるディレクトリ ($AisRootDir) 内の
+# .cmd ファイルと .ps1 ファイルのブロックを解除 (実行時に無駄な警告を表示させないため)
+Get-ChildItem -Path $AisRootDir -Include "*.cmd", "*.ps1" -Recurse | Unblock-File
+
+Start-Sleep -Milliseconds 500
+
 # script_files ディレクトリのパスを $scriptFilesDirectoryPath に格納
 	# settings ディレクトリと同じ親ディレクトリを持つことを前提としているので注意
 $scriptFilesDirectoryPath = Join-Path -Path $AisRootDir -ChildPath script_files
-
-Write-Host -NoNewline "準備中..."
-
-# script_files ディレクトリ内の .cmd ファイルと .ps1 ファイルのブロックを解除 (実行時に無駄な警告を表示させないため)
-Get-ChildItem -Path $scriptFilesDirectoryPath -Include "*.cmd", "*.ps1" -Recurse | Unblock-File
-
-Start-Sleep -Milliseconds 500
 
 # script_files\ais-shared-function.ps1 を読み込み
 . "${scriptFilesDirectoryPath}\ais-shared-function.ps1"
 
 # script_files\PSConvertFromJsonEditable\ConvertFrom-JsonEditable.ps1 を読み込み
+	# PSConvertFromJsonEditable (Author: ShwIws)
 . "${scriptFilesDirectoryPath}\PSConvertFromJsonEditable\ConvertFrom-JsonEditable.ps1"
 
 Write-Host "完了"
