@@ -88,7 +88,7 @@ $scriptFilesDirectoryPath = Join-Path -Path $AisRootDir -ChildPath script_files
 . "${scriptFilesDirectoryPath}\PSConvertFromJsonEditable\ConvertFrom-JsonEditable.ps1"
 
 Write-Host "完了"
-Write-Host -NoNewline "AviUtlがインストールされているフォルダを確認しています..."
+Write-Host -NoNewline "`r`nAviUtlがインストールされているフォルダを確認しています..."
 
 Start-Sleep -Milliseconds 500
 

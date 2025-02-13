@@ -96,7 +96,7 @@ Write-Host "完了"
 
 
 # 本体の更新確認 by Yu-yu0202 (20250121)
-Write-Host -NoNewline "AviUtl Installer Scriptの更新を確認します..."
+Write-Host -NoNewline "`r`nAviUtl Installer Scriptの更新を確認します..."
 
 $AisGithubApi = GithubLatestRelease "menndouyukkuri/aviutl-installer-script"
 $AisTagName = $AisGithubApi.tag_name
