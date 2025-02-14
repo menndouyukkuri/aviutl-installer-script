@@ -30,30 +30,6 @@ $scriptFileRoot = (Get-Location).Path
 $Host.UI.RawUI.WindowTitle = "必須プラグイン・スクリプトを更新する.cmd"
 Write-Host "必須プラグイン (patch.aul・L-SMASH Works・InputPipePlugin・x264guiEx) および LuaJIT、ifheif の更新を開始します。`r`n`r`n"
 
-# PowerShellのバージョンを確認し、実行できない場合はそれを表示する
-if ((((Get-Host).Version) -split "\.")[0] -ne "5") {
-	Write-Host "For this script to work, PowerShell 5.x needs to launch when `"powershell`" command is executed in Command Prompt."
-	Write-Host "このスクリプトが動作するには コマンド プロンプト で `"powershell`" コマンドを実行した際に、PowerShell 5.x が起動する必要があります。`r`n"
-	Pause
-	exit
-}
-
-# Windowsのバージョンを確認し、実行できない場合はそれを表示する
-$WindowsNtCurrentVersion = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
-if ($WindowsNtCurrentVersion.CurrentBuild -lt 17134) {
-	Write-Host "このスクリプトは Windows 10 April 2018 Update (バージョン 1803) 以降でのみ動作します。`r`n"
-
-	# サポートが終了しているバージョンのWindowsを使用しているため警告を出す
-	Write-Host "　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　                    `r`n　　警告: このバージョンの Windows は Microsoft によるサポートが終了しています。　　　　　　　　　　　`r`n　　　　  サポートが終了した Windows を使用し続けると、マルウェアに感染するなどの被害を受ける         `r`n　　　　  可能性があります。速やかにサポート中のバージョンへの更新を行ってください。                  `r`n　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　                    `r`n" -BackgroundColor Yellow -ForegroundColor Black
-
-	Pause
-	exit
-
-# スクリプトは実行可能だが、リリース時点でサポートが終了しているバージョンのWindowsを使用している場合に警告を出す
-} elseif (($WindowsNtCurrentVersion.CurrentBuild -lt 19045) -or (($WindowsNtCurrentVersion.CurrentBuild -ge 22000) -and ($WindowsNtCurrentVersion.CurrentBuild -lt 22630))) {
-	Write-Host "　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　                    `r`n　　警告: このバージョンの Windows は Microsoft によるサポートが終了しています。　　　　　　　　　　　`r`n　　　　  サポートが終了した Windows を使用し続けると、マルウェアに感染するなどの被害を受ける         `r`n　　　　  可能性があります。速やかにサポート中のバージョンへの更新を行ってください。                  `r`n　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　                    `r`n" -BackgroundColor Yellow -ForegroundColor Black
-}
-
 # settings ディレクトリの場所を確認
 if (Test-Path ".\settings") {
 	$settingsDirectoryPath = Convert-Path ".\settings"
@@ -86,6 +62,9 @@ $scriptFilesDirectoryPath = Join-Path -Path $AisRootDir -ChildPath script_files
 # script_files\PSConvertFromJsonEditable\ConvertFrom-JsonEditable.ps1 を読み込み
 	# PSConvertFromJsonEditable (Author: ShwIws)
 . "${scriptFilesDirectoryPath}\PSConvertFromJsonEditable\ConvertFrom-JsonEditable.ps1"
+
+# 動作環境を事前にチェックし、問題がある場合は終了するかメッセージを表示する (ais-shared-function.ps1 の関数)
+CheckOfEnvironment
 
 Write-Host "完了"
 Write-Host -NoNewline "`r`nAviUtlがインストールされているフォルダを確認しています..."
@@ -1694,6 +1673,9 @@ if ($Vc2015App -and $Vc2008App) {
 
 	# 選択ここまで
 }
+
+# AviUtl ディレクトリ内の全ファイルのブロックを解除 (セキュリティ機能の不要な反応を可能な範囲で防ぐため)
+Get-ChildItem -Path $aviutlExeDirectory -Recurse | Unblock-File
 
 Write-Host -NoNewline "`r`napm.json を作成しています..."
 
