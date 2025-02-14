@@ -28,8 +28,8 @@
 $scriptFileRoot = (Get-Location).Path
 
 # バージョン情報を記載
-$VerNum = "1.1.15"
-$ReleaseDate = "2025-02-14"
+$VerNum = "1.1.16"
+$ReleaseDate = "2025-02-15"
 
 # 更新確認用にバージョン情報を格納
 $Version = "v" + $VerNum
@@ -149,15 +149,15 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 		"packages" = [ordered]@{
 			"nazono/patch" = [ordered]@{
 				"id" = "nazono/patch"
-				"version" = "r43_68"
+				"version" = "r43_69"
 			}
 			"MrOjii/LSMASHWorks" = [ordered]@{
 				"id" = "MrOjii/LSMASHWorks"
-				"version" = "2025/01/26"
+				"version" = "2025/02/09"
 			}
 			"amate/InputPipePlugin" = [ordered]@{
 				"id" = "amate/InputPipePlugin"
-				"version" = "v2.0"
+				"version" = "v2.0_1"
 			}
 			"rigaya/x264guiEx" = [ordered]@{
 				"id" = "rigaya/x264guiEx"
@@ -208,7 +208,7 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 				"version" = "2021/03/07"
 			}
 			"Per-Terra/LuaJIT" = @{
-				"version" = "2025/01/30"
+				"version" = "2025/02/13"
 			}
 		}
 	}
@@ -400,7 +400,17 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	$InputPipePluginUrl = $InputPipePluginGithubApi.assets.browser_download_url
 
 	# $apmJsonHash のバージョン情報をGitHubから取得したデータで最新のものに更新
-	$apmJsonHash["packages"]["amate/InputPipePlugin"]["version"] = $InputPipePluginGithubApi.tag_name
+		# 基本的には取得したタグ名をそのまま登録すればよい。
+		# ただし、AviUtl Package Manager が L-SMASH Works と InputPipePlugin のネイティブ64bit対応の
+		# ファイルをインストールしなかった問題 (Issue: https://github.com/team-apm/apm/issues/1666 etc.)
+		# の修正により、区別のため apm.json には InputPipePlugin のバージョン2.0が v2.0_1 と記載されるように
+		# なっている模様。そのため、v2.0 の場合はそのまま登録するのではなく v2.0_1 とする。
+		# 参考: https://github.com/team-apm/apm-data/commit/240a170cc0b121f9b9d1edbe20f19f89146f03aa
+	if ($InputPipePluginGithubApi.tag_name -eq "v2.0") {
+		$apmJsonHash["packages"]["amate/InputPipePlugin"]["version"] = "v2.0_1"
+	} else {
+		$apmJsonHash["packages"]["amate/InputPipePlugin"]["version"] = $InputPipePluginGithubApi.tag_name
+	}
 
 	Write-Host "完了"
 	Write-Host -NoNewline "InputPipePluginをダウンロードしています..."

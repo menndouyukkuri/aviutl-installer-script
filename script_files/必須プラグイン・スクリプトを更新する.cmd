@@ -150,15 +150,15 @@ if (Test-Path "${aviutlExeDirectory}\apm.json") {
 		"packages" = [ordered]@{
 			"nazono/patch" = [ordered]@{
 				"id" = "nazono/patch"
-				"version" = "r43_68"
+				"version" = "r43_69"
 			}
 			"MrOjii/LSMASHWorks" = [ordered]@{
 				"id" = "MrOjii/LSMASHWorks"
-				"version" = "2025/01/26"
+				"version" = "2025/02/09"
 			}
 			"amate/InputPipePlugin" = [ordered]@{
 				"id" = "amate/InputPipePlugin"
-				"version" = "v2.0"
+				"version" = "v2.0_1"
 			}
 			"rigaya/x264guiEx" = [ordered]@{
 				"id" = "rigaya/x264guiEx"
@@ -220,7 +220,7 @@ if (Test-Path "${aviutlExeDirectory}\ais.json") {
 				"version" = "2021/03/07"
 			}
 			"Per-Terra/LuaJIT" = @{
-				"version" = "2025/01/30"
+				"version" = "2025/02/13"
 			}
 		}
 	}
@@ -631,9 +631,23 @@ Write-Host -NoNewline "`r`nInputPipePluginの最新版情報を取得しています..."
 $InputPipePluginGithubApi = GithubLatestRelease "amate/InputPipePlugin"
 $InputPipePluginUrl = $InputPipePluginGithubApi.assets.browser_download_url
 
+# GitHubから取得した情報をもとに、apm.json に記載されているバージョンを比較するために形式を合わせたバージョン名を
+# $InputPipePluginLatestApmFormat に格納する
+	# 基本的には取得したタグ名をそのまま格納すればよい。
+	# ただし、AviUtl Package Manager が L-SMASH Works と InputPipePlugin のネイティブ64bit対応の
+	# ファイルをインストールしなかった問題 (Issue: https://github.com/team-apm/apm/issues/1666 etc.)
+	# の修正により、区別のため apm.json には InputPipePlugin のバージョン2.0が v2.0_1 と記載されるように
+	# なっている模様。そのため、v2.0 の場合はそのまま登録するのではなく v2.0_1 とする。
+	# 参考: https://github.com/team-apm/apm-data/commit/240a170cc0b121f9b9d1edbe20f19f89146f03aa
+if ($InputPipePluginGithubApi.tag_name -eq "v2.0") {
+	$InputPipePluginLatestApmFormat = "v2.0_1"
+} else {
+	$InputPipePluginLatestApmFormat = $InputPipePluginGithubApi.tag_name
+}
+
 # apm.json があり、かつ最新版の情報が記載されている場合はスキップする
 if (!($apmJsonExist -and $apmJsonHash.packages.Contains("amate/InputPipePlugin") -and
-	($apmJsonHash["packages"]["amate/InputPipePlugin"]["version"] -eq $InputPipePluginGithubApi.tag_name))) {
+	($apmJsonHash["packages"]["amate/InputPipePlugin"]["version"] -eq $InputPipePluginLatestApmFormat))) {
 	Write-Host "完了"
 	Write-Host -NoNewline "InputPipePluginをダウンロードしています..."
 
@@ -671,7 +685,11 @@ if (!($apmJsonExist -and $apmJsonHash.packages.Contains("amate/InputPipePlugin")
 	}
 
 	# apm.json の amate/InputPipePlugin のバージョンを更新
-	$apmJsonHash["packages"]["amate/InputPipePlugin"]["version"] = $InputPipePluginGithubApi.tag_name
+	if ($InputPipePluginGithubApi.tag_name -eq "v2.0") {
+		$apmJsonHash["packages"]["amate/InputPipePlugin"]["version"] = "v2.0_1"
+	} else {
+		$apmJsonHash["packages"]["amate/InputPipePlugin"]["version"] = $InputPipePluginGithubApi.tag_name
+	}
 
 	# カレントディレクトリを tmp ディレクトリに変更
 	Set-Location tmp
