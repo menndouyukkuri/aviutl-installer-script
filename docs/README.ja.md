@@ -24,7 +24,7 @@ aviutl-installer_X.X.X.zip をダウンロードし、展開してください�
 ![ss002 - NoTitle](https://github.com/user-attachments/assets/129cd65b-8c40-4b34-bfd3-4e96ca36e39a)
 
 動作中の様子:
-![2025-02-17_19h30_35](https://github.com/user-attachments/assets/dc83ee4f-69ad-40bc-9b32-42db13857ca4)
+![2025-02-17_19h30_35](https://github.com/user-attachments/assets/dc70d846-234e-40d1-b28c-d15f59c4ac9b)
 
 YouTubeの紹介動画:
 [![紹介動画](https://github.com/user-attachments/assets/c0dbb594-0c99-4ac0-96e1-fc51f924ba78)](https://youtu.be/fJYp_nV-yrg)
