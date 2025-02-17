@@ -1,4 +1,4 @@
-日本語のREADMEは[こちら](./docs/README.ja.md)
+日本語は[こちら](./docs/README.ja.md)
 
 ## About AviUtl Installer Script
 This is a collection of scripts created with the purpose of simplifying the complex and difficult task for beginners of install and setting up the AviUtl main body and several essential plugins for video editing using AviUtl, so that it can be done by executing just one file.
@@ -17,7 +17,7 @@ After that, simply double-click on aviutl-installer.cmd to start the installatio
 If a screen saying "Windows protected your PC" appears, you can click More info and then click [Run anyway] to execute the script.
 
 State of operation:
-![ss001 - AviUtl Installer Script (Version 1 0 11_2025-01-12)](https://github.com/user-attachments/assets/a92f4681-1a93-4ed0-850b-8faba6b4bfbb)
+![2025-02-17_19h30_35](https://github.com/user-attachments/assets/dc83ee4f-69ad-40bc-9b32-42db13857ca4)
 
 YouTube introduction video (Japanese language only):
 [![紹介動画](https://github.com/user-attachments/assets/c0dbb594-0c99-4ac0-96e1-fc51f924ba78)](https://youtu.be/fJYp_nV-yrg)
