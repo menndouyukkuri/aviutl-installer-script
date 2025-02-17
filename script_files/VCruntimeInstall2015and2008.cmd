@@ -2,6 +2,7 @@
 
 # Visual C++ 2015-20xx Redistributable (x86) と Visual C++ 2008 Redistributable - x86 の
 # インストーラーを順番に実行していくだけのスクリプトです
+# 他のスクリプトから管理者権限で呼び出されることが想定されています
 
 <#!
  #  MIT License
@@ -32,9 +33,9 @@ $scriptFileRoot = (Get-Location).Path
 
 # tmp ディレクトリの場所を確認してカレントディレクトリとする
 if (Test-Path ..\tmp) {
-    Set-Location ..\tmp
+	Set-Location ..\tmp
 } else {
-    Set-Location tmp
+	Set-Location tmp
 }
 
 # Visual C++ 2015-20xx Redistributable (x86) のインストーラーを実行 (待機)
@@ -42,5 +43,5 @@ if (Test-Path ..\tmp) {
 Start-Process -FilePath vc_redist.x86.exe -ArgumentList "/install /passive" -Wait
 
 # Visual C++ 2008 Redistributable - x86 のインストーラーを実行 (待機)
-    # 自動インストールオプションを追加 by Atolycs (20250106)
+	# 自動インストールオプションを追加 by Atolycs (20250106)
 Start-Process -FilePath vcredist_x86.exe -ArgumentList "/qb" -Wait
