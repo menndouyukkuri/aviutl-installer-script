@@ -382,7 +382,7 @@ if ((!(Test-Path "${aviutlExeDirectory}\exedit.auf")) -or
 	Write-Host "完了"
 
 	# AviUtl\readme\exedit 内に exedit.txt, lua.txt をコピー
-	Copy-Item "C:\Applications\AviUtl\exedit.txt", "C:\Applications\AviUtl\lua.txt" "${ReadmeDirectoryRoot}\exedit" -Force
+	Copy-Item "${aviutlExeDirectory}\exedit.txt", "${aviutlExeDirectory}\lua.txt" "${ReadmeDirectoryRoot}\exedit" -Force
 }
 
 Write-Host -NoNewline "`r`npatch.aul (謎さうなフォーク版) の最新版情報を取得しています..."
