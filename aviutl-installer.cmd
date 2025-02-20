@@ -153,7 +153,7 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 			}
 			"MrOjii/LSMASHWorks" = [ordered]@{
 				"id" = "MrOjii/LSMASHWorks"
-				"version" = "2025/02/09"
+				"version" = "2025/02/18"
 			}
 			"amate/InputPipePlugin" = [ordered]@{
 				"id" = "amate/InputPipePlugin"
@@ -196,7 +196,7 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 				"version" = "2021/03/07"
 			}
 			"Per-Terra/LuaJIT" = @{
-				"version" = "2025/02/13"
+				"version" = "2025/02/20"
 			}
 		}
 	}
