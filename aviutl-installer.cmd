@@ -28,8 +28,8 @@
 $scriptFileRoot = (Get-Location).Path
 
 # バージョン情報を記載
-$VerNum = "1.1.16"
-$ReleaseDate = "2025-02-15"
+$VerNum = "1.1.17"
+$ReleaseDate = "2025-02-20"
 
 # 更新確認用にバージョン情報を格納
 $Version = "v" + $VerNum
@@ -167,18 +167,6 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 				"id" = "amate/MFVideoReader"
 				"version" = "v1.0"
 			}
-			"rigaya/NVEnc" = [ordered]@{
-				"id" = "rigaya/NVEnc"
-				"version" = "7.82"
-			}
-			"rigaya/QSVEnc" = [ordered]@{
-				"id" = "rigaya/QSVEnc"
-				"version" = "7.79"
-			}
-			"rigaya/VCEEnc" = [ordered]@{
-				"id" = "rigaya/VCEEnc"
-				"version" = "8.28"
-			}
 			"satsuki/satsuki" = [ordered]@{
 				"id" = "satsuki/satsuki"
 				"version" = "20160828"
@@ -275,12 +263,14 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	# AviUtl\readme 内に aviutl ディレクトリを作成 (待機)
 	Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\readme\aviutl -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
 
-	# AviUtl ディレクトリ内に aviutl.exe を、AviUtl\readme\aviutl 内に aviutl.txt をそれぞれ移動
-	Move-Item aviutl.exe C:\Applications\AviUtl -Force
-	Move-Item aviutl.txt C:\Applications\AviUtl\readme\aviutl -Force
+	# AviUtl ディレクトリ内に aviutl.exe と aviutl.txt を移動
+	Move-Item "aviutl.exe", "aviutl.txt" C:\Applications\AviUtl -Force
 
 	# カレントディレクトリを tmp ディレクトリに変更
 	Set-Location ..
+
+	# AviUtl\readme\aviutl 内に aviutl.txt をコピー
+	Copy-Item "C:\Applications\AviUtl\aviutl.txt" C:\Applications\AviUtl\readme\aviutl -Force
 
 	Write-Host "完了"
 	Write-Host -NoNewline "`r`n拡張編集Plugin version 0.92をダウンロードしています..."
@@ -303,12 +293,14 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	# exedit.ini は使用せず、かつこの後の処理で邪魔になるので削除する (待機)
 	Start-Process powershell -ArgumentList "-command Remove-Item exedit.ini" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
 
-	# AviUtl\readme\exedit 内に exedit.txt, lua.txt を (待機) 、AviUtl ディレクトリ内にその他のファイルをそれぞれ移動
-	Start-Process powershell -ArgumentList "-command Move-Item *.txt C:\Applications\AviUtl\readme\exedit -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
+	# AviUtl ディレクトリ内にファイルを全て移動
 	Move-Item * C:\Applications\AviUtl -Force
 
 	# カレントディレクトリを tmp ディレクトリに変更
 	Set-Location ..
+
+	# AviUtl\readme\exedit 内に exedit.txt, lua.txt をコピー
+	Copy-Item "C:\Applications\AviUtl\exedit.txt", "C:\Applications\AviUtl\lua.txt" C:\Applications\AviUtl\readme\exedit -Force
 
 	Write-Host "完了"
 	Write-Host -NoNewline "`r`npatch.aul (謎さうなフォーク版) の最新版情報を取得しています..."
@@ -829,7 +821,13 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 				Move-Item -Path "$extdir\*.bat" -Destination C:\Applications\AviUtl -Force
 				Move-Item -Path "$extdir\*_readme.txt" -Destination C:\Applications\AviUtl\readme\$($hwEncoder.Key) -Force
 
-				# $apmJsonHash のバージョン情報をGitHubから取得したデータで最新のものに更新
+				# apm.json に rigaya/$($hwEncoder.Key) が登録されていない場合はキーを作成してidを登録
+				if (!($apmJsonHash.packages.Contains("rigaya/$($hwEncoder.Key)"))) {
+					$apmJsonHash["packages"]["rigaya/$($hwEncoder.Key)"] = [ordered]@{}
+					$apmJsonHash["packages"]["rigaya/$($hwEncoder.Key)"]["id"] = "rigaya/$($hwEncoder.Key)"
+				}
+
+				# apm.json の rigaya/$($hwEncoder.Key) のバージョンを更新
 				$apmJsonHash["packages"]["rigaya/$($hwEncoder.Key)"]["version"] = $hwEncodersTagName.$($hwEncoder.Key)
 
 				Write-Host "完了"
@@ -837,15 +835,9 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 				# 一応、出力プラグインが共存しないようbreakでforeachを抜ける
 				break
 
-			# ExitCode が 0 ではない = 使用不可能な場合
-			} else {
-				# $apmJsonHash からインストールしないプラグインの項目を削除
-				$apmJsonHash.packages.Remove("rigaya/$($hwEncoder.Key)")
-
-				# 最後のVCEEncも使用不可だった場合、ハードウェアエンコードが使用できない旨のメッセージを表示
-				if ($($hwEncoder.Key) -eq "VCEEnc") {
-					Write-Host "この環境ではハードウェアエンコードは使用できません。"
-				}
+			# 最後のVCEEncも使用不可だった場合、ハードウェアエンコードが使用できない旨のメッセージを表示
+			} elseif ($($hwEncoder.Key) -eq "VCEEnc") {
+				Write-Host "この環境ではハードウェアエンコードは使用できません。"
 			}
 
 		# エンコーダーの実行ファイルが確認できない場合、エラーメッセージを表示する

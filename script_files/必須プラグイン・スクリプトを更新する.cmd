@@ -168,18 +168,6 @@ if (Test-Path "${aviutlExeDirectory}\apm.json") {
 				"id" = "amate/MFVideoReader"
 				"version" = "v1.0"
 			}
-			"rigaya/NVEnc" = [ordered]@{
-				"id" = "rigaya/NVEnc"
-				"version" = "7.82"
-			}
-			"rigaya/QSVEnc" = [ordered]@{
-				"id" = "rigaya/QSVEnc"
-				"version" = "7.79"
-			}
-			"rigaya/VCEEnc" = [ordered]@{
-				"id" = "rigaya/VCEEnc"
-				"version" = "8.28"
-			}
 			"satsuki/satsuki" = [ordered]@{
 				"id" = "satsuki/satsuki"
 				"version" = "20160828"
@@ -291,10 +279,9 @@ if (($apmJsonExist -and ($apmJsonHash["core"]["aviutl"] -ne "1.10")) -or
 	# AviUtl\readme 内に aviutl ディレクトリを作成 (待機)
 	Start-Process powershell -ArgumentList "-command New-Item `"${ReadmeDirectoryRoot}\aviutl`" -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
 
-	# AviUtl ディレクトリ内に aviutl.exe を、AviUtl\readme\aviutl 内に aviutl.txt をそれぞれ移動
-	Move-Item aviutl.exe $aviutlExeDirectory -Force
-	Move-Item aviutl.txt "${ReadmeDirectoryRoot}\aviutl" -Force
-
+	# AviUtl ディレクトリ内に aviutl.exe と aviutl.txt を移動
+	Move-Item "aviutl.exe", "aviutl.txt" $aviutlExeDirectory -Force
+	
 	# 不要な aviutl.vfp を削除
 	Remove-Item "${aviutlExeDirectory}\aviutl.vfp"
 
@@ -313,6 +300,9 @@ if (($apmJsonExist -and ($apmJsonHash["core"]["aviutl"] -ne "1.10")) -or
 
 	# カレントディレクトリを tmp ディレクトリに変更
 	Set-Location ..
+
+	# AviUtl\readme\aviutl 内に aviutl.txt をコピー
+	Copy-Item "${aviutlExeDirectory}\aviutl.txt" "${ReadmeDirectoryRoot}\aviutl" -Force
 }
 
 Write-Host "完了"
@@ -375,8 +365,7 @@ if ((!(Test-Path "${aviutlExeDirectory}\exedit.auf")) -or
 	# exedit.ini は使用せず、かつこの後の処理で邪魔になるので削除する (待機)
 	Start-Process powershell -ArgumentList "-command Remove-Item exedit.ini" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
 
-	# AviUtl\readme\exedit 内に exedit.txt, lua.txt を (待機) 、AviUtl ディレクトリ内にその他のファイルをそれぞれ移動
-	Start-Process powershell -ArgumentList "-command Move-Item *.txt `"${ReadmeDirectoryRoot}\exedit`" -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
+	# AviUtl ディレクトリ内にファイルを全て移動
 	Move-Item * $aviutlExeDirectory -Force
 
 	# 不要な lua51jit.dll を削除
@@ -391,6 +380,9 @@ if ((!(Test-Path "${aviutlExeDirectory}\exedit.auf")) -or
 	Set-Location ..
 
 	Write-Host "完了"
+
+	# AviUtl\readme\exedit 内に exedit.txt, lua.txt をコピー
+	Copy-Item "C:\Applications\AviUtl\exedit.txt", "C:\Applications\AviUtl\lua.txt" "${ReadmeDirectoryRoot}\exedit" -Force
 }
 
 Write-Host -NoNewline "`r`npatch.aul (謎さうなフォーク版) の最新版情報を取得しています..."
