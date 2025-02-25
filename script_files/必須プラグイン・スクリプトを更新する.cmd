@@ -77,7 +77,7 @@ Write-Host -NoNewline "`r`nAviUtl‚ªƒCƒ“ƒXƒg[ƒ‹‚³‚ê‚Ä‚¢‚éƒtƒHƒ‹ƒ_‚ğŠm”F‚µ‚Ä‚¢‚Ü‚
 Start-Sleep -Milliseconds 500
 
 # aviutl.exe ‚ª“ü‚Á‚Ä‚¢‚éƒfƒBƒŒƒNƒgƒŠ‚ğ’T‚µA$Path ‚ÉƒpƒX‚ğ•Û‘¶
-if (Test-Path "${Path}\aviutl.exe") {
+if (($null -ne $Path) -and (Test-Path "${Path}\aviutl.exe")) {
 	# Šù‚Éƒpƒ‰ƒ[ƒ^‚Æ‚µ‚Ä aviutl.exe ‚ª“ü‚Á‚Ä‚¢‚éƒfƒBƒŒƒNƒgƒŠ‚ª“n‚³‚ê‚Ä‚¢‚éê‡AƒƒbƒZ[ƒW‚¾‚¯•\¦
 	Write-Host "Š®—¹"
 } elseif (Test-Path "C:\AviUtl\aviutl.exe") {
