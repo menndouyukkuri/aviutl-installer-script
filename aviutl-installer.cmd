@@ -80,6 +80,7 @@ Write-Host "完了"
 
 
 # 本体の更新確認 by Yu-yu0202 (20250121)
+
 Write-Host -NoNewline "`r`nAviUtl Installer Scriptの更新を確認します..."
 
 $AisGithubApi = GithubLatestRelease "menndouyukkuri/aviutl-installer-script"
@@ -679,11 +680,6 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 
 	# LuaJITのインストール by Yu-yu0202 (20250109)
 		# 不具合が直らなかったため再実装 by menndouyukkuri (20250110)
-
-	# AviUtl 内に exedit_lua51.dll があれば削除する (エラーの防止)
-
-		Remove-Item "${Path}\exedit_lua51.dll" -Recurse
-	}
 
 	Write-Host -NoNewline "`r`nLuaJITの最新版情報を取得しています..."
 
