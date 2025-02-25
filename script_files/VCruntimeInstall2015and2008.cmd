@@ -1,4 +1,4 @@
-@powershell -NoProfile -ExecutionPolicy Unrestricted "$s=[scriptblock]::create((gc \"%~f0\"|?{$_.readcount -gt 1})-join\"`n\");&$s" %*&goto:eof
+@powershell -NoProfile -ExecutionPolicy Unrestricted "$s=[scriptblock]::create((Get-Content \"%~f0\"|?{$_.readcount -gt 1})-join\"`n\");&$s %*" %*&goto:eof
 
 # Visual C++ 2015-20xx Redistributable (x86) と Visual C++ 2008 Redistributable - x86 の
 # インストーラーを順番に実行していくだけのスクリプトです

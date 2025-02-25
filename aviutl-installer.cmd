@@ -1,4 +1,4 @@
-@powershell -NoProfile -ExecutionPolicy Unrestricted "$s=[scriptblock]::create((gc \"%~f0\"|?{$_.readcount -gt 1})-join\"`n\");&$s" %*&goto:eof
+@powershell -NoProfile -ExecutionPolicy Unrestricted "$s=[scriptblock]::create((Get-Content \"%~f0\"|?{$_.readcount -gt 1})-join\"`n\");&$s %*" %*&goto:eof
 
 <#!
  #  MIT License
@@ -24,12 +24,17 @@
  #  SOFTWARE.
 #>
 
+# AviUtlをインストールするディレクトリのパスを、パラメータとして受け取れるようにする
+param(
+	[string]$Path = "C:\Applications\AviUtl"
+)
+
 # カレントディレクトリのパスを $scriptFileRoot に保存 (起動方法のせいで $PSScriptRoot が使用できないため)
 $scriptFileRoot = (Get-Location).Path
 
 # バージョン情報を記載
-$VerNum = "1.1.17"
-$ReleaseDate = "2025-02-20"
+$VerNum = "1.1.18"
+$ReleaseDate = "2025-02-26"
 
 # 更新確認用にバージョン情報を格納
 $Version = "v" + $VerNum
@@ -203,14 +208,11 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 
 	Write-Host -NoNewline "`r`nAviUtlをインストールするフォルダを作成しています..."
 
-	# C:\Applications ディレクトリを作成する (待機)
-	Start-Process powershell -ArgumentList "-command New-Item C:\Applications -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
-
-	# C:\Applications\AviUtl ディレクトリを作成する (待機)
-	Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
+	# $Path ディレクトリを作成する (待機)
+	Start-Process powershell -ArgumentList "-command New-Item $Path -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
 
 	# AviUtl ディレクトリ内に plugins, script, license, readme の4つのディレクトリを作成する (待機)
-	Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\plugins, C:\Applications\AviUtl\script, C:\Applications\AviUtl\license, C:\Applications\AviUtl\readme -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
+	Start-Process powershell -ArgumentList "-command New-Item `"${Path}\plugins`", `"${Path}\script`", `"${Path}\license`", `"${Path}\readme`" -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
 
 	Write-Host "完了"
 	Write-Host -NoNewline "`r`n一時的にファイルを保管するフォルダを作成しています..."
@@ -261,16 +263,16 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Set-Location aviutl110
 
 	# AviUtl\readme 内に aviutl ディレクトリを作成 (待機)
-	Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\readme\aviutl -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
+	Start-Process powershell -ArgumentList "-command New-Item `"${Path}\readme\aviutl`" -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
 
 	# AviUtl ディレクトリ内に aviutl.exe と aviutl.txt を移動
-	Move-Item "aviutl.exe", "aviutl.txt" C:\Applications\AviUtl -Force
+	Move-Item "aviutl.exe", "aviutl.txt" $Path -Force
 
 	# カレントディレクトリを tmp ディレクトリに変更
 	Set-Location ..
 
 	# AviUtl\readme\aviutl 内に aviutl.txt をコピー
-	Copy-Item "C:\Applications\AviUtl\aviutl.txt" C:\Applications\AviUtl\readme\aviutl -Force
+	Copy-Item "${Path}\aviutl.txt" "${Path}\readme\aviutl" -Force
 
 	Write-Host "完了"
 	Write-Host -NoNewline "`r`n拡張編集Plugin version 0.92をダウンロードしています..."
@@ -288,19 +290,19 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Set-Location exedit92
 
 	# AviUtl\readme 内に exedit ディレクトリを作成 (待機)
-	Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\readme\exedit -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
+	Start-Process powershell -ArgumentList "-command New-Item `"${Path}\readme\exedit`" -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
 
 	# exedit.ini は使用せず、かつこの後の処理で邪魔になるので削除する (待機)
 	Start-Process powershell -ArgumentList "-command Remove-Item exedit.ini" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
 
 	# AviUtl ディレクトリ内にファイルを全て移動
-	Move-Item * C:\Applications\AviUtl -Force
+	Move-Item * $Path -Force
 
 	# カレントディレクトリを tmp ディレクトリに変更
 	Set-Location ..
 
 	# AviUtl\readme\exedit 内に exedit.txt, lua.txt をコピー
-	Copy-Item "C:\Applications\AviUtl\exedit.txt", "C:\Applications\AviUtl\lua.txt" C:\Applications\AviUtl\readme\exedit -Force
+	Copy-Item "${Path}\exedit.txt", "${Path}\lua.txt" "${Path}\readme\exedit" -Force
 
 	Write-Host "完了"
 	Write-Host -NoNewline "`r`npatch.aul (謎さうなフォーク版) の最新版情報を取得しています..."
@@ -328,11 +330,11 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Set-Location "patch.aul_*"
 
 	# AviUtl\license 内に patch-aul ディレクトリを作成 (待機)
-	Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\license\patch-aul -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
+	Start-Process powershell -ArgumentList "-command New-Item `"${Path}\license\patch-aul`" -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
 
 	# AviUtl ディレクトリ内に patch.aul を (待機) 、AviUtl\license\patch-aul 内にその他のファイルをそれぞれ移動
-	Start-Process powershell -ArgumentList "-command Move-Item patch.aul C:\Applications\AviUtl -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
-	Move-Item * C:\Applications\AviUtl\license\patch-aul -Force
+	Start-Process powershell -ArgumentList "-command Move-Item patch.aul $Path -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
+	Move-Item * "${Path}\license\patch-aul" -Force
 
 	# カレントディレクトリを tmp ディレクトリに変更
 	Set-Location ..
@@ -363,8 +365,8 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Write-Host -NoNewline "L-SMASH Works (Mr-Ojii版) をインストールしています..."
 
 	# AviUtl\license\l-smash_works 内に Licenses ディレクトリがあれば削除する (エラーの防止)
-	if (Test-Path "C:\Applications\AviUtl\license\l-smash_works\Licenses") {
-		Remove-Item C:\Applications\AviUtl\license\l-smash_works\Licenses -Recurse
+	if (Test-Path "${Path}\license\l-smash_works\Licenses") {
+		Remove-Item "${Path}\license\l-smash_works\Licenses" -Recurse
 	}
 
 	# L-SMASH Worksのzipファイルを展開 (待機)
@@ -374,12 +376,12 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Set-Location "L-SMASH-Works_*"
 
 	# AviUtl\readme, AviUtl\license 内に l-smash_works ディレクトリを作成 (待機)
-	Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\readme\l-smash_works, C:\Applications\AviUtl\license\l-smash_works -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
+	Start-Process powershell -ArgumentList "-command New-Item `"${Path}\readme\l-smash_works`", `"${Path}\license\l-smash_works`" -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
 
 	# AviUtl\plugins ディレクトリ内に lw*.au* を、AviUtl\readme\l-smash_works 内に READM* を (待機) 、
 	# AviUtl\license\l-smash_works 内にその他のファイルをそれぞれ移動
-	Start-Process powershell -ArgumentList "-command Move-Item lw*.au* C:\Applications\AviUtl\plugins -Force; Move-Item READM* C:\Applications\AviUtl\readme\l-smash_works -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
-	Move-Item * C:\Applications\AviUtl\license\l-smash_works -Force
+	Start-Process powershell -ArgumentList "-command Move-Item lw*.au* `"${Path}\plugins`" -Force; Move-Item READM* `"${Path}\readme\l-smash_works`" -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
+	Move-Item * "${Path}\license\l-smash_works" -Force
 
 	# カレントディレクトリを tmp ディレクトリに変更
 	Set-Location ..
@@ -420,12 +422,12 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Set-Location "InputPipePlugin_*\InputPipePlugin"
 
 	# AviUtl\readme, AviUtl\license 内に inputPipePlugin ディレクトリを作成 (待機)
-	Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\readme\inputPipePlugin, C:\Applications\AviUtl\license\inputPipePlugin -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
+	Start-Process powershell -ArgumentList "-command New-Item `"${Path}\readme\inputPipePlugin`", `"${Path}\license\inputPipePlugin`" -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
 
 	# AviUtl\license\inputPipePlugin 内に LICENSE を、AviUtl\readme\inputPipePlugin 内に Readme.md を (待機) 、
 	# AviUtl\plugins ディレクトリ内にその他のファイルをそれぞれ移動
-	Start-Process powershell -ArgumentList "-command Move-Item LICENSE C:\Applications\AviUtl\license\inputPipePlugin -Force; Move-Item Readme.md C:\Applications\AviUtl\readme\inputPipePlugin -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
-	Move-Item * C:\Applications\AviUtl\plugins -Force
+	Start-Process powershell -ArgumentList "-command Move-Item LICENSE `"${Path}\license\inputPipePlugin`" -Force; Move-Item Readme.md `"${Path}\readme\inputPipePlugin`" -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
+	Move-Item * "${Path}\plugins" -Force
 
 	# カレントディレクトリを tmp ディレクトリに変更
 	Set-Location ..\..
@@ -450,8 +452,8 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Write-Host -NoNewline "x264guiExをインストールしています..."
 
 	# AviUtl\plugins 内に x264guiEx_stg ディレクトリがあれば削除する (エラーの防止)
-	if (Test-Path "C:\Applications\AviUtl\plugins\x264guiEx_stg") {
-		Remove-Item C:\Applications\AviUtl\plugins\x264guiEx_stg -Recurse
+	if (Test-Path "${Path}\plugins\x264guiEx_stg") {
+		Remove-Item "${Path}\plugins\x264guiEx_stg" -Recurse
 	}
 
 	# x264guiExのzipファイルを展開 (待機)
@@ -464,25 +466,25 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Set-Location plugins
 
 	# AviUtl\plugins 内に現在のディレクトリのファイルを全て移動
-	Move-Item * C:\Applications\AviUtl\plugins -Force
+	Move-Item * "${Path}\plugins" -Force
 
 	# カレントディレクトリをx264guiExのzipファイルを展開したディレクトリ内の exe_files ディレクトリに変更
 	Set-Location ..\exe_files
 
 	# AviUtl ディレクトリ内に exe_files ディレクトリを作成 (待機)
-	Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\exe_files -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
+	Start-Process powershell -ArgumentList "-command New-Item `"${Path}\exe_files`" -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
 
 	# AviUtl\exe_files 内に現在のディレクトリのファイルを全て移動
-	Move-Item * C:\Applications\AviUtl\exe_files -Force
+	Move-Item * "${Path}\exe_files" -Force
 
 	# カレントディレクトリをx264guiExのzipファイルを展開したディレクトリに変更
 	Set-Location ..
 
 	# AviUtl\readme 内に x264guiEx ディレクトリを作成 (待機)
-	Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\readme\x264guiEx -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
+	Start-Process powershell -ArgumentList "-command New-Item `"${Path}\readme\x264guiEx`" -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
 
 	# AviUtl\readme\x264guiEx 内に x264guiEx_readme.txt を移動
-	Move-Item x264guiEx_readme.txt C:\Applications\AviUtl\readme\x264guiEx -Force
+	Move-Item x264guiEx_readme.txt "${Path}\readme\x264guiEx" -Force
 
 	# カレントディレクトリを tmp ディレクトリに変更
 	Set-Location ..\..
@@ -513,12 +515,12 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Set-Location "MFVideoReader_*\MFVideoReader"
 
 	# AviUtl\readme, AviUtl\license 内に MFVideoReader ディレクトリを作成 (待機)
-	Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\readme\MFVideoReader, C:\Applications\AviUtl\license\MFVideoReader -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
+	Start-Process powershell -ArgumentList "-command New-Item `"${Path}\readme\MFVideoReader`", `"${Path}\license\MFVideoReader`" -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
 
 	# AviUtl\license\MFVideoReader 内に LICENSE を、AviUtl\readme\MFVideoReader 内に Readme.md を (待機) 、
 	# AviUtl\plugins ディレクトリ内にその他のファイルをそれぞれ移動
-	Start-Process powershell -ArgumentList "-command Move-Item LICENSE C:\Applications\AviUtl\license\MFVideoReader -Force; Move-Item Readme.md C:\Applications\AviUtl\readme\MFVideoReader -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
-	Move-Item * C:\Applications\AviUtl\plugins -Force
+	Start-Process powershell -ArgumentList "-command Move-Item LICENSE `"${Path}\license\MFVideoReader`" -Force; Move-Item Readme.md `"${Path}\readme\MFVideoReader`" -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
+	Move-Item * "${Path}\plugins" -Force
 
 	# カレントディレクトリを tmp ディレクトリに変更
 	Set-Location ..\..
@@ -539,11 +541,11 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Set-Location iftwebp11
 
 	# AviUtl\readme 内に iftwebp ディレクトリを作成 (待機)
-	Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\readme\iftwebp -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
+	Start-Process powershell -ArgumentList "-command New-Item `"${Path}\readme\iftwebp`" -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
 
 	# AviUtl ディレクトリ内に iftwebp.spi を、AviUtl\readme\iftwebp 内に iftwebp.txt をそれぞれ移動
-	Move-Item iftwebp.spi C:\Applications\AviUtl -Force
-	Move-Item iftwebp.txt C:\Applications\AviUtl\readme\iftwebp -Force
+	Move-Item iftwebp.spi $Path -Force
+	Move-Item iftwebp.txt "${Path}\readme\iftwebp" -Force
 
 	# カレントディレクトリを tmp ディレクトリに変更
 	Set-Location ..
@@ -568,8 +570,8 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Write-Host -NoNewline "ifheifをインストールしています..."
 
 	# AviUtl\license\ifheif 内に Licenses ディレクトリがあれば削除する (エラーの防止)
-	if (Test-Path "C:\Applications\AviUtl\license\ifheif\Licenses") {
-		Remove-Item C:\Applications\AviUtl\license\ifheif\Licenses -Recurse
+	if (Test-Path "${Path}\license\ifheif\Licenses") {
+		Remove-Item "${Path}\license\ifheif\Licenses" -Recurse
 	}
 
 	# ifheifのzipファイルを展開 (待機)
@@ -579,13 +581,13 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Set-Location "ifheif"
 
 	# AviUtl\readme, AviUtl\license 内に ifheif ディレクトリを作成 (待機)
-	Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\readme\ifheif, C:\Applications\AviUtl\license\ifheif -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
+	Start-Process powershell -ArgumentList "-command New-Item `"${Path}\readme\ifheif`", `"${Path}\license\ifheif`" -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
 
 	# AviUtl ディレクトリ内に ifheif.spi を、AviUtl\license\ifheif 内に LICENSE と Licenses ディレクトリを、
 	# AviUtl\readme\ifheif 内に Readme.md をそれぞれ移動
-	Move-Item ifheif.spi C:\Applications\AviUtl -Force
-	Move-Item "LICENS*" C:\Applications\AviUtl\license\ifheif -Force
-	Move-Item Readme.md C:\Applications\AviUtl\readme\ifheif -Force
+	Move-Item ifheif.spi $Path -Force
+	Move-Item "LICENS*" "${Path}\license\ifheif" -Force
+	Move-Item Readme.md "${Path}\readme\ifheif" -Force
 
 	# カレントディレクトリを tmp ディレクトリに変更
 	Set-Location ..
@@ -600,18 +602,18 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Write-Host -NoNewline "「AviUtlスクリプト一式」をインストールしています..."
 
 	# AviUtl\script 内に さつき ディレクトリがあれば削除する (エラーの防止)
-	if (Test-Path "C:\Applications\AviUtl\script\さつき") {
-		Remove-Item "C:\Applications\AviUtl\script\さつき" -Recurse
+	if (Test-Path "${Path}\script\さつき") {
+		Remove-Item "${Path}\script\さつき" -Recurse
 	}
 
 	# AviUtl\script 内に ANM_ssd ディレクトリがあれば削除する (エラーの防止)
-	if (Test-Path "C:\Applications\AviUtl\script\ANM_ssd") {
-		Remove-Item "C:\Applications\AviUtl\script\ANM_ssd" -Recurse
+	if (Test-Path "${Path}\script\ANM_ssd") {
+		Remove-Item "${Path}\script\ANM_ssd" -Recurse
 	}
 
 	# AviUtl\script 内に TA_ssd ディレクトリがあれば削除する (エラーの防止)
-	if (Test-Path "C:\Applications\AviUtl\script\TA_ssd") {
-		Remove-Item "C:\Applications\AviUtl\script\TA_ssd" -Recurse
+	if (Test-Path "${Path}\script\TA_ssd") {
+		Remove-Item "${Path}\script\TA_ssd" -Recurse
 	}
 
 	# 「AviUtlスクリプト一式」のzipファイルを展開 (待機)
@@ -621,12 +623,12 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Set-Location script_20160828\script_20160828
 
 	# AviUtl\script 内に さつき ディレクトリを、AviUtl\readme 内に AviUtlスクリプト一式 ディレクトリを作成 (待機)
-	Start-Process powershell -ArgumentList "-command New-Item `"C:\Applications\AviUtl\script\さつき`", `"C:\Applications\AviUtl\readme\AviUtlスクリプト一式`" -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
+	Start-Process powershell -ArgumentList "-command New-Item `"${Path}\script\さつき`", `"${Path}\readme\AviUtlスクリプト一式`" -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
 
 	# AviUtl\script 内に ANM_ssd と TA_ssd を、AviUtl\readme\AviUtlスクリプト一式 内に readme.txt と 使い方.txt を (待機) 、
 	# AviUtl\script\さつき 内にその他のファイルをそれぞれ移動
-	Start-Process powershell -ArgumentList "-command Move-Item ANM_ssd C:\Applications\AviUtl\script -Force; Move-Item TA_ssd C:\Applications\AviUtl\script -Force; Move-Item *.txt `"C:\Applications\AviUtl\readme\AviUtlスクリプト一式`" -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
-	Move-Item * "C:\Applications\AviUtl\script\さつき" -Force
+	Start-Process powershell -ArgumentList "-command Move-Item ANM_ssd `"${Path}\script`" -Force; Move-Item TA_ssd `"${Path}\script`" -Force; Move-Item *.txt `"${Path}\readme\AviUtlスクリプト一式`" -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
+	Move-Item * "${Path}\script\さつき" -Force
 
 	# カレントディレクトリを tmp ディレクトリに変更
 	Set-Location ..\..
@@ -641,10 +643,10 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Write-Host -NoNewline "「値で図形」をインストールしています..."
 
 	# AviUtl\script 内に Nagomiku ディレクトリを作成 (待機)
-	Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\script\Nagomiku -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
+	Start-Process powershell -ArgumentList "-command New-Item `"${Path}\script\Nagomiku`" -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
 
 	# AviUtl\script\Nagomiku 内に 値で図形.obj を移動
-	Move-Item "値で図形.obj" "C:\Applications\AviUtl\script\Nagomiku" -Force
+	Move-Item "値で図形.obj" "${Path}\script\Nagomiku" -Force
 
 	Write-Host "完了"
 	Write-Host -NoNewline "`r`n直線スクリプトをダウンロードしています..."
@@ -662,12 +664,12 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Set-Location "直線スクリプト"
 
 	# AviUtl\script 内に ちくぼん ディレクトリを、AviUtl\readme, AviUtl\license 内に 直線スクリプト ディレクトリを作成 (待機)
-	Start-Process powershell -ArgumentList "-command New-Item `"C:\Applications\AviUtl\script\ちくぼん`", `"C:\Applications\AviUtl\readme\直線スクリプト`", `"C:\Applications\AviUtl\license\直線スクリプト`" -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
+	Start-Process powershell -ArgumentList "-command New-Item `"${Path}\script\ちくぼん`", `"${Path}\readme\直線スクリプト`", `"${Path}\license\直線スクリプト`" -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
 
 	# AviUtl\script\ちくぼん 内に 直線.obj を、AviUtl\license\直線スクリプト 内に LICENSE.txt を (待機) 、
 	# AviUtl\readme\直線スクリプト 内にその他のファイルをそれぞれ移動
-	Start-Process powershell -ArgumentList "-command Move-Item `"直線.obj`" `"C:\Applications\AviUtl\script\ちくぼん`" -Force; Move-Item LICENSE.txt `"C:\Applications\AviUtl\license\直線スクリプト`" -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
-	Move-Item * "C:\Applications\AviUtl\readme\直線スクリプト" -Force
+	Start-Process powershell -ArgumentList "-command Move-Item `"直線.obj`" `"${Path}\script\ちくぼん`" -Force; Move-Item LICENSE.txt `"${Path}\license\直線スクリプト`" -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
+	Move-Item * "${Path}\readme\直線スクリプト" -Force
 
 	# カレントディレクトリを tmp ディレクトリに変更
 	Set-Location ..
@@ -679,8 +681,8 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 		# 不具合が直らなかったため再実装 by menndouyukkuri (20250110)
 
 	# AviUtl 内に exedit_lua51.dll があれば削除する (エラーの防止)
-	if (Test-Path "C:\Applications\AviUtl\exedit_lua51.dll") {
-		Remove-Item "C:\Applications\AviUtl\exedit_lua51.dll" -Recurse
+
+		Remove-Item "${Path}\exedit_lua51.dll" -Recurse
 	}
 
 	Write-Host -NoNewline "`r`nLuaJITの最新版情報を取得しています..."
@@ -707,12 +709,15 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Write-Host "完了"
 	Write-Host -NoNewline "LuaJITをインストールしています..."
 
-	# AviUtl ディレクトリに既にある lua51.dll (拡張編集Pluginのもの) をリネームしてバックアップする
-	Rename-Item "C:\Applications\AviUtl\lua51.dll" "exedit_lua51.dll" -Force
+	# 既に exedit_lua51.dll が存在する場合は以下の処理をスキップする (エラーの防止)
+	if (!(Test-Path "${Path}\exedit_lua51.dll")) {
+		# AviUtl ディレクトリに既にある lua51.dll (拡張編集Pluginのもの) をリネームしてバックアップする
+		Rename-Item "${Path}\lua51.dll" "exedit_lua51.dll" -Force
+	}
 
 	# AviUtl\readme\LuaJIT 内に doc ディレクトリがあれば削除する (エラーの防止)
-	if (Test-Path "C:\Applications\AviUtl\readme\LuaJIT\doc") {
-		Remove-Item C:\Applications\AviUtl\readme\LuaJIT\doc -Recurse
+	if (Test-Path "${Path}\readme\LuaJIT\doc") {
+		Remove-Item "${Path}\readme\LuaJIT\doc" -Recurse
 	}
 
 	# LuaJITのzipファイルを展開 (待機)
@@ -722,15 +727,15 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Set-Location "LuaJIT_2.1_Win_x86"
 
 	# AviUtl\readme, AviUtl\license 内に LuaJIT ディレクトリを作成 (待機)
-	Start-Process powershell -ArgumentList "-command New-Item C:\Applications\AviUtl\readme\LuaJIT, C:\Applications\AviUtl\license\LuaJIT -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
+	Start-Process powershell -ArgumentList "-command New-Item `"${Path}\readme\LuaJIT`", `"${Path}\license\LuaJIT`" -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
 
 	# AviUtl ディレクトリ内に lua51.dll を、AviUtl\readme\LuaJIT 内に README と doc を、AviUtl\license\LuaJIT 内に
 	# COPYRIGHT と About-This-Build.txt をそれぞれ移動
-	Move-Item "lua51.dll" C:\Applications\AviUtl -Force
-	Move-Item README C:\Applications\AviUtl\readme\LuaJIT -Force
-	Move-Item doc C:\Applications\AviUtl\readme\LuaJIT -Force
-	Move-Item COPYRIGHT C:\Applications\AviUtl\license\LuaJIT -Force
-	Move-Item "About-This-Build.txt" C:\Applications\AviUtl\license\LuaJIT -Force
+	Move-Item "lua51.dll" $Path -Force
+	Move-Item README "${Path}\readme\LuaJIT" -Force
+	Move-Item doc "${Path}\readme\LuaJIT" -Force
+	Move-Item COPYRIGHT "${Path}\license\LuaJIT" -Force
+	Move-Item "About-This-Build.txt" "${Path}\license\LuaJIT" -Force
 
 	# カレントディレクトリを tmp ディレクトリに変更
 	Set-Location ..
@@ -801,25 +806,25 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 			# ExitCode が 0 = 使用可能な場合はインストール
 			if ($process.ExitCode -eq 0) {
 				# AviUtl\exe_files 内に $($hwEncoder.Key)C ディレクトリがあれば削除する (エラーの防止)
-				if (Test-Path "C:\Applications\AviUtl\exe_files\$($hwEncoder.Key)C") {
-					Remove-Item "C:\Applications\AviUtl\exe_files\$($hwEncoder.Key)C" -Recurse
+				if (Test-Path "${Path}\exe_files\$($hwEncoder.Key)C") {
+					Remove-Item "${Path}\exe_files\$($hwEncoder.Key)C" -Recurse
 				}
 
 				# AviUtl\plugins 内に $($hwEncoder.Key)_stg ディレクトリがあれば削除する (エラーの防止)
-				if (Test-Path "C:\Applications\AviUtl\plugins\$($hwEncoder.Key)_stg") {
-					Remove-Item "C:\Applications\AviUtl\plugins\$($hwEncoder.Key)_stg" -Recurse
+				if (Test-Path "${Path}\plugins\$($hwEncoder.Key)_stg") {
+					Remove-Item "${Path}\plugins\$($hwEncoder.Key)_stg" -Recurse
 				}
 
 				Write-Host -NoNewline "$($hwEncoder.Key)が使用可能です。$($hwEncoder.Key)をインストールしています..."
 
 				# readme ディレクトリを作成
-				New-Item -ItemType Directory -Path C:\Applications\AviUtl\readme\$($hwEncoder.Key) -Force | Out-Null
+				New-Item -ItemType Directory -Path "${Path}\readme\$($hwEncoder.Key)" -Force | Out-Null
 
 				# 展開後のそれぞれのファイルを移動
-				Move-Item -Path "$extdir\exe_files\*" -Destination C:\Applications\AviUtl\exe_files -Force
-				Move-Item -Path "$extdir\plugins\*" -Destination C:\Applications\AviUtl\plugins -Force
-				Move-Item -Path "$extdir\*.bat" -Destination C:\Applications\AviUtl -Force
-				Move-Item -Path "$extdir\*_readme.txt" -Destination C:\Applications\AviUtl\readme\$($hwEncoder.Key) -Force
+				Move-Item -Path "$extdir\exe_files\*" -Destination "${Path}\exe_files" -Force
+				Move-Item -Path "$extdir\plugins\*" -Destination "${Path}\plugins" -Force
+				Move-Item -Path "$extdir\*.bat" -Destination $Path -Force
+				Move-Item -Path "$extdir\*_readme.txt" -Destination "${Path}\readme\$($hwEncoder.Key)" -Force
 
 				# apm.json に rigaya/$($hwEncoder.Key) が登録されていない場合はキーを作成してidを登録
 				if (!($apmJsonHash.packages.Contains("rigaya/$($hwEncoder.Key)"))) {
@@ -996,28 +1001,25 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Write-Host -NoNewline "`r`n設定ファイルをコピーしています..."
 
 	# AviUtl\plugins 内に lsmash.ini と MFVideoReaderConfig.ini をコピー
-	Copy-Item "${settingsDirectoryPath}\lsmash.ini" C:\Applications\AviUtl\plugins
-	Copy-Item "${settingsDirectoryPath}\MFVideoReaderConfig.ini" C:\Applications\AviUtl\plugins
+	Copy-Item "${settingsDirectoryPath}\lsmash.ini", "${settingsDirectoryPath}\MFVideoReaderConfig.ini" "${Path}\plugins"
 
 	# AviUtl ディレクトリ内に aviutl.ini, exedit.ini と デフォルト.cfg をコピー
-	Copy-Item "${settingsDirectoryPath}\aviutl.ini" C:\Applications\AviUtl
-	Copy-Item "${settingsDirectoryPath}\exedit.ini" C:\Applications\AviUtl
-	Copy-Item "${settingsDirectoryPath}\デフォルト.cfg" C:\Applications\AviUtl
+	Copy-Item "${settingsDirectoryPath}\aviutl.ini", "${settingsDirectoryPath}\exedit.ini", "${settingsDirectoryPath}\デフォルト.cfg" $Path
 
 	# AviUtl ディレクトリ内の全ファイルのブロックを解除 (セキュリティ機能の不要な反応を可能な範囲で防ぐため)
-	Get-ChildItem -Path C:\Applications\AviUtl -Recurse | Unblock-File
+	Get-ChildItem -Path $Path -Recurse | Unblock-File
 
 	Write-Host "完了"
 	Write-Host -NoNewline "`r`napm.json を作成しています..."
 
 	# $apmJsonHash をJSON形式に変換し、apm.json として出力する
-	ConvertTo-Json $apmJsonHash -Depth 8 -Compress | ForEach-Object { $_ + "`n" } | ForEach-Object { [Text.Encoding]::UTF8.GetBytes($_) } | Set-Content -Encoding Byte -Path "C:\Applications\AviUtl\apm.json"
+	ConvertTo-Json $apmJsonHash -Depth 8 -Compress | ForEach-Object { $_ + "`n" } | ForEach-Object { [Text.Encoding]::UTF8.GetBytes($_) } | Set-Content -Encoding Byte -Path "${Path}\apm.json"
 
 	Write-Host "完了"
 	Write-Host -NoNewline "`r`nais.json を作成しています..."
 
 	# $aisJsonHash をJSON形式に変換し、ais.json として出力する
-	ConvertTo-Json $aisJsonHash -Depth 8 -Compress | ForEach-Object { $_ + "`n" } | ForEach-Object { [Text.Encoding]::UTF8.GetBytes($_) } | Set-Content -Encoding Byte -Path "C:\Applications\AviUtl\ais.json"
+	ConvertTo-Json $aisJsonHash -Depth 8 -Compress | ForEach-Object { $_ + "`n" } | ForEach-Object { [Text.Encoding]::UTF8.GetBytes($_) } | Set-Content -Encoding Byte -Path "${Path}\ais.json"
 
 	Write-Host "完了"
 	Write-Host -NoNewline "`r`nデスクトップにショートカットファイルを作成しています..."
@@ -1027,9 +1029,9 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	$DesktopShortcutFile = Join-Path -Path $DesktopShortcutFolder -ChildPath "AviUtl.lnk"
 	$DesktopWshShell = New-Object -comObject WScript.Shell
 	$DesktopShortcut = $DesktopWshShell.CreateShortcut($DesktopShortcutFile)
-	$DesktopShortcut.TargetPath = "C:\Applications\AviUtl\aviutl.exe"
-	$DesktopShortcut.IconLocation = "C:\Applications\AviUtl\aviutl.exe,0"
-	$DesktopShortcut.WorkingDirectory = "C:\Applications\AviUtl"
+	$DesktopShortcut.TargetPath = "${Path}\aviutl.exe"
+	$DesktopShortcut.IconLocation = "${Path}\aviutl.exe,0"
+	$DesktopShortcut.WorkingDirectory = $Path
 	$DesktopShortcut.Save()
 
 	Write-Host "完了"
@@ -1040,9 +1042,9 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	$ProgramsShortcutFile = Join-Path -Path $ProgramsShortcutFolder -ChildPath "AviUtl.lnk"
 	$ProgramsWshShell = New-Object -comObject WScript.Shell
 	$ProgramsShortcut = $ProgramsWshShell.CreateShortcut($ProgramsShortcutFile)
-	$ProgramsShortcut.TargetPath = "C:\Applications\AviUtl\aviutl.exe"
-	$ProgramsShortcut.IconLocation = "C:\Applications\AviUtl\aviutl.exe,0"
-	$ProgramsShortcut.WorkingDirectory = "C:\Applications\AviUtl"
+	$ProgramsShortcut.TargetPath = "${Path}\aviutl.exe"
+	$ProgramsShortcut.IconLocation = "${Path}\aviutl.exe,0"
+	$ProgramsShortcut.WorkingDirectory = $Path
 	$ProgramsShortcut.Save()
 
 	Write-Host "完了"
@@ -1087,5 +1089,5 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Pause
 
 	# 終了時に readme ディレクトリを表示
-	Invoke-Item "C:\Applications\AviUtl\readme"
+	Invoke-Item "${Path}\readme"
 }

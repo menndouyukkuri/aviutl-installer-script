@@ -1,4 +1,4 @@
-@powershell -NoProfile -ExecutionPolicy Unrestricted "$s=[scriptblock]::create((gc \"%~f0\"|?{$_.readcount -gt 1})-join\"`n\");&$s" %*&goto:eof
+@powershell -NoProfile -ExecutionPolicy Unrestricted "$s=[scriptblock]::create((Get-Content \"%~f0\"|?{$_.readcount -gt 1})-join\"`n\");&$s %*" %*&goto:eof
 
 <#!
  #  MIT License
@@ -23,6 +23,11 @@
  #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  #  SOFTWARE.
 #>
+
+# AviUtl‚ğƒCƒ“ƒXƒg[ƒ‹‚·‚éƒfƒBƒŒƒNƒgƒŠ‚ÌƒpƒX‚ğAƒpƒ‰ƒ[ƒ^‚Æ‚µ‚Äó‚¯æ‚ê‚é‚æ‚¤‚É‚·‚é
+param(
+	[string]$Path
+)
 
 # ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ‚ÌƒpƒX‚ğ $scriptFileRoot ‚É•Û‘¶ (‹N“®•û–@‚Ì‚¹‚¢‚Å $PSScriptRoot ‚ªg—p‚Å‚«‚È‚¢‚½‚ß)
 $scriptFileRoot = (Get-Location).Path
@@ -71,13 +76,16 @@ Write-Host -NoNewline "`r`nAviUtl‚ªƒCƒ“ƒXƒg[ƒ‹‚³‚ê‚Ä‚¢‚éƒtƒHƒ‹ƒ_‚ğŠm”F‚µ‚Ä‚¢‚Ü‚
 
 Start-Sleep -Milliseconds 500
 
-# aviutl.exe ‚ª“ü‚Á‚Ä‚¢‚éƒfƒBƒŒƒNƒgƒŠ‚ğ’T‚µA$aviutlExeDirectory ‚ÉƒpƒX‚ğ•Û‘¶
-if (Test-Path "C:\AviUtl\aviutl.exe") {
+# aviutl.exe ‚ª“ü‚Á‚Ä‚¢‚éƒfƒBƒŒƒNƒgƒŠ‚ğ’T‚µA$Path ‚ÉƒpƒX‚ğ•Û‘¶
+if (Test-Path "${Path}\aviutl.exe") {
+	# Šù‚Éƒpƒ‰ƒ[ƒ^‚Æ‚µ‚Ä aviutl.exe ‚ª“ü‚Á‚Ä‚¢‚éƒfƒBƒŒƒNƒgƒŠ‚ª“n‚³‚ê‚Ä‚¢‚éê‡AƒƒbƒZ[ƒW‚¾‚¯•\¦
 	Write-Host "Š®—¹"
-	$aviutlExeDirectory = "C:\AviUtl"
+} elseif (Test-Path "C:\AviUtl\aviutl.exe") {
+	$Path = "C:\AviUtl"
+	Write-Host "Š®—¹"
 } elseif (Test-Path "C:\Applications\AviUtl\aviutl.exe") {
+	$Path = "C:\Applications\AviUtl"
 	Write-Host "Š®—¹"
-	$aviutlExeDirectory = "C:\Applications\AviUtl"
 } else { # Šm”F‚Å‚«‚È‚©‚Á‚½ê‡Aƒ†[ƒU[‚ÉƒpƒX‚ğ“ü—Í‚³‚¹‚é
 	# 1ü–Ú‚ÌƒƒbƒZ[ƒW‚Ì•\¦—p‚É false ‚É
 	$PathIncludingSpace = $false
@@ -99,16 +107,16 @@ if (Test-Path "C:\AviUtl\aviutl.exe") {
 
 			Write-Host "`r`nƒpƒX‚ÉƒXƒy[ƒX‚ªŠÜ‚Ü‚ê‚Ä‚¢‚é‚ÆA•s‹ï‡‚ÌŒ´ˆö‚É‚È‚é‚½‚ß‹–‰Â‚³‚ê‚Ä‚¢‚Ü‚¹‚ñB"
 
-			# ƒ†[ƒU[‚Ì“ü—Í‚ğ‚à‚Æ‚É aviutl.exe ‚Ì“ü‚Á‚Ä‚¢‚éƒfƒBƒŒƒNƒgƒŠ‚ÌƒpƒX‚ğ $aviutlExeDirectory ‚É‘ã“ü
+			# ƒ†[ƒU[‚Ì“ü—Í‚ğ‚à‚Æ‚É aviutl.exe ‚Ì“ü‚Á‚Ä‚¢‚éƒfƒBƒŒƒNƒgƒŠ‚ÌƒpƒX‚ğ $Path ‚É‘ã“ü
 			if ($userInputAviutlExePath -match "\\aviutl\.exe") {
-				$aviutlExeDirectory = Split-Path $userInputAviutlExePath -Parent
+				$Path = Split-Path $userInputAviutlExePath -Parent
 			} else {
-				$aviutlExeDirectory = $userInputAviutlExePath
+				$Path = $userInputAviutlExePath
 			}
 
 			# aviutl.exe ‚Ì“ü‚Á‚½ƒtƒHƒ‹ƒ_‚Ì–¼‘O‚É‚µ‚©ƒXƒy[ƒX‚ª‚È‚¢‚Ì‚©A‚»‚êˆÈŠO‚É‚àƒXƒy[ƒX‚ª‚ ‚é‚Ì‚©‚ğ”»•Ê‚µ‚ÄƒƒbƒZ[ƒW‚ğ•Ï‚¦‚é
-			$aviutlExeDirectoryParent = Split-Path $aviutlExeDirectory -Parent
-			if ($aviutlExeDirectoryParent.Contains(" ")) {
+			$PathParent = Split-Path $Path -Parent
+			if ($PathParent.Contains(" ")) {
 				Write-Host "aviutl.exe ‚ª“ü‚Á‚Ä‚¢‚éƒtƒHƒ‹ƒ_‚ÌêŠ‚ğ•ÏX‚·‚é‚È‚Ç‚µ‚ÄAƒpƒX‚ÉƒXƒy[ƒX‚ªŠÜ‚Ü‚ê‚È‚¢‚æ‚¤‚É‚µ‚Ä‚­‚¾‚³‚¢B`r`n"
 			} else {
 				Write-Host "aviutl.exe ‚ª“ü‚Á‚Ä‚¢‚éƒtƒHƒ‹ƒ_‚Ì–¼‘O‚ğ•ÏX‚·‚é‚È‚Ç‚µ‚ÄAƒpƒX‚ÉƒXƒy[ƒX‚ªŠÜ‚Ü‚ê‚È‚¢‚æ‚¤‚É‚µ‚Ä‚­‚¾‚³‚¢B`r`n"
@@ -117,26 +125,26 @@ if (Test-Path "C:\AviUtl\aviutl.exe") {
 		} else {
 			$PathIncludingSpace = $false
 
-			# ƒ†[ƒU[‚Ì“ü—Í‚ğ‚à‚Æ‚É aviutl.exe ‚Ì“ü‚Á‚Ä‚¢‚éƒfƒBƒŒƒNƒgƒŠ‚ÌƒpƒX‚ğ $aviutlExeDirectory ‚É‘ã“ü
+			# ƒ†[ƒU[‚Ì“ü—Í‚ğ‚à‚Æ‚É aviutl.exe ‚Ì“ü‚Á‚Ä‚¢‚éƒfƒBƒŒƒNƒgƒŠ‚ÌƒpƒX‚ğ $Path ‚É‘ã“ü
 			if ($userInputAviutlExePath -match "\\aviutl\.exe") {
-				$aviutlExeDirectory = Split-Path $userInputAviutlExePath -Parent
+				$Path = Split-Path $userInputAviutlExePath -Parent
 			} else {
-				$aviutlExeDirectory = $userInputAviutlExePath
+				$Path = $userInputAviutlExePath
 			}
 
 			Write-Host -NoNewline "`r`nAviUtl‚ªƒCƒ“ƒXƒg[ƒ‹‚³‚ê‚Ä‚¢‚éƒtƒHƒ‹ƒ_‚ğŠm”F‚µ‚Ä‚¢‚Ü‚·..."
 		}
-	} while (!(Test-Path "${aviutlExeDirectory}\aviutl.exe") -or $PathIncludingSpace)
+	} while (!(Test-Path "${Path}\aviutl.exe") -or $PathIncludingSpace)
 	Write-Host "Š®—¹"
 }
 
-Write-Host "${aviutlExeDirectory} ‚É aviutl.exe ‚ğŠm”F‚µ‚Ü‚µ‚½B"
+Write-Host "${Path} ‚É aviutl.exe ‚ğŠm”F‚µ‚Ü‚µ‚½B"
 Write-Host -NoNewline "`r`napm.json ‚ğŠm”F‚µ‚Ä‚¢‚Ü‚·..."
 
 # apm.json ‚ª‘¶İ‚·‚éê‡A$apmJsonHash ‚É“Ç‚İ‚İA$apmJsonExist ‚É true ‚ğŠi”[
 $apmJsonExist = $false
-if (Test-Path "${aviutlExeDirectory}\apm.json") {
-	$apmJsonHash = Get-Content "${aviutlExeDirectory}\apm.json" | ConvertFrom-JsonEditable
+if (Test-Path "${Path}\apm.json") {
+	$apmJsonHash = Get-Content "${Path}\apm.json" | ConvertFrom-JsonEditable
 	$apmJsonExist = $true
 
 # apm.json ‚ª‘¶İ‚µ‚È‚¢ê‡Aapm.json ‚ÌŒ³‚É‚È‚éƒnƒbƒVƒ…ƒe[ƒuƒ‹‚ğ—pˆÓ‚µ‚Ä $apmJsonHash ‚É‘ã“ü
@@ -189,8 +197,8 @@ Write-Host -NoNewline "`r`nais.json ‚ğŠm”F‚µ‚Ä‚¢‚Ü‚·..."
 
 # ais.json ‚ª‘¶İ‚·‚éê‡A$aisJsonHash ‚É“Ç‚İ‚İA$aisJsonExist ‚É true ‚ğŠi”[
 $aisJsonExist = $false
-if (Test-Path "${aviutlExeDirectory}\ais.json") {
-	$aisJsonHash = Get-Content "${aviutlExeDirectory}\ais.json" | ConvertFrom-JsonEditable
+if (Test-Path "${Path}\ais.json") {
+	$aisJsonHash = Get-Content "${Path}\ais.json" | ConvertFrom-JsonEditable
 	$aisJsonExist = $true
 
 # ais.json ‚ª‘¶İ‚µ‚È‚¢ê‡Aais.json ‚ÌŒ³‚É‚È‚éƒnƒbƒVƒ…ƒe[ƒuƒ‹‚ğ—pˆÓ‚µ‚Ä $aisJsonHash ‚É‘ã“ü
@@ -218,10 +226,10 @@ Write-Host "Š®—¹"
 Write-Host -NoNewline "`r`nˆê“I‚Éƒtƒ@ƒCƒ‹‚ğ•ÛŠÇ‚·‚éƒtƒHƒ‹ƒ_‚ğì¬‚µ‚Ä‚¢‚Ü‚·..."
 
 # AviUtl ƒfƒBƒŒƒNƒgƒŠ“à‚É plugins, script, license, readme ‚Ì4‚Â‚ÌƒfƒBƒŒƒNƒgƒŠ‚ğì¬‚·‚é (‘Ò‹@)
-$aviutlPluginsDirectory = Join-Path -Path $aviutlExeDirectory -ChildPath plugins
-$aviutlScriptDirectory = Join-Path -Path $aviutlExeDirectory -ChildPath script
-$LicenseDirectoryRoot = Join-Path -Path $aviutlExeDirectory -ChildPath license
-$ReadmeDirectoryRoot = Join-Path -Path $aviutlExeDirectory -ChildPath readme
+$aviutlPluginsDirectory = Join-Path -Path $Path -ChildPath plugins
+$aviutlScriptDirectory = Join-Path -Path $Path -ChildPath script
+$LicenseDirectoryRoot = Join-Path -Path $Path -ChildPath license
+$ReadmeDirectoryRoot = Join-Path -Path $Path -ChildPath readme
 Start-Process powershell -ArgumentList "-command New-Item $aviutlPluginsDirectory, $aviutlScriptDirectory, $LicenseDirectoryRoot, $ReadmeDirectoryRoot -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
 
 # tmp ƒfƒBƒŒƒNƒgƒŠ‚ğì¬‚·‚é (‘Ò‹@)
@@ -239,8 +247,8 @@ if ($ExplorerAdvancedRegKey.HideFileExt -ne "0") {
 	Write-Host "Š®—¹"
 	Write-Host -NoNewline "u“o˜^‚³‚ê‚Ä‚¢‚éŠg’£q‚Í•\¦‚µ‚È‚¢v‚ğ–³Œø‚É‚µ‚Ä‚¢‚Ü‚·..."
 
-	# C:\Applications, C:\Applications\AviUtl-Installer-Script ƒfƒBƒŒƒNƒgƒŠ‚ğì¬‚·‚é (‘Ò‹@)
-	Start-Process powershell -ArgumentList "-command New-Item `"C:\Applications`", `"C:\Applications\AviUtl-Installer-Script`" -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
+	# C:\Applications\AviUtl-Installer-Script ƒfƒBƒŒƒNƒgƒŠ‚ğì¬‚·‚é (‘Ò‹@)
+	Start-Process powershell -ArgumentList "-command New-Item `"C:\Applications\AviUtl-Installer-Script`" -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
 
 	# "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion" ‚ğƒoƒbƒNƒAƒbƒv (‘Ò‹@)
 	Start-Process powershell -ArgumentList "-command reg export `"HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion`" `"C:\Applications\AviUtl-Installer-Script\Backup.reg`"" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
@@ -260,7 +268,7 @@ Write-Host -NoNewline "`r`nAviUtl–{‘Ì‚Ìƒo[ƒWƒ‡ƒ“‚ğŠm”F‚µ‚Ä‚¢‚Ü‚·..."
 # apm.json ‚ª‘¶İ‚·‚éê‡AAviUtl‚Ìƒo[ƒWƒ‡ƒ“‚ğQÆ‚µ‚Ä1.10‚Å‚È‚¯‚ê‚ÎXV‚·‚éB‚Ü‚½Aapm.json ‚ª‘¶İ‚µ‚È‚¢ê‡A
 # aviutl.vfp ‚ğ”­Œ©‚µ‚½‚ç1.00ˆÈ‘O‚Ì‰Â”\«‚ª‚ ‚é‚½‚ßXV‚·‚é (1.10‚É‚Í aviutl.vfp ‚Í•t‘®‚µ‚È‚¢‚½‚ß)
 if (($apmJsonExist -and ($apmJsonHash["core"]["aviutl"] -ne "1.10")) -or
-	(($apmJsonExist -eq $false) -and (Test-Path "${aviutlExeDirectory}\aviutl.vfp"))) {
+	(($apmJsonExist -eq $false) -and (Test-Path "${Path}\aviutl.vfp"))) {
 	Write-Host "Š®—¹"
 	Write-Host -NoNewline "AviUtl–{‘Ì (version 1.10) ‚ğƒ_ƒEƒ“ƒ[ƒh‚µ‚Ä‚¢‚Ü‚·..."
 
@@ -280,10 +288,10 @@ if (($apmJsonExist -and ($apmJsonHash["core"]["aviutl"] -ne "1.10")) -or
 	Start-Process powershell -ArgumentList "-command New-Item `"${ReadmeDirectoryRoot}\aviutl`" -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
 
 	# AviUtl ƒfƒBƒŒƒNƒgƒŠ“à‚É aviutl.exe ‚Æ aviutl.txt ‚ğˆÚ“®
-	Move-Item "aviutl.exe", "aviutl.txt" $aviutlExeDirectory -Force
+	Move-Item "aviutl.exe", "aviutl.txt" $Path -Force
 	
 	# •s—v‚È aviutl.vfp ‚ğíœ
-	Remove-Item "${aviutlExeDirectory}\aviutl.vfp"
+	Remove-Item "${Path}\aviutl.vfp"
 
 	# VFPlugin‚ªƒŒƒWƒXƒgƒŠ‚É“o˜^‚³‚ê‚Ä‚¢‚é‚©Šm”F
 	if (Test-Path "HKCU:\Software\VFPlugin") {
@@ -302,7 +310,7 @@ if (($apmJsonExist -and ($apmJsonHash["core"]["aviutl"] -ne "1.10")) -or
 	Set-Location ..
 
 	# AviUtl\readme\aviutl “à‚É aviutl.txt ‚ğƒRƒs[
-	Copy-Item "${aviutlExeDirectory}\aviutl.txt" "${ReadmeDirectoryRoot}\aviutl" -Force
+	Copy-Item "${Path}\aviutl.txt" "${ReadmeDirectoryRoot}\aviutl" -Force
 }
 
 Write-Host "Š®—¹"
@@ -314,23 +322,23 @@ if (Test-Path "${aviutlPluginsDirectory}\exedit.auf") {
 	Set-Location $aviutlPluginsDirectory
 
 	# Šg’£•ÒWPlugin‚Ìƒtƒ@ƒCƒ‹‚ğ‘S‚Ä AviUtl ƒfƒBƒŒƒNƒgƒŠ“à‚ÉˆÚ“®
-	Move-Item "exedit*" $aviutlExeDirectory -Force
-	Move-Item lua51.dll $aviutlExeDirectory -Force
+	Move-Item "exedit*" $Path -Force
+	Move-Item lua51.dll $Path -Force
 	if (Test-Path "${aviutlPluginsDirectory}\lua.txt") {
-		Move-Item lua.txt $aviutlExeDirectory -Force
+		Move-Item lua.txt $Path -Force
 	}
 	if (Test-Path "${aviutlPluginsDirectory}\lua51jit.dll") {
-		Move-Item lua51jit.dll $aviutlExeDirectory -Force
+		Move-Item lua51jit.dll $Path -Force
 	}
 
 	# script ƒfƒBƒŒƒNƒgƒŠ‚ÌêŠ‚à•¹‚¹‚Ä•ÏX
 	if (Test-Path "${aviutlPluginsDirectory}\script") {
-		Move-Item "${aviutlPluginsDirectory}\script" $aviutlExeDirectory -Force
+		Move-Item "${aviutlPluginsDirectory}\script" $Path -Force
 	}
 
 	# Susieƒvƒ‰ƒOƒCƒ“‚ÌêŠ‚à•¹‚¹‚Ä•ÏX
 	if (Test-Path "${aviutlPluginsDirectory}\*.spi") {
-		Move-Item "*.spi" $aviutlExeDirectory -Force
+		Move-Item "*.spi" $Path -Force
 	}
 
 	# ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ‚ğ tmp ƒfƒBƒŒƒNƒgƒŠ‚É•ÏX
@@ -342,9 +350,9 @@ Write-Host "Š®—¹"
 # Šg’£•ÒWPlugin‚ªŒ©‚Â‚©‚ç‚È‚¢ê‡AŠg’£•ÒWPlugin‚ğƒ_ƒEƒ“ƒ[ƒh‚µ‚Ä“±“ü‚·‚é
 # apm.json ‚ª‘¶İ‚·‚éê‡AŠg’£•ÒWPlugin‚Ìƒo[ƒWƒ‡ƒ“‚ğQÆ‚µ‚Ä0.92‚Å‚È‚¯‚ê‚Î’u‚«Š·‚¦‚éB‚Ü‚½Aapm.json ‚ª
 # ‘¶İ‚µ‚È‚¢ê‡AŠg’£•ÒWPlugin 0.93ƒeƒXƒg”Å‚É‚Ì‚İ•t‘®‚·‚é lua51jit.dll ‚ğ”­Œ©‚µ‚½‚ç0.92‚Å’u‚«Š·‚¦‚é
-if ((!(Test-Path "${aviutlExeDirectory}\exedit.auf")) -or
+if ((!(Test-Path "${Path}\exedit.auf")) -or
 	($apmJsonExist -and ($apmJsonHash["core"]["exedit"] -ne "0.92")) -or
-	(($apmJsonExist -eq $false) -and (Test-Path "${aviutlExeDirectory}\lua51jit.dll"))) {
+	(($apmJsonExist -eq $false) -and (Test-Path "${Path}\lua51jit.dll"))) {
 	Write-Host -NoNewline "`r`nŠg’£•ÒWPlugin version 0.92‚ğƒ_ƒEƒ“ƒ[ƒh‚µ‚Ä‚¢‚Ü‚·..."
 
 	# Šg’£•ÒWPlugin version 0.92‚Ìzipƒtƒ@ƒCƒ‹‚ğƒ_ƒEƒ“ƒ[ƒh (‘Ò‹@)
@@ -366,11 +374,11 @@ if ((!(Test-Path "${aviutlExeDirectory}\exedit.auf")) -or
 	Start-Process powershell -ArgumentList "-command Remove-Item exedit.ini" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
 
 	# AviUtl ƒfƒBƒŒƒNƒgƒŠ“à‚Éƒtƒ@ƒCƒ‹‚ğ‘S‚ÄˆÚ“®
-	Move-Item * $aviutlExeDirectory -Force
+	Move-Item * $Path -Force
 
 	# •s—v‚È lua51jit.dll ‚ğíœ
-	if (Test-Path "${aviutlExeDirectory}\lua51jit.dll") {
-		Remove-Item "${aviutlExeDirectory}\lua51jit.dll"
+	if (Test-Path "${Path}\lua51jit.dll") {
+		Remove-Item "${Path}\lua51jit.dll"
 	}
 
 	# apm.json ‚ÌŠg’£•ÒWPlugin‚Ìƒo[ƒWƒ‡ƒ“‚ğXV
@@ -382,7 +390,7 @@ if ((!(Test-Path "${aviutlExeDirectory}\exedit.auf")) -or
 	Write-Host "Š®—¹"
 
 	# AviUtl\readme\exedit “à‚É exedit.txt, lua.txt ‚ğƒRƒs[
-	Copy-Item "${aviutlExeDirectory}\exedit.txt", "${aviutlExeDirectory}\lua.txt" "${ReadmeDirectoryRoot}\exedit" -Force
+	Copy-Item "${Path}\exedit.txt", "${Path}\lua.txt" "${ReadmeDirectoryRoot}\exedit" -Force
 }
 
 Write-Host -NoNewline "`r`npatch.aul (“ä‚³‚¤‚ÈƒtƒH[ƒN”Å) ‚ÌÅV”Åî•ñ‚ğæ“¾‚µ‚Ä‚¢‚Ü‚·..."
@@ -415,15 +423,15 @@ if (!($apmJsonExist -and $apmJsonHash.packages.Contains("nazono/patch") -and
 	# patch.aul ‚ª plugins ƒfƒBƒŒƒNƒgƒŠ“à‚É‚ ‚éê‡Aíœ‚µ‚Ä patch.aul.json ‚ğˆÚ“®‚³‚¹‚é (ƒGƒ‰[‚Ì–h~)
 	if (Test-Path "${aviutlPluginsDirectory}\patch.aul") {
 		Remove-Item "${aviutlPluginsDirectory}\patch.aul"
-		if ((Test-Path "${aviutlPluginsDirectory}\patch.aul.json") -and (!(Test-Path "${aviutlExeDirectory}\patch.aul.json"))) {
-			Move-Item "${aviutlPluginsDirectory}\patch.aul.json" $aviutlExeDirectory -Force
+		if ((Test-Path "${aviutlPluginsDirectory}\patch.aul.json") -and (!(Test-Path "${Path}\patch.aul.json"))) {
+			Move-Item "${aviutlPluginsDirectory}\patch.aul.json" $Path -Force
 		} elseif (Test-Path "${aviutlPluginsDirectory}\patch.aul.json") {
 			Remove-Item "${aviutlPluginsDirectory}\patch.aul.json"
 		}
 	}
 
 	# AviUtl ƒfƒBƒŒƒNƒgƒŠ“à‚É patch.aul ‚ğ (‘Ò‹@) AAviUtl\license\patch-aul “à‚É‚»‚Ì‘¼‚Ìƒtƒ@ƒCƒ‹‚ğ‚»‚ê‚¼‚êˆÚ“®
-	Start-Process powershell -ArgumentList "-command Move-Item patch.aul $aviutlExeDirectory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
+	Start-Process powershell -ArgumentList "-command Move-Item patch.aul $Path -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
 	Move-Item * "${LicenseDirectoryRoot}\patch-aul" -Force
 
 	# apm.json ‚É ePi/patch ‚ª“o˜^‚³‚ê‚Ä‚¢‚éê‡‚Ííœ
@@ -453,8 +461,8 @@ Write-Host "Š®—¹"
 Write-Host -NoNewline "`r`npatch.aul (“ä‚³‚¤‚ÈƒtƒH[ƒN”Å) ‚Æ‹£‡‚·‚éƒvƒ‰ƒOƒCƒ“‚Ì—L–³‚ğŠm”F‚µ‚Ä‚¢‚Ü‚·..."
 
 # bakusoku.auf ‚ğŠm”F‚µA‚ ‚Á‚½‚çíœ
-if (Test-Path "${aviutlExeDirectory}\bakusoku.auf") {
-	Remove-Item "${aviutlExeDirectory}\bakusoku.auf"
+if (Test-Path "${Path}\bakusoku.auf") {
+	Remove-Item "${Path}\bakusoku.auf"
 }
 if (Test-Path "${aviutlPluginsDirectory}\bakusoku.auf") {
 	Remove-Item "${aviutlPluginsDirectory}\bakusoku.auf"
@@ -471,8 +479,8 @@ if ($apmJsonHash.packages.Contains("suzune/bakusoku")) {
 }
 
 # Boost.auf ‚ğŠm”F‚µA‚ ‚Á‚½‚çíœ
-if (Test-Path "${aviutlExeDirectory}\Boost.auf") {
-	Remove-Item "${aviutlExeDirectory}\Boost.auf"
+if (Test-Path "${Path}\Boost.auf") {
+	Remove-Item "${Path}\Boost.auf"
 }
 if (Test-Path "${aviutlPluginsDirectory}\Boost.auf") {
 	Remove-Item "${aviutlPluginsDirectory}\Boost.auf"
@@ -493,12 +501,12 @@ Write-Host -NoNewline "`r`nL-SMASH Works (Mr-Ojii”Å) ‚ÌÅV”Åî•ñ‚ğæ“¾‚µ‚Ä‚¢‚Ü‚
 
 # L-SMASH Works‚Ì“ü‚Á‚Ä‚¢‚éƒfƒBƒŒƒNƒgƒŠ‚ğ’T‚µA$lwinputAuiDirectory ‚ÉƒpƒX‚ğ•Û‘¶
 # $inputPipePluginDeleteCheckDirectory ‚Í $lwinputAuiDirectory ‚Ì‹tAŒã‚Ég—p
-if (Test-Path "${aviutlExeDirectory}\lwinput.aui") {
-	$lwinputAuiDirectory = $aviutlExeDirectory
+if (Test-Path "${Path}\lwinput.aui") {
+	$lwinputAuiDirectory = $Path
 	$inputPipePluginDeleteCheckDirectory = $aviutlPluginsDirectory
 } else {
 	$lwinputAuiDirectory = $aviutlPluginsDirectory
-	$inputPipePluginDeleteCheckDirectory = $aviutlExeDirectory
+	$inputPipePluginDeleteCheckDirectory = $Path
 }
 
 # L-SMASH Works (Mr-Ojii”Å) ‚ÌÅV”Å‚Ìƒ_ƒEƒ“ƒ[ƒhURL‚ğæ“¾
@@ -563,7 +571,7 @@ if ($lSmashWorksUpdate) {
 	if (Test-Path "*.lwi") {
 		Remove-Item "*.lwi"
 	}
-	Get-ChildItem -Path $aviutlExeDirectory -Directory -Recurse | ForEach-Object {
+	Get-ChildItem -Path $Path -Directory -Recurse | ForEach-Object {
 		if (Test-Path -Path "${_}\*.lwi") {
 			Remove-Item "${_}\*.lwi"
 		}
@@ -766,13 +774,13 @@ if (!($apmJsonExist -and $apmJsonHash.packages.Contains("rigaya/x264guiEx") -and
 	Set-Location ..\exe_files
 
 	# AviUtl ƒfƒBƒŒƒNƒgƒŠ“à‚É exe_files ƒfƒBƒŒƒNƒgƒŠ‚ğì¬ (‘Ò‹@)
-	Start-Process powershell -ArgumentList "-command New-Item `"${aviutlExeDirectory}\exe_files`" -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
+	Start-Process powershell -ArgumentList "-command New-Item `"${Path}\exe_files`" -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
 
 	# AviUtl\exe_files “à‚É x264_*.exe ‚ª‚ ‚ê‚Îíœ (‘Ò‹@)
-	Start-Process powershell -ArgumentList "-command if (Test-Path `"${aviutlExeDirectory}\exe_files\x264_*.exe`") { Remove-Item `"${aviutlExeDirectory}\exe_files\x264_*.exe`" }" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
+	Start-Process powershell -ArgumentList "-command if (Test-Path `"${Path}\exe_files\x264_*.exe`") { Remove-Item `"${Path}\exe_files\x264_*.exe`" }" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
 
 	# AviUtl\exe_files “à‚ÉŒ»İ‚ÌƒfƒBƒŒƒNƒgƒŠ‚Ìƒtƒ@ƒCƒ‹‚ğ‘S‚ÄˆÚ“®
-	Move-Item * "${aviutlExeDirectory}\exe_files" -Force
+	Move-Item * "${Path}\exe_files" -Force
 
 	# ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ‚ğx264guiEx‚Ìzipƒtƒ@ƒCƒ‹‚ğ“WŠJ‚µ‚½ƒfƒBƒŒƒNƒgƒŠ‚É•ÏX
 	Set-Location ..
@@ -800,8 +808,8 @@ Write-Host "Š®—¹"
 Write-Host -NoNewline "`r`nMFVideoReader‚ÌÅV”Åî•ñ‚ğæ“¾‚µ‚Ä‚¢‚Ü‚·..."
 
 # MFVideoReader‚Ì“ü‚Á‚Ä‚¢‚éƒfƒBƒŒƒNƒgƒŠ‚ğ’T‚µA$MFVideoReaderAuiDirectory ‚ÉƒpƒX‚ğ•Û‘¶
-if (Test-Path "${aviutlExeDirectory}\MFVideoReaderPlugin.aui") {
-	$MFVideoReaderAuiDirectory = $aviutlExeDirectory
+if (Test-Path "${Path}\MFVideoReaderPlugin.aui") {
+	$MFVideoReaderAuiDirectory = $Path
 } else {
 	$MFVideoReaderAuiDirectory = $aviutlPluginsDirectory
 }
@@ -879,7 +887,7 @@ if (!($aisJsonExist -and $aisJsonHash.packages.Contains("TORO/iftwebp") -and
 	Start-Process powershell -ArgumentList "-command New-Item `"${ReadmeDirectoryRoot}\iftwebp`" -ItemType Directory -Force" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait
 
 	# AviUtl ƒfƒBƒŒƒNƒgƒŠ“à‚É iftwebp.spi ‚ğAAviUtl\readme\iftwebp “à‚É iftwebp.txt ‚ğ‚»‚ê‚¼‚êˆÚ“®
-	Move-Item iftwebp.spi $aviutlExeDirectory -Force
+	Move-Item iftwebp.spi $Path -Force
 	Move-Item iftwebp.txt "${ReadmeDirectoryRoot}\iftwebp" -Force
 
 	# ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ‚ğ tmp ƒfƒBƒŒƒNƒgƒŠ‚É•ÏX
@@ -921,7 +929,7 @@ if (!($aisJsonExist -and $aisJsonHash.packages.Contains("Mr-Ojii/ifheif") -and
 
 	# AviUtl ƒfƒBƒŒƒNƒgƒŠ“à‚É ifheif.spi ‚ğAAviUtl\license\ifheif “à‚É LICENSE ‚Æ Licenses ƒfƒBƒŒƒNƒgƒŠ‚ğA
 	# AviUtl\readme\ifheif “à‚É Readme.md ‚ğ‚»‚ê‚¼‚êˆÚ“®
-	Move-Item ifheif.spi $aviutlExeDirectory -Force
+	Move-Item ifheif.spi $Path -Force
 	Move-Item "LICENS*" "${LicenseDirectoryRoot}\ifheif" -Force
 	Move-Item Readme.md "${ReadmeDirectoryRoot}\ifheif" -Force
 
@@ -1227,8 +1235,8 @@ if ($luaJitUpdate) {
 	Write-Host -NoNewline "LuaJIT‚ğƒCƒ“ƒXƒg[ƒ‹‚µ‚Ä‚¢‚Ü‚·..."
 
 	# AviUtl ƒfƒBƒŒƒNƒgƒŠ“à‚É exedit_lua51.dll ‚à old_lua51.dll ‚à‚È‚¢ê‡AŠù‚É‚ ‚é lua51.dll ‚ğƒŠƒl[ƒ€‚µ‚ÄƒoƒbƒNƒAƒbƒv‚·‚é
-	if (!(Test-Path "${aviutlExeDirectory}\exedit_lua51.dll") -and !(Test-Path "${aviutlExeDirectory}\old_lua51.dll")) {
-		Rename-Item "${aviutlExeDirectory}\lua51.dll" "old_lua51.dll" -Force
+	if (!(Test-Path "${Path}\exedit_lua51.dll") -and !(Test-Path "${Path}\old_lua51.dll")) {
+		Rename-Item "${Path}\lua51.dll" "old_lua51.dll" -Force
 	}
 
 	# AviUtl\readme\LuaJIT “à‚É doc ƒfƒBƒŒƒNƒgƒŠ‚ª‚ ‚ê‚Îíœ‚·‚é (ƒGƒ‰[‚Ì–h~)
@@ -1247,7 +1255,7 @@ if ($luaJitUpdate) {
 
 	# AviUtl ƒfƒBƒŒƒNƒgƒŠ“à‚É lua51.dll ‚ğAAviUtl\readme\LuaJIT “à‚É README ‚Æ doc ‚ğAAviUtl\license\LuaJIT “à‚É
 	# COPYRIGHT ‚Æ About-This-Build.txt ‚ğ‚»‚ê‚¼‚êˆÚ“®
-	Move-Item "lua51.dll" $aviutlExeDirectory -Force
+	Move-Item "lua51.dll" $Path -Force
 	Move-Item README "${ReadmeDirectoryRoot}\LuaJIT" -Force
 	Move-Item doc "${ReadmeDirectoryRoot}\LuaJIT" -Force
 	Move-Item COPYRIGHT "${LicenseDirectoryRoot}\LuaJIT" -Force
@@ -1294,7 +1302,7 @@ foreach ($hwEncoder in $hwEncoders.GetEnumerator()) {
 		Write-Host -NoNewline "`r`n$($hwEncoder.Key)‚ªg—p‚Å‚«‚é‚©ƒ`ƒFƒbƒN‚µ‚Ü‚·..."
 
 		# ƒn[ƒhƒEƒFƒAƒGƒ“ƒR[ƒh‚Å‚«‚é‚©ƒ`ƒFƒbƒN
-		$process = Start-Process -FilePath "${aviutlExeDirectory}\exe_files\$($hwEncoder.Key)C\x86\$($hwEncoder.Value)" -ArgumentList "--check-hw" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait -PassThru
+		$process = Start-Process -FilePath "${Path}\exe_files\$($hwEncoder.Key)C\x86\$($hwEncoder.Value)" -ArgumentList "--check-hw" -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -Wait -PassThru
 
 		Write-Host "Š®—¹"
 
@@ -1375,15 +1383,15 @@ foreach ($hwEncoder in $hwEncoders.GetEnumerator()) {
 				Write-Host -NoNewline "$($hwEncoder.Key)‚ğƒCƒ“ƒXƒg[ƒ‹‚µ‚Ä‚¢‚Ü‚·..."
 
 				# AviUtl\exe_files\(NVEnc/QSVEnc/VCEEnc)C ‚ªŒã‚Å×–‚‚É‚È‚é‚Ì‚Åíœ
-				Remove-Item "${aviutlExeDirectory}\exe_files\$($hwEncoder.Key)C" -Recurse
+				Remove-Item "${Path}\exe_files\$($hwEncoder.Key)C" -Recurse
 
 				# readme ƒfƒBƒŒƒNƒgƒŠ‚ğì¬
 				New-Item -ItemType Directory -Path "${ReadmeDirectoryRoot}\$($hwEncoder.Key)" -Force | Out-Null
 
 				# “WŠJŒã‚Ì‚»‚ê‚¼‚ê‚Ìƒtƒ@ƒCƒ‹‚ğˆÚ“®
-				Move-Item -Path "$extdir\*.bat" -Destination $aviutlExeDirectory -Force
+				Move-Item -Path "$extdir\*.bat" -Destination $Path -Force
 				Move-Item -Path "$extdir\plugins\*" -Destination $aviutlPluginsDirectory -Force
-				Move-Item -Path "$extdir\exe_files\*" -Destination "${aviutlExeDirectory}\exe_files" -Force
+				Move-Item -Path "$extdir\exe_files\*" -Destination "${Path}\exe_files" -Force
 				Move-Item -Path "$extdir\*_readme.txt" -Destination "${ReadmeDirectoryRoot}\$($hwEncoder.Key)" -Force
 
 				# apm.json ‚É rigaya/$($hwEncoder.Key) ‚ª“o˜^‚³‚ê‚Ä‚¢‚È‚¢ê‡‚ÍƒL[‚ğì¬‚µ‚Äid‚ğ“o˜^
@@ -1402,7 +1410,7 @@ foreach ($hwEncoder in $hwEncoders.GetEnumerator()) {
 			Write-Host -NoNewline "$($hwEncoder.Key)‚Íg—p‚Å‚«‚Ü‚¹‚ñBíœ‚µ‚Ä‚¢‚Ü‚·..."
 
 			# ƒtƒ@ƒCƒ‹‚ğíœ
-			Remove-Item "${aviutlExeDirectory}\exe_files\$($hwEncoder.Key)C" -Recurse
+			Remove-Item "${Path}\exe_files\$($hwEncoder.Key)C" -Recurse
 			Remove-Item "${aviutlPluginsDirectory}\$($hwEncoder.Key)*" -Recurse
 			if (Test-Path "${ReadmeDirectoryRoot}\$($hwEncoder.Key)") {
 				Remove-Item "${ReadmeDirectoryRoot}\$($hwEncoder.Key)" -Recurse
@@ -1491,8 +1499,8 @@ if ((!($CheckHwEncoder)) -and
 			# ExitCode‚ª0‚Ìê‡‚ÍƒCƒ“ƒXƒg[ƒ‹
 			if ($process.ExitCode -eq 0) {
 				# AviUtl\exe_files “à‚É $($hwEncoder.Key)C ƒfƒBƒŒƒNƒgƒŠ‚ª‚ ‚ê‚Îíœ‚·‚é (ƒGƒ‰[‚Ì–h~)
-				if (Test-Path "${aviutlExeDirectory}\exe_files\$($hwEncoder.Key)C") {
-					Remove-Item "${aviutlExeDirectory}\exe_files\$($hwEncoder.Key)C" -Recurse
+				if (Test-Path "${Path}\exe_files\$($hwEncoder.Key)C") {
+					Remove-Item "${Path}\exe_files\$($hwEncoder.Key)C" -Recurse
 				}
 
 				# AviUtl\plugins “à‚É $($hwEncoder.Key)_stg ƒfƒBƒŒƒNƒgƒŠ‚ª‚ ‚ê‚Îíœ‚·‚é (ƒGƒ‰[‚Ì–h~)
@@ -1506,9 +1514,9 @@ if ((!($CheckHwEncoder)) -and
 				New-Item -ItemType Directory -Path "${ReadmeDirectoryRoot}\$($hwEncoder.Key)" -Force | Out-Null
 
 				# “WŠJŒã‚Ì‚»‚ê‚¼‚ê‚Ìƒtƒ@ƒCƒ‹‚ğˆÚ“®
-				Move-Item -Path "$extdir\exe_files\*" -Destination "${aviutlExeDirectory}\exe_files" -Force
+				Move-Item -Path "$extdir\exe_files\*" -Destination "${Path}\exe_files" -Force
 				Move-Item -Path "$extdir\plugins\*" -Destination $aviutlPluginsDirectory -Force
-				Move-Item -Path "$extdir\*.bat" -Destination $aviutlExeDirectory -Force
+				Move-Item -Path "$extdir\*.bat" -Destination $Path -Force
 				Move-Item -Path "$extdir\*_readme.txt" -Destination "${ReadmeDirectoryRoot}\$($hwEncoder.Key)" -Force
 
 				# apm.json ‚É rigaya/$($hwEncoder.Key) ‚ª“o˜^‚³‚ê‚Ä‚¢‚È‚¢ê‡‚ÍƒL[‚ğì¬‚µ‚Äid‚ğ“o˜^
@@ -1685,18 +1693,18 @@ if ($Vc2015App -and $Vc2008App) {
 }
 
 # AviUtl ƒfƒBƒŒƒNƒgƒŠ“à‚Ì‘Sƒtƒ@ƒCƒ‹‚ÌƒuƒƒbƒN‚ğ‰ğœ (ƒZƒLƒ…ƒŠƒeƒB‹@”\‚Ì•s—v‚È”½‰‚ğ‰Â”\‚È”ÍˆÍ‚Å–h‚®‚½‚ß)
-Get-ChildItem -Path $aviutlExeDirectory -Recurse | Unblock-File
+Get-ChildItem -Path $Path -Recurse | Unblock-File
 
 Write-Host -NoNewline "`r`napm.json ‚ğì¬‚µ‚Ä‚¢‚Ü‚·..."
 
 # $apmJsonHash ‚ğJSONŒ`®‚É•ÏŠ·‚µAapm.json ‚Æ‚µ‚Äo—Í‚·‚é
-ConvertTo-Json $apmJsonHash -Depth 8 -Compress | ForEach-Object { $_ + "`n" } | ForEach-Object { [Text.Encoding]::UTF8.GetBytes($_) } | Set-Content -Encoding Byte -Path "${aviutlExeDirectory}\apm.json"
+ConvertTo-Json $apmJsonHash -Depth 8 -Compress | ForEach-Object { $_ + "`n" } | ForEach-Object { [Text.Encoding]::UTF8.GetBytes($_) } | Set-Content -Encoding Byte -Path "${Path}\apm.json"
 
 Write-Host "Š®—¹"
 Write-Host -NoNewline "`r`nais.json ‚ğì¬‚µ‚Ä‚¢‚Ü‚·..."
 
 # $aisJsonHash ‚ğJSONŒ`®‚É•ÏŠ·‚µAais.json ‚Æ‚µ‚Äo—Í‚·‚é
-ConvertTo-Json $aisJsonHash -Depth 8 -Compress | ForEach-Object { $_ + "`n" } | ForEach-Object { [Text.Encoding]::UTF8.GetBytes($_) } | Set-Content -Encoding Byte -Path "${aviutlExeDirectory}\ais.json"
+ConvertTo-Json $aisJsonHash -Depth 8 -Compress | ForEach-Object { $_ + "`n" } | ForEach-Object { [Text.Encoding]::UTF8.GetBytes($_) } | Set-Content -Encoding Byte -Path "${Path}\ais.json"
 
 Write-Host "Š®—¹"
 Write-Host -NoNewline "`r`nXV‚Ég—p‚µ‚½•s—v‚Èƒtƒ@ƒCƒ‹‚ğíœ‚µ‚Ä‚¢‚Ü‚·..."
