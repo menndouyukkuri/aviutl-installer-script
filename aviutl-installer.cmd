@@ -1,4 +1,4 @@
-@powershell -NoProfile -ExecutionPolicy Unrestricted "$s = [scriptblock]::create((Get-Content \"%~f0\" | Where-Object {$_.readcount -gt 1}) -join \"`n\"); & $s %~dp0 %*" & goto:eof
+@powershell -NoProfile -ExecutionPolicy Unrestricted "$s = [scriptblock]::create((Get-Content \"%~f0\" | Where-Object {$_.readcount -gt 1}) -join \"`n\"); & $s %~dp0 %*" & goto :eof
 
 # これ以降は全てPowerShellのスクリプト
 
@@ -35,8 +35,8 @@ param (
 )
 
 # バージョン情報を記載
-$VerNum = "1.1.18"
-$ReleaseDate = "2025-02-26"
+$VerNum = "1.1.19"
+$ReleaseDate = "2025-02-27"
 
 # 更新確認用にバージョン情報を格納
 $Version = "v" + $VerNum
