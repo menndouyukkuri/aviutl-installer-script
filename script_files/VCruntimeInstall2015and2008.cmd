@@ -1,4 +1,4 @@
-@powershell -NoProfile -ExecutionPolicy Unrestricted "$s = [scriptblock]::create((Get-Content \"%~f0\" | Where-Object {$_.readcount -gt 1}) -join \"`n\"); & $s \"%~dp0 %*\"" & goto:eof
+@powershell -NoProfile -ExecutionPolicy Unrestricted "$s = [scriptblock]::create((Get-Content \"%~f0\" | Where-Object {$_.readcount -gt 1}) -join \"`n\"); & $s %~dp0 %*" & goto:eof
 
 # これ以降は全てPowerShellのスクリプト
 
@@ -31,21 +31,20 @@
 #>
 
 param (
-	# カレントディレクトリのパス
-	[string]$scriptFileRoot = (Get-Location).Path
+	# スクリプトのファイルが存在するディレクトリのパス (必須)
+	[parameter(mandatory=$true)][string]$scriptFileRoot ,
+
+	# 呼び出し元のスクリプトがあるディレクトリのパス (必須)
+	[parameter(mandatory=$true)][string]$callingScriptRoot
 )
 
-# tmp ディレクトリの場所を確認してカレントディレクトリとする
-if (Test-Path ..\tmp) {
-	Set-Location ..\tmp
-} else {
-	Set-Location tmp
-}
+# ${callingScriptRoot}\tmp ディレクトリをカレントディレクトリとする
+Set-Location "${callingScriptRoot}\tmp"
 
 # Visual C++ 2015-20xx Redistributable (x86) のインストーラーを実行 (待機)
 	# 自動インストールオプションを追加 by Atolycs (20250106)
-Start-Process -FilePath vc_redist.x86.exe -ArgumentList "/install /passive" -Wait
+Start-Process -FilePath vc_redist.x86.exe -ArgumentList "/install /passive" -WorkingDirectory (Get-Location).Path -Wait
 
 # Visual C++ 2008 Redistributable - x86 のインストーラーを実行 (待機)
 	# 自動インストールオプションを追加 by Atolycs (20250106)
-Start-Process -FilePath vcredist_x86.exe -ArgumentList "/qb" -Wait
+Start-Process -FilePath vcredist_x86.exe -ArgumentList "/qb" -WorkingDirectory (Get-Location).Path -Wait
