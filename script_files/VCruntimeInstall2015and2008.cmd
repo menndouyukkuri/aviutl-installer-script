@@ -1,4 +1,6 @@
-@powershell -NoProfile -ExecutionPolicy Unrestricted "$s=[scriptblock]::create((Get-Content \"%~f0\"|?{$_.readcount -gt 1})-join\"`n\");&$s %*" %*&goto:eof
+@powershell -NoProfile -ExecutionPolicy Unrestricted "$s = [scriptblock]::create((Get-Content \"%~f0\" | Where-Object {$_.readcount -gt 1}) -join \"`n\"); & $s \"%~dp0 %*\"" & goto:eof
+
+# これ以降は全てPowerShellのスクリプト
 
 # Visual C++ 2015-20xx Redistributable (x86) と Visual C++ 2008 Redistributable - x86 の
 # インストーラーを順番に実行していくだけのスクリプトです
@@ -28,8 +30,10 @@
  #  SOFTWARE.
 #>
 
-# カレントディレクトリのパスを $scriptFileRoot に保存 (起動方法のせいで $PSScriptRoot が使用できないため)
-$scriptFileRoot = (Get-Location).Path
+param (
+	# カレントディレクトリのパス
+	[string]$scriptFileRoot = (Get-Location).Path
+)
 
 # tmp ディレクトリの場所を確認してカレントディレクトリとする
 if (Test-Path ..\tmp) {
