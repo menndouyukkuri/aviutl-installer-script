@@ -55,8 +55,8 @@ param (
 )
 
 # バージョン情報を記載
-$VerNum = "1.1.19"
-$ReleaseDate = "2025-02-27"
+$VerNum = "1.1.20"
+$ReleaseDate = "2025-03-01"
 
 # 更新確認用にバージョン情報を格納
 $Version = "v" + $VerNum
