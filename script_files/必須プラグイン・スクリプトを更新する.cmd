@@ -1,4 +1,4 @@
-@powershell -NoProfile -ExecutionPolicy Unrestricted "$s = [scriptblock]::create((Get-Content \"%~f0\" | Where-Object {$_.readcount -gt 1}) -join \"`n\"); & $s %~dp0 %*" & goto :eof
+@powershell -NoProfile -ExecutionPolicy Unrestricted "$s = [scriptblock]::create((Get-Content \"%~f0\" | Where-Object { $_.readcount -gt 1 }) -join \"`n\"); & $s %~dp0 %*" & goto :eof
 
 # これ以降は全てPowerShellのスクリプト
 
@@ -29,8 +29,24 @@
 param (
 	# 以下は1行目の処理によって自動で追加されたパラメーター
 
-	# スクリプトのファイルが存在するディレクトリのパス
-	[parameter(mandatory=$true)][string]$scriptFileRoot ,
+	[ValidateScript({
+		# 1行目の処理に失敗していて、正しいパラメーターを渡されていない場合
+		if ([string]::IsNullOrWhiteSpace($_)) {
+			# エラーメッセージを表示
+			Write-Host "エラー: スクリプトの実行に必要な情報が取得できませんでした。"
+
+			# 不具合の報告を促すメッセージを表示
+			Write-Host "`r`n以下のリンク先で Issue を作成して、この不具合を報告していただけると助かります。`r`nCtrl キーを押しながらクリックするとリンク先が表示できます。`r`nhttps://github.com/menndouyukkuri/aviutl-installer-script/issues/new?template=01-bug-report.md`r`n"
+
+			# ユーザーの操作を待ってスクリプトを終了
+			Pause
+			exit 1
+		}
+
+		# 正しいパラメーターを渡されている場合、$true を返却
+		return $true
+	})][string]$scriptFileRoot , # スクリプトのファイルが存在するディレクトリのパス
+
 
 	# 以下はバッチファイル実行時に渡された引数
 

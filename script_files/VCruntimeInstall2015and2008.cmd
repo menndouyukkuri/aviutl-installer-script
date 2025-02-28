@@ -1,4 +1,4 @@
-@powershell -NoProfile -ExecutionPolicy Unrestricted "$s = [scriptblock]::create((Get-Content \"%~f0\" | Where-Object {$_.readcount -gt 1}) -join \"`n\"); & $s %~dp0 %*" & goto :eof
+@powershell -NoProfile -ExecutionPolicy Unrestricted "$s = [scriptblock]::create((Get-Content \"%~f0\" | Where-Object { $_.readcount -gt 1 }) -join \"`n\"); & $s %~dp0 %*" & goto :eof
 
 # これ以降は全てPowerShellのスクリプト
 
@@ -35,6 +35,7 @@ param (
 
 	# スクリプトのファイルが存在するディレクトリのパス
 	[parameter(mandatory=$true)][string]$scriptFileRoot ,
+
 
 	# 以下はバッチファイル実行時に渡された引数
 
