@@ -31,8 +31,12 @@
 #>
 
 param (
-	# スクリプトのファイルが存在するディレクトリのパス (必須)
+	# 以下は1行目の処理によって自動で追加されたパラメーター
+
+	# スクリプトのファイルが存在するディレクトリのパス
 	[parameter(mandatory=$true)][string]$scriptFileRoot ,
+
+	# 以下はバッチファイル実行時に渡された引数
 
 	# 呼び出し元のスクリプトがあるディレクトリのパス (必須)
 	[parameter(mandatory=$true)][string]$callingScriptRoot
