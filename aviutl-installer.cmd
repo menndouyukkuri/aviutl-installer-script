@@ -56,6 +56,10 @@ param (
 
 function New-TempDirectory() {
   $path = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
+  while (Test-Path $path) {
+    $path = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
+  }
+  New-Item -ItemType Directory -Path $path
 }
 
 $TempPath = New-TempDirectory
