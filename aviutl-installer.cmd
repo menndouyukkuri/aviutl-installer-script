@@ -54,6 +54,9 @@ param (
 	[string]$Path = "C:\Applications\AviUtl"
 )
 
+# 一時作業フォルダをUserProfile側のTempに展開するように設定 by Atolycs
+# これ以降の一時作業フォルダの場所はスクリプトとは別の場所に保存
+
 function New-TempDirectory() {
   $path = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
   while (Test-Path $path) {
@@ -251,10 +254,10 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Write-Host -NoNewline "`r`n一時的にファイルを保管するフォルダを作成しています..."
 
 	# tmp ディレクトリを作成する (待機)
-	Start-Process powershell -ArgumentList "-command New-Item ${TempPath} -ItemType Directory -Force" -WorkingDirectory ${TempPath} -WindowStyle Hidden -Wait
+	# Start-Process powershell -ArgumentList "-command New-Item ${TempPath} -ItemType Directory -Force" -WorkingDirectory ${TempPath} -WindowStyle Hidden -Wait
 
 	# カレントディレクトリを tmp ディレクトリに変更
-	Set-Location tmp
+	Set-Location ${TempPath}
 
 	Write-Host "完了"
 	Write-Host -NoNewline "`r`nフォルダーオプションを確認しています..."
@@ -1079,9 +1082,10 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Write-Host -NoNewline "`r`nインストールに使用した不要なファイルを削除しています..."
 
 	# カレントディレクトリをスクリプトファイルのあるディレクトリに変更
-	#Set-Location ..
+	Set-Location ${Path}
 
-	# tmp ディレクトリを削除
+	# tmp ディレクトリを削除 (By 20250307 Atolycs)
+  # UserProfileに作成した一時フォルダを削除
 	Remove-Item ${TempPath} -Recurse
 
 	Write-Host "完了"
