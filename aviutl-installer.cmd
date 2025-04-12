@@ -1031,13 +1031,13 @@ if (($AisTagName -ne $Version) -and ($scriptFileRoot -eq $AisRootDir)) {
 	Write-Host -NoNewline "`r`napm.json を作成しています..."
 
 	# $apmJsonHash をJSON形式に変換し、apm.json として出力する
-	ConvertTo-Json $apmJsonHash -Depth 8 -Compress | ForEach-Object { $_ + "`n" } | ForEach-Object { [Text.Encoding]::UTF8.GetBytes($_) } | Set-Content -Encoding Byte -Path "${Path}\apm.json"
+	ConvertTo-Json $apmJsonHash -Depth 8 | ForEach-Object { $_ + "`n" } | ForEach-Object { [Text.Encoding]::UTF8.GetBytes($_) } | Set-Content -Encoding Byte -Path "${Path}\apm.json"
 
 	Write-Host "完了"
 	Write-Host -NoNewline "`r`nais.json を作成しています..."
 
 	# $aisJsonHash をJSON形式に変換し、ais.json として出力する
-	ConvertTo-Json $aisJsonHash -Depth 8 -Compress | ForEach-Object { $_ + "`n" } | ForEach-Object { [Text.Encoding]::UTF8.GetBytes($_) } | Set-Content -Encoding Byte -Path "${Path}\ais.json"
+	ConvertTo-Json $aisJsonHash -Depth 8 | ForEach-Object { $_ + "`n" } | ForEach-Object { [Text.Encoding]::UTF8.GetBytes($_) } | Set-Content -Encoding Byte -Path "${Path}\ais.json"
 
 	Write-Host "完了"
 	Write-Host -NoNewline "`r`nデスクトップにショートカットファイルを作成しています..."
