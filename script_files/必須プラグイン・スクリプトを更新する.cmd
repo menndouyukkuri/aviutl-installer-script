@@ -5,7 +5,7 @@
 <#!
  #  MIT License
  #
- #  Copyright (c) 2025 menndouyukkuri, atolycs, Yu-yu0202
+ #  Copyright (c) 2025 menndouyukkuri, atolycs, Yu-yu0202, FullWidth-mion
  #
  #  Permission is hereby granted, free of charge, to any person obtaining a copy
  #  of this software and associated documentation files (the "Software"), to deal
@@ -220,7 +220,7 @@ Write-Host -NoNewline "`r`nais.json を確認しています..."
 # ais.json が存在する場合、$aisJsonHash に読み込み、$aisJsonExist に true を格納
 $aisJsonExist = $false
 if (Test-Path "${Path}\ais.json") {
-	$aisJsonHash = Get-Content "${Path}\ais.json" | ConvertFrom-JsonEditable
+	$aisJsonHash = (Get-Content "${Path}\ais.json" -Raw) | ConvertFrom-JsonEditable
 	$aisJsonExist = $true
 
 # ais.json が存在しない場合、ais.json の元になるハッシュテーブルを用意して $aisJsonHash に代入
@@ -1720,13 +1720,13 @@ Get-ChildItem -Path $Path -Recurse | Unblock-File
 Write-Host -NoNewline "`r`napm.json を作成しています..."
 
 # $apmJsonHash をJSON形式に変換し、apm.json として出力する
-ConvertTo-Json $apmJsonHash -Depth 8 | ForEach-Object { $_ + "`n" } | ForEach-Object { [Text.Encoding]::UTF8.GetBytes($_) } | Set-Content -Encoding Byte -Path "${Path}\apm.json"
+ConvertTo-Json $apmJsonHash -Depth 8 -Compress | ForEach-Object { $_ + "`n" } | ForEach-Object { [Text.Encoding]::UTF8.GetBytes($_) } | Set-Content -Encoding Byte -Path "${Path}\apm.json"
 
 Write-Host "完了"
 Write-Host -NoNewline "`r`nais.json を作成しています..."
 
 # $aisJsonHash をJSON形式に変換し、ais.json として出力する
-ConvertTo-Json $aisJsonHash -Depth 8 | ForEach-Object { $_ + "`n" } | ForEach-Object { [Text.Encoding]::UTF8.GetBytes($_) } | Set-Content -Encoding Byte -Path "${Path}\ais.json"
+ConvertTo-Json $aisJsonHash -Depth 8 -Compress | ForEach-Object { $_ + "`n" } | ForEach-Object { [Text.Encoding]::UTF8.GetBytes($_) } | Set-Content -Encoding Byte -Path "${Path}\ais.json"
 
 Write-Host "完了"
 Write-Host -NoNewline "`r`n更新に使用した不要なファイルを削除しています..."
